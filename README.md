@@ -4,12 +4,35 @@
 
 TensorCode is a framework that introduces simple abstractions and functions for encoding and decoding arbitrary python objects, differentiable programming (including differentiable control flow), and intelligent object creation / selection / other runtime code generation features. Rather than just think about the underlying mathematical objects, TensorCode's Programming 2.0 paradigm gives your brain the abstractions it needs to apply software engineering patterns including of encapsulation, abstraction, composition, design patterns, and derived concepts to your underlying problem. If you’re developing a multi-modal agent, building the next generation of end-to-end differentiable cognitive architectures, or just adding magic to an existing program, TensorCode may fit right into your stack!
 
+## TensorCode allows you to do the following
+
+1. arbitrary object encoding, decoding, and selection
+1. overriding the encoder, decoder, or selector to prefer when processing a given type, object, or parameter
+2. overriding the encoder, decoder, or selector to prefer inside a `with` scope (eg, different percieve vs. act scopes use different parameters)
+2. various code execution primitives (`if`, `while`, etc.) made differentiable
+3. runtime code-generation and execution for a given objective
+
 ## Basics
 
 - The Python scope can be viewed as a heterogenous directed graph. `object`'s are vertices, attributes are edges, and the `__dict__` is the adjacency list.
 - The `encode` operation recieves a Python object to encode. First, it initializes each vertex of the object to-be-encoded and its connected objects with an embedding computed from their `__name__` attribute. Then a graph neural network recursively updates those embeddings for a constant, computed, or learned number of steps. Finally, the embedding of the object to-be-encoded is returned.
 - The `select` operation recieves a query object and a list of options. First, these inputs are encoded. Then an attention-based classifier selects the top `n` options from the list of options. Finally, those top `n` options are returned.
 - The `select_call` operation wraps the `select` operation with a small modification: callable options are passed along to `select` as both a callable object and a callable invocation. `select_call` assists `select` by attaching the signature, return type, and syntax graph (if parsable) directly to the callables before passing them along.
+
+- The `call` operation recursively selects/creates args for a function, but doesn't necesarily return a newly created object
+
+tc.call(fn=tc.select(opts=(f, g, h)), call_args=True)
+
+- The `call` operation recieves a query and a list of functions to choose from. It inspects and attaches each function's signature information is attached  Each functions is considered its own subgraph. The `select` operation uses this information to select a constructor to use. Then,   If the constructor is a primitive type, a special decoder overrides the `create` method. Finally, the resulting object is returned.
+- determines the top-match constructor is selected and executed with the query as its argument. The result is returned.
+- Decoding works by recursively creating or selecting appropriate arguments to pass into an initializer.
+- Operations may be overriden, eg, `float` and `Tensor` are allready considered to be in encoded form, so their values are not changed by `encode` and `decode`.
+- explain the model at any scope
+  - many tensorcode top-level endpoints redirect to the model's corresponding method
+    - eg, tc.add_loss() redirects to tc.MODEL.add_loss()
+- explain functional and object-oriented training.
+  - Mention flax @compact annotation
+- learn via manual fitting (SL), self-supervision on normal execution, and reinforcement learning.
 
 ## Details
 
