@@ -3,16 +3,11 @@ from typing import List
 
 from tensorcode import pop_export, push_export
 from tensorcode.operations.operation import Operation
-from tensorcode.utils.inject_subclasses import inject_epilog_into_subclasses
+from tensorcode.utils.inject_subclasses import inject_into_subclasses_epilog
 from tensorcode.utils.unique import unique
 
 
 class Model:
-
-  DEFAULT_MODEL = "default_model"
-  CURRENT_MODEL = "current_model"
-  SAVE = "save"
-  LOAD = "load"
 
   @property
   def operations(self) -> List[Operation]:
@@ -25,8 +20,9 @@ class Model:
     self.output_spec = output_spec
     self.context_name = unique(context_name)
 
+    # FIXME: do we even want Models to hijack the currentmodel as soon as they are created?
     # if I'm being subclassed, inject my context manager into all subclass methods
-    @inject_epilog_into_subclasses(self.__name__, '__init__')
+    @inject_into_subclasses_epilog(self.__name__, '__init__')
     def with_context(method, *args, **kwargs):
       with self:
         method(*args, **kwargs)
@@ -35,22 +31,30 @@ class Model:
     for operation in self.operations:
       push_export(operation.OP_NAME, operation.handler)
     push_export(Model.CURRENT_MODEL, self)
-    push_export(Model.SAVE, self.save)
-    push_export(Model.LOAD, self.load)
 
     return self
 
   def __exit__(self, exc_type, exc_value, traceback):
     for operation in self.operations:
       pop_export(operation.OP_NAME, operation.handler)
-    pop_export(Model.CURRENT_MODEL)
-    pop_export(Model.SAVE)
-    pop_export(Model.LOAD)
+      toplevel_namespace_export(openation.handler)
 
-  # saving
-  def save(self, path):
+  @toplevel_namespace_export
+  def train(self, path):
     pass
 
-  # loading
+  @toplevel_namespace_export
+  def reward(self, path):
+    pass
+
+  @toplevel_namespace_export
+  def add_loss(self, path):
+    pass
+
+  @toplevel_namespace_export
+  def load(self, path):
+    pass
+
+  @toplevel_namespace_export
   def load(self, path):
     pass
