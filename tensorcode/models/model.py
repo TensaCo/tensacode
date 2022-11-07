@@ -20,7 +20,7 @@ class Model:
     self.output_spec = output_spec
     self.context_name = unique(context_name)
 
-    # FIXME: do we even want Models to hijack the currentmodel as soon as they are created?
+    # FIXME: do we even want Models to hijack the current_model as soon as they are created?
     # if I'm being subclassed, inject my context manager into all subclass methods
     @inject_into_subclasses_epilog(self.__name__, '__init__')
     def with_context(method, *args, **kwargs):
