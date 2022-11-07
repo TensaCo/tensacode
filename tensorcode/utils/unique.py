@@ -5,4 +5,4 @@ def unique(name: str, namespace=_NAMESPACE, scope_delimitor='/'):
     return name
   else:
     _NAMESPACE[name] += 1
-    return f'{name}{scope_delimitor}{_NAMESPACE[name]}'
+    return name + scope_delimitor + _NAMESPACE[name]
