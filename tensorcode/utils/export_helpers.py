@@ -1,6 +1,6 @@
 from tensorcode.utils.stacked import stacked
 
-def make_registration_helpers(__all__, __dict__):
+def make_export_helpers(__all__, __dict__):
   """Used to push and pop variables to the top-level module namespace"""
 
   _push, _pop, _stack = stacked(__dict__)
