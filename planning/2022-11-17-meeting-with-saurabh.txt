@@ -1,0 +1,88 @@
+def encode(d: dict):
+    q_enc_init = ...
+    keys, vals = [], []
+    for k, v in d.items()
+        keys += [encode(k)]
+        vals += [encode(v)]
+    return Attn(q_enc, keys, vals) # V softmax(k . q^T)
+    # shaped like vals[i]
+
+
+
+Q^T @ K
+
+Q: [B, D]
+K: [B, D]
+
+einsum('bi,bi->b', Q, K)
+
+
+
+object
+- __dict__ __items__
+
+class Foo:
+    ...
+    
+foo = Foo()
+
+foo.a
+foo.b
+foo.doWork()
+
+__items__
+
+
+def clone(obj):
+    return obj.__items__
+
+object.__name__ = 'foo'
+object.__items__ = {...}
+object.__type__ = <class Foo>
+object.__docstring__ = str
+
+object.__call__ 
+
+
+def bar(a, b, c: str = None):
+    ...
+    
+bar.__name__
+bar. -?> code
+import inspect
+signature
+annotations
+
+
+
+
+
+int str set list tuple ...
+
+
+
+
+def encode(obj: any): ...
+@Overload
+def encode(obj: str): ...
+@Overload
+def encode(obj: int): ...
+@Overload
+def encode(obj: list): ...
+@Overload
+def encode(obj: object): ...
+
+
+
+my_obj = smart_decode(tensor_representation, type=MyClass)
+
+if smart_bool(tensor):
+    ...
+elif smart_bool(tensor):
+    ...
+else:
+
+
+
+
+
