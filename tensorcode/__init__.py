@@ -8,7 +8,13 @@ TODO: introduction
 from tensorcode.models.model import Model
 from tensorcode.operations.operation import Operation
 from tensorcode.utils.export_helpers import make_export_helpers
+from tensorcode.utils.registry import Registry
 from tensorcode.utils.stacked import stacked
+
+# directly specify configs in their native packages
+import openai
+import forefront
+import transformers
 
 
 encode: Encode
@@ -19,8 +25,22 @@ current_model: Model
 
 
 
-
-
+registry: Registry
+'''
+models(task, uri):
+  completion/edit/image_generation/inpainting/outpainting/translation/summarization/etc.:
+    Task-specific subregistries wrap the native models into a common interface, eg, CompletionModel, ImageGenerationModel, etc.
+    openai: (actually lookup all of these jit)
+      gpt-3: davinci-001, davinci-text-002, codex-001, etc.
+      dalle: dalle-001, dalle-002, etc.
+    forefront: (actually lookup all of these jit)
+      gpt-j: 6b, 100M, etc.
+    stability-ai: (actually lookup all of these jit)
+      ...
+    transformers: (actually lookup all of these jit)
+      ...lookup JIT
+    https://url/to/oracle:
+'''
 
 
 
