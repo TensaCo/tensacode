@@ -17,7 +17,10 @@ class Namespaced:
 
     ALL: Mapping[str, object] = dict() # {name, obj}
 
-    def __new__(cls: type[Self], *args, /, name: str, **kwargs) -> Self:
+    def __new__(cls: type[Self], *args, /, name: str = None, **kwargs) -> Self:
+        if name is None and len(args) >= 1 and inspect.ismethod(args[-1]):
+            # convenient when annotating a method 
+            name = args[-1].__qualname__
         if name in Namespaced.ALL:
             self = Namespaced.ALL[name]
             self.__additional__(*args, **kwargs)
