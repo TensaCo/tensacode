@@ -2,12 +2,12 @@
 from __future__ import annotations
 from dataclasses import dataclass
 from typing import Callable
+from types import Mapping
 
 from tensorcode._utils.export_helpers import export, ContextManaged
 from tensorcode._utils.fp import Test
-from tensorcode._utils.overloaded import Overloaded
 import tensorcode as tc
-from tensorcode.utils.annotations import like, enc
+from tensorcode.utils.annotations import like, enc, encode_args, overloaded
 
 
 @ContextManaged
@@ -19,157 +19,269 @@ class Model(tc.utils.annotations.SupportsEncode[any]):
     I should group the items in this class into sub-class/modules so it looks like a real module
     even though its a class
     """
+
+    class _persistant:
+        context
+        instructions
+        focus
+        examples
+    def _managed(fn):
+        @wraps(fn)
+        def add_persistant(
+            *args,**kwargs,
+            commit_to_persistant=True,
+            get_from_persistant,
+            same_for_indv_args,
+            ):
+            if 
+
     
     @export
-    @Overloaded
+    @overloaded
+    @encode_args
     def encode(self,
-        object: any,
+        object: object,
+        depth_limit: int = 10,
+        context: any = None,
+        instructions: enc[str] = None,
+        focus: like[str] = None,
+        examples: list = None):
+        
+        keys = dir(object) + context | map$(self.encode(?, depth_limit=depth_limit-1, ...))
+
+
+
+    @encode.overload(x -> isinstance(x, bool))
+    @encode_args
+    def encode_bool(self,
+        object: bool,
         context: any,
         instructions: enc[str],
         focus: like[str],
         examples: list):
         pass
+    @encode.overload(x -> isinstance(x, int))
+    @encode_args
+    def encode_int(self,
+        object: int,
+        context: any,
+        instructions: enc[str],
+        focus: like[str],
+        examples: list):
+        pass
+    @encode.overload(x -> isinstance(x, float))
+    @encode_args
+    def encode_float(self,
+        object: float,
+        context: any,
+        instructions: enc[str],
+        focus: like[str],
+        examples: list):
+        pass
+    @encode.overload(x -> isinstance(x, str))
+    @encode_args
+    def encode_str(self,
+        object: str,
+        context: any,
+        instructions: enc[str],
+        focus: like[str],
+        examples: list):
+        pass
+    @encode.overload(x -> isinstance(x, (list, tuple)))
+    @encode_args
+    def encode_ordered_collection(self,
+        object: list|tuple,
+        context: any,
+        instructions: enc[str],
+        focus: like[str],
+        examples: list):
+        pass
+    @encode.overload(x -> isinstance(x, (set, frozenset)))
+    @encode_args
+    def encode_unordered_collection(self,
+        object: set|frozenset,
+        context: any,
+        instructions: enc[str],
+        focus: like[str],
+        examples: list):
+        pass
+    @encode.overload(x -> isinstance(x, Mapping))
+    @encode_args
+    def encode_mapping(self,
+        object: Mapping,
+        context: any,
+        instructions: enc[str],
+        focus: like[str],
+        examples: list):
+        pass
+    
     # in child classes, directly write
     # @encode.overload(x -> x is Number)
     # def encode_number(self, number): ...
     # this is possible since python classes are basically a module
 
     @export
-    @Overloaded
+    @overloaded
+    @encode_args
     def create(description: R[str] | like[str], type: type|R[type], max_depth=1, recursions=1):
         pass
 
     @export
-    @Overloaded
+    @overloaded
+    @encode_args
     # create bool with prompt engineered for decision:
     def decide(question: str):
         pass
 
     @export
-    @Overloaded
+    @overloaded
+    @encode_args
     def write(prompt: str):  # create str with prompt engineered for writing:
         pass
 
     @export
-    @Overloaded
+    @overloaded
+    @encode_args
     def define(description: str):  # define class:
         pass
 
     @export
-    @Overloaded
+    @overloaded
+    @encode_args
     def get(obj: any, n: int | str, description: str, max_depth=0) -> any:
         pass
 
     @export
-    @Overloaded
+    @overloaded
+    @encode_args
     def put(obj: any, val: any, description: str, max_depth=0):
         pass
 
     @export
-    @Overloaded
+    @overloaded
+    @encode_args
     def sort(items: list, criteria: str) -> list:
         pass
 
     @export
-    @Overloaded
+    @overloaded
+    @encode_args
     def similarity(a: any, b: any) -> float:
         pass
 
     @export
-    @Overloaded
+    @overloaded
+    @encode_args
     def closest(item: T, choices: set[T]) -> T:  # find the closest match:
         pass
 
     @export
-    @Overloaded
+    @overloaded
+    @encode_args
     def identify_anomalies(examples: set) -> set:
         pass
 
     @export
-    @Overloaded
+    @overloaded
+    @encode_args
     def identify_patterns(examples: set, n=None, min=None, max=None, recognition_threshold=None) -> Pattern:
         pass
 
     @export
-    @Overloaded
+    @overloaded
+    @encode_args
     def identify_isomorphisms(examples: set) -> set[tuple[Pattern, set]]:
         pass
 
     @export
-    @Overloaded
+    @overloaded
+    @encode_args
     # organize items into groups (number of groups is auto-detected if not specified):
     def group(items, n=None, min=None, max=None):
         pass
 
     @export
-    @Overloaded
+    @overloaded
+    @encode_args
     def predict(seq, steps=1):  # predict next n elements in sequence:
         pass
 
     @export
-    @Overloaded
+    @overloaded
+    @encode_args
     # produces an item with the average appearance, shape, value, etc of the inputs:
     def average(items):
         pass
 
     @export
-    @Overloaded
+    @overloaded
+    @encode_args
     # produces an item with a semantic value equaling the combination of the inputs:
     def combine(items):
         pass
 
     @export
-    @Overloaded
+    @overloaded
+    @encode_args
     def _if(condition1: bool, fn1, condition2: bool, fn2, ..., conditionN: bool, fnN, else_fn):
         pass
 
     @export
-    @Overloaded
+    @overloaded
+    @encode_args
     def _elif(condition: bool, fn):
         pass
 
     @export
-    @Overloaded
+    @overloaded
+    @encode_args
     def _else(fn):
         pass
 
     @export
-    @Overloaded
+    @overloaded
+    @encode_args
     # coconut is useful here:
-    def switch(condition: bool, cases: dict, default=None)
-    pass
+    def switch(condition: bool, cases: dict, default=None):
+        pass
 
     @export
-    @Overloaded
+    @overloaded
+    @encode_args
     def _while(condition: bool, loop):
         pass
 
     @export
-    @Overloaded
-    def call(fn)  # produced wrapped function that intelligently selects parameters when called. You should pre-curry mandatory arguments and initiate the call afterwards if you don't have any conditioning parameters to supply. Useful as a wrapper for auto-converting inputs to the proper type. EG, tc._if asks for a bool, but you can give it a string and it will convert it to a bool automatically. Also, call avoids decoding from R only to have the function re-encode it to R in the backend.:
-    pass
+    @overloaded
+    @encode_args
+    def call(fn):
+        # produced wrapped function that intelligently selects parameters when called. You should pre-curry mandatory arguments and initiate the call afterwards if you don't have any conditioning parameters to supply. Useful as a wrapper for auto-converting inputs to the proper type. EG, tc._if asks for a bool, but you can give it a string and it will convert it to a bool automatically. Also, call avoids decoding from R only to have the function re-encode it to R in the backend.:
+        pass
 
     @export
-    @Overloaded
-    # executes a series of operations (including tensorcode operations) and returns result. The central function for tensorcode-based interpreter:
+    @overloaded
+    @encode_args
     def do(instructions: R) -> any?:
+        # executes a series of operations (including tensorcode operations) and returns result. The central function for tensorcode-based interpreter:
         pass
 
     @export
-    @Overloaded
-    # returns {'clusters': ..., 'trends': ..., 'statistics': ..., notes: ['blah blah blah', ...], ...}:
+    @overloaded
+    @encode_args
     def analyze(items):
+        # returns {'clusters': ..., 'trends': ..., 'statistics': ..., notes: ['blah blah blah', ...], ...}:
         pass
 
     @export
-    @Overloaded
-    # auto-generates visualizations that may be useful to understand the object(s) (code, data, or class definitions) and runs them. Useful in an interactive computing environment:
+    @overloaded
+    @encode_args
     def visualize(object):
+        # auto-generates visualizations that may be useful to understand the object(s) (code, data, or class definitions) and runs them. Useful in an interactive computing environment:
         pass
 
     @export
-    @Overloaded
-    @tensorcode.call  # TODO: how can I use call to route for the call function?????
+    @overloaded
+    @encode_args
     def write_tests(self,
                     function: Callable,
                     instructions: str,
@@ -181,12 +293,14 @@ class Model(tc.utils.annotations.SupportsEncode[any]):
         pass
 
     @export
-    @Overloaded
+    @overloaded
+    @encode_args
     def benchmark(function: Callable, instructions: str, metrics: list[str] = None):
         pass
 
     @export
-    @Overloaded
+    @overloaded
+    @encode_args
     def debug(self, program: str | Callable):
         """
         program:
@@ -196,15 +310,6 @@ class Model(tc.utils.annotations.SupportsEncode[any]):
         # uses 3rd party tools to decompose program into modules of interest, tests, their expected behavior, and their actual behavior. Based on test result divergence, makes appropriate changes to code. This should be a future todo rather than main item:
         pass
 
-    # parameters are auto-encoded to R's or decoded to specific types as needed using the @tensorcode.call decorator
-    # TODO: most functions should have these extra params
-    # focus refers to which parts of the objects should be focused on
-    # context is just extra information
-    # instructions
-    # examples
-
-    @export
-    def instruct(self, instructions: list[str]): ...
     @export
     def add_loss(self, loss, info, operation): ...
     @export

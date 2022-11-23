@@ -64,11 +64,20 @@ def make_decorator(dataclass):
         # applies attrs from source onto target
         # copies default values if they exist
         # it should also copy superclass' keys and slots
-        for attr in inspect.getmembers(source, predicate=) # TODO
+        for attr in inspect.getmembers(source, predicate=X): # TODO
             pass
             # TODO: maybe one-liner for this
     return partial(apply, source=dataclass)
 
+class decorate_fn(fn, *, prolog=None, epilog=None, extra_args=list[Arg], extra_kwargs=None):
+  pass # use functools.wraps
+
+
+@dataclass
+class Param:
+  name: str
+  annotation: any = None
+  default: any = None
 
 @dataclass
 class Arguments:

@@ -1,0 +1,42 @@
+from __future__ import annotations
+
+import inspect
+from functools import wraps
+from typing import TypeVar, Generic, Protocol
+
+from tensorcode._utils.registry import Registry, HighestScore
+
+
+data like[T] # Indicates that this types does not need to match exactly"""
+data enc[T] # Indicates that this type is an encoded form of T"""
+
+class SupportsEncode[T](Protocol):
+    def encode(self, object: T, *args, **kwargs) -> enc[T]: ...
+
+def encode_args(fn, *,
+        ignore_arg_indeces: list[int],
+        ignore_kwarg_names: list[str]):
+    """ Encodes args to wrapped function which have params
+    annotated with `enc[T]` but are passed as `T`'s.
+    """
+    @wraps(fn)
+    def _fn(self: SupportsEncode, *_args, **_kwargs):
+        args = []
+        kwargs = {}
+        # TODO
+
+
+
+        fn(self, *args, **kwargs)
+    return _fn
+
+def overloaded(self, fn):
+    registry = Registry(HighestScore(), self.__call__)
+    @wraps(fn)
+    def _fn(*args, **kwargs):
+        return self.registry.first(*args, **kwargs)
+    def overload(condition, method):
+        self.registry.register(condition, method)
+        return method
+    setattr(_fn, 'overload', overload)
+    return _fn
