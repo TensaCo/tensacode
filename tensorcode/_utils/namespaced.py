@@ -17,10 +17,7 @@ class Namespaced:
 
     ALL: Mapping[str, object] = dict() # {name, obj}
 
-    def __new__(cls: type[Self], *args, /, name: str = None, **kwargs) -> Self:
-        if name is None and len(args) >= 1 and inspect.ismethod(args[-1]):
-            # convenient when annotating a method 
-            name = args[-1].__qualname__
+    def __new__(cls: type[Self], name: str, *args, **kwargs) -> Self:
         if name in Namespaced.ALL:
             self = Namespaced.ALL[name]
             self.__additional__(*args, **kwargs)
@@ -29,6 +26,15 @@ class Namespaced:
             Namespaced.ALL[name] = self
         return self
 
+    def __pre_init__(self, *args, **kwargs):
+        """Called before either __init__ or __additional__ is called"""
+        pass
+    def __post_init__(self, *args, **kwargs):
+        """Called after either __init__ or __additional__ is called"""
+        pass
+    def __init__(self, *args, **kwargs):
+        """Called when a class is being initialized the first time"""
+        pass
     def __additional__(self, *args, **kwargs):
         """Called when a class already exists but is being 'initialized' again"""
         pass

@@ -6,13 +6,12 @@ from typing import Callable
 from tensorcode._utils.export_helpers import export, ContextManaged
 from tensorcode._utils.fp import Test
 from tensorcode._utils.overloaded import Overloaded
-
-
-R = typevar('R')  # representation format for `Model`
+import tensorcode as tc
+from tensorcode.utils.annotations import like, enc
 
 
 @ContextManaged
-class Model:
+class Model(tc.utils.annotations.SupportsEncode[any]):
     """I don't want to put so many methods in the same file, but I don't see a better
     way to group all the call signatures togethor. Also, many of these methods call each other.
     Finally, it just makes sense for LLM-based methods to all enter context simultaneously.
@@ -20,34 +19,15 @@ class Model:
     I should group the items in this class into sub-class/modules so it looks like a real module
     even though its a class
     """
-
-    """
-    Custom type annotations
-
-    like[T] is something that is close to T
-      this provides infomation to the developer about what sort of
-      behavior to expect from feed a like[T] to tensorcode functions
-      However mypy will need ot use tc.similarity to perform type 
-      checking
-
-    encoded[T] useful for avoiding enc-dec-enc chains
-      also useful for identifying the source type of a tensor
-    encoded[like[T]]|like[T]
-
-    decodes_to[T] something that is T or can be decoded to T
-
-    """
-
-    focus = str
-    context = dict()
-    instructions = list()
-    example = list()
-
-    # focus: str
-
+    
     @export
     @Overloaded
-    def encode(object):
+    def encode(self,
+        object: any,
+        context: any,
+        instructions: enc[str],
+        focus: like[str],
+        examples: list):
         pass
     # in child classes, directly write
     # @encode.overload(x -> x is Number)
