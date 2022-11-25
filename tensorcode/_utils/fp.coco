@@ -69,24 +69,9 @@ def make_decorator(dataclass):
             # TODO: maybe one-liner for this
     return partial(apply, source=dataclass)
 
-class decorate_fn(fn, *, prolog=None, epilog=None, extra_args=list[Arg], extra_kwargs=None):
-  pass # use functools.wraps
-
-
-@dataclass
-class Param:
-  name: str
-  annotation: any = None
-  default: any = None
-
-@dataclass
-class Arguments:
-  args: list[any]
-  kwargs: dict[str, any]
-
-@dataclass
-class Test:
-  arguments: Arguments
-  function: Callable
-  expected_outputs: any
-  actual_outputs: any = None
+class decorate(fn, *, prolog=None, epilog=None):
+  @wraps
+  def _fn(*args, **kwargs):
+    prolog?(*args, **kwargs)
+    fn(*args, **kwargs)
+    epilog?(*args, **kwargs)
