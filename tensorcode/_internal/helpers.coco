@@ -41,7 +41,7 @@ def join(vals, delim=', '):
     match vals:
         case _ is (tuple, list):
             return delim.join(vals)
-        case _ is (dict):
+        case _ is dict:
             return vals.items() \
                 |> map$((key, val)->f'{key}={val}', ?) \
                 |> delim.join$(?)

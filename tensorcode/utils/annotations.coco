@@ -30,13 +30,25 @@ def encode_args(fn, *,
         fn(self, *args, **kwargs)
     return _fn
 
-def overloaded(self, fn):
-    registry = Registry(HighestScore(), self.__call__)
+def overloaded(self, cond_or_fn=None, fn=None):
+    def get_cond_and_fn(cond_or_fn, fn):
+        match fn:
+            case fn is None: 
+                cond = arg_argspec_similarity$(fullargspec=inspect.getfullargspec(fn))
+                fn = cond_or_fn
+            case fn is not None:
+                cond = cond_or_fn
+                fn = fn
+        return cond, fn
+
+    registry = Registry(HighestScore())
+    self.registry,registry(get_cond_and_fn(cond_or_fn, fn))
+    def overload(cond_or_fn=None, fn=None):
+        self.registry,registry(get_cond_and_fn(cond_or_fn, fn))
+        return method
+    
     @wraps(fn)
     def _fn(*args, **kwargs):
-        return self.registry.first(*args, **kwargs)
-    def overload(condition, method):
-        self.registry.register(condition, method)
-        return method
+        return self.registry.first(args=args, kwargs=kwargs)
     setattr(_fn, 'overload', overload)
     return _fn

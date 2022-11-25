@@ -91,10 +91,10 @@ class Model(tc.utils.annotations.SupportsEncode[any]):
             enc = self._encode_process(enc)
         return enc
 
-    @encode.overload(x -> isinstance(x, bool))
+    @encode.overload((obj, *args, **kwargs) -> obj is bool)
     @encode_args
     def encode_bool(self,
-        object: bool,
+        obj: bool,
         context: any,
         instructions: enc[str],
         focus: like[str],
