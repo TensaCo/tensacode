@@ -1,3 +1,6 @@
+import ivy
+
+
 class Model(ivy.Model):
 
     def __init__(self, fn, input_shape, output_shape):

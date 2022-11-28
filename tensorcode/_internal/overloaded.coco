@@ -1,0 +1,74 @@
+FullArgSpec(
+  args, varargs, varkw, defaults, 
+  kwonlyargs, kwonlydefaults, 
+  annotations)
+
+data Argument(name: str, val: any, annotation: any = None)
+
+@memoized
+def get_arguments(fn, supplied_args, supplied_kwargs) -> Agrument[]:
+	arguments = []
+	fullargspec = inspect.getfullargspec(fn)	
+	remaining_args = fullargspec.args
+  # extract kwargs first, since they may eat up some of the args
+	for kw, val in supplied_kwargs.items():
+		if kw in fullargspec.kwonlyargs:
+			arguments.append(Argument(kw, val, annotations[kw]))
+		elif kw in remaining_args:
+			remaining_args.pop(kw)
+			arguments.append(Argument(kw, val, annotations[kw]))
+		elif len(remaining_args) == 0 and fullargspec.varargs is not None:
+			arguments.append(Argument(kw, val, annotations[fullargspec.varargs]))
+		elif fullargspec.varkwargs is not None:
+			arguments.append(Argument(kw, val, annotations[fullargspec.varkwargs]))
+		else:
+			raise Error('Arguments supplied to not match signature')
+  # now extract args
+	for val in supplied_args:
+		if len(remaining_args) > 0:
+			arguments.append(Argument(remaining_args.pop(0), val, annotations[kw]))
+		elif len(remaining_args) == 0 and fullargspec.varargs is not None:
+			arguments.append
+				<| Argument(fullargspec.varargs, val, annotations[fullargspec.varargs])
+		else:
+			raise Error('Arguments supplied to not match signature')
+	# add defaults
+	argnames = arguments |> map$(.name)
+	fullargspec.args
+		|> dropwhile (_ in argnames)
+		|> Argument$(_, fullargspec.defaults[_], fullargspec.annotations[_])
+		|> arguments.extend
+	fullargspec.kwonlyargs
+		|> dropwhile (_ in argnames)
+		|> Argument$(_, fullargspec.kwonlydefaults[_], fullargspec.annotations[_])
+		|> arguments.extend
+  
+  return arguments
+
+def attempt(fn, args, kwargs):
+  try:
+    return fn(*args, **kwargs)
+  except:
+    return None
+
+def arg_annotation_distance(val, annotation):
+  # also support predicate annotations
+
+def best_match(fns, *args, **kwargs):
+  fns
+    # see which of these functions even support the supplied arguments
+    |> map$(fn=_, arguments=attempt(get_arguments, _, args, kwargs))
+    |> filter$(.arguments is not None)
+    |> map$(fn=_, distance=sum(arg_annotation_distance(_) for _ in .arguments))
+    |> min$(.distance)
+
+def overloaded(self, fn):
+    registry = Registry(HighestScore(), self.__call__)
+    @wraps(fn)
+    def _fn(*args, **kwargs):
+        return self.registry.first(*args, **kwargs)
+    def overload(condition, method):
+        self.registry.register(condition, method)
+        return method
+    setattr(_fn, 'overload', overload)
+    return _fn

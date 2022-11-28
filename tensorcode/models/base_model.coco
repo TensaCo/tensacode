@@ -126,6 +126,13 @@ class Model(tc.utils.annotations.SupportsEncode[any]):
         instructions: enc[str],
         focus: like[str],
         examples: list):
+        # try parsing it as a literal
+
+        # try parsing as a variable name
+        
+        # try parsing as a zero-argument function or iterator
+
+        # otherwise, build semantic embedding of the string
         pass
     @encode.overload(x -> isinstance(x, (list, tuple)))
     @encode_args
@@ -218,6 +225,16 @@ class Model(tc.utils.annotations.SupportsEncode[any]):
 
     @export
     @ledger.ledgered
+    @overloaded
+    @encode_args
+    def sement(obj: any, ...) -> any:
+        """
+        for getting masks from images and highlights from text 
+        Useful for breaking long documents into smaller pieces
+        """
+        pass
+
+    @export
     @overloaded
     @encode_args
     def closest(item: T, choices: set[T]) -> T:  # find the closest match:
