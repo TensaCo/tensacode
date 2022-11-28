@@ -91,7 +91,8 @@ class Model(tc.utils.annotations.SupportsEncode[any]):
             enc = self._encode_process(enc)
         return enc
 
-    @encode.overload((obj, *args, **kwargs) -> obj is bool)
+
+    @encode.overload(_ is bool)
     @encode_args
     def encode_bool(self,
         obj: bool,
@@ -99,25 +100,35 @@ class Model(tc.utils.annotations.SupportsEncode[any]):
         instructions: enc[str],
         focus: like[str],
         examples: list):
-        pass
-    @encode.overload(x -> isinstance(x, int))
+        subclasses_should_implement()
+
+    @encode.overload(_ is int)
     @encode_args
     def encode_int(self,
         object: int,
+        bounds: (int, int) = None,
         context: any,
         instructions: enc[str],
         focus: like[str],
         examples: list):
-        pass
+        args = locals()
+        args.pop('self')
+        return self.encode_float(epsilon=1., **args)
+
     @encode.overload(x -> isinstance(x, float))
     @encode_args
     def encode_float(self,
         object: float,
+        bounds: (float, float) = None,
+        epsilon: float = 0.01,
         context: any,
         instructions: enc[str],
         focus: like[str],
         examples: list):
-        pass
+        # use positional embeddings in NN implementation
+        # use adjectives in LLM implementation
+        subclasses_should_implement()
+
     @encode.overload(x -> isinstance(x, str))
     @encode_args
     def encode_str(self,
@@ -127,13 +138,11 @@ class Model(tc.utils.annotations.SupportsEncode[any]):
         focus: like[str],
         examples: list):
         # try parsing it as a literal
-
-        # try parsing as a variable name
-        
-        # try parsing as a zero-argument function or iterator
-
+        # if that doesn't work, try parsing as a variable name
+        # if that doesn't work, try parsing as a zero-argument function or iterator
         # otherwise, build semantic embedding of the string
-        pass
+        subclasses_should_implement()
+
     @encode.overload(x -> isinstance(x, (list, tuple)))
     @encode_args
     def encode_ordered_collection(self,
@@ -161,6 +170,15 @@ class Model(tc.utils.annotations.SupportsEncode[any]):
         focus: like[str],
         examples: list):
         pass
+    @encode.overload(_ is code)
+    @encode_args
+    def encode_code(self,
+        object: code,
+        context: any,
+        instructions: enc[str],
+        focus: like[str],
+        examples: list):
+        pass
     
     # in child classes, directly write
     # @encode.overload(x -> x is Number)
@@ -173,6 +191,7 @@ class Model(tc.utils.annotations.SupportsEncode[any]):
     @encode_args
     def create(description: R[str] | like[str], type: type|R[type], max_depth=1, recursions=1):
         pass
+        """tc.create('the highest number in the ', int)"""
 
     @export
     @ledger.ledgered
@@ -227,7 +246,7 @@ class Model(tc.utils.annotations.SupportsEncode[any]):
     @ledger.ledgered
     @overloaded
     @encode_args
-    def sement(obj: any, ...) -> any:
+    def segment(obj: any, ...) -> any:
         """
         for getting masks from images and highlights from text 
         Useful for breaking long documents into smaller pieces

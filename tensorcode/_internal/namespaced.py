@@ -3,7 +3,8 @@ from __future__ import annotations
 from typing import Mapping
 from typing_extensions import Self
 
-# TODO: this class needs a better name
+
+
 class Namespaced:
     """Namespaced
 

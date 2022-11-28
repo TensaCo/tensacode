@@ -13,6 +13,7 @@ type NumericalTensor = float|int|ivy.Array # TODO: syntax not correct
 type like[T <= object] = object
 type enc[T <= object] = NumericalTensor # Indicates that this type is an encoded form of T
 
+
 class SupportsEncode[T](Protocol):
     def encode(self, object: T, *args, **kwargs) -> enc[T]: ...
 
