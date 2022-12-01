@@ -16,5 +16,10 @@ def TODO(reason=None):
 
 def subclasses_should_implement(cls):
   calling_class = inspect.currentframe().f_back.f_locals['self'].__class__
-  raise NotImplementedError(f"Not implemented in {calling_class}. "
-                             "Subclasses should implement this method")
+  raise NotImplementedError("Not implemented in {calling_class}. Subclasses should implement this method")
+
+def unscramble_optional_first(first_or_second, definitely_second, default=None):
+  if definitely_second:
+    return first_or_second, definitely_second
+  else:
+    return default, first_or_second

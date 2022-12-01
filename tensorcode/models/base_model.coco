@@ -92,7 +92,7 @@ class Model(tc.utils.annotations.SupportsEncode[any]):
         return enc
 
 
-    @encode.overload(_ is bool)
+    @encode.overload
     @encode_args
     def encode_bool(self,
         obj: bool,
@@ -102,7 +102,7 @@ class Model(tc.utils.annotations.SupportsEncode[any]):
         examples: list):
         subclasses_should_implement()
 
-    @encode.overload(_ is int)
+    @encode.overload
     @encode_args
     def encode_int(self,
         object: int,
@@ -115,7 +115,7 @@ class Model(tc.utils.annotations.SupportsEncode[any]):
         args.pop('self')
         return self.encode_float(epsilon=1., **args)
 
-    @encode.overload(x -> isinstance(x, float))
+    @encode.overload
     @encode_args
     def encode_float(self,
         object: float,
@@ -129,7 +129,7 @@ class Model(tc.utils.annotations.SupportsEncode[any]):
         # use adjectives in LLM implementation
         subclasses_should_implement()
 
-    @encode.overload(x -> isinstance(x, str))
+    @encode.overload
     @encode_args
     def encode_str(self,
         object: str,
@@ -143,7 +143,7 @@ class Model(tc.utils.annotations.SupportsEncode[any]):
         # otherwise, build semantic embedding of the string
         subclasses_should_implement()
 
-    @encode.overload(x -> isinstance(x, (list, tuple)))
+    @encode.overload
     @encode_args
     def encode_ordered_collection(self,
         object: list|tuple,
@@ -151,8 +151,9 @@ class Model(tc.utils.annotations.SupportsEncode[any]):
         instructions: enc[str],
         focus: like[str],
         examples: list):
-        pass
-    @encode.overload(x -> isinstance(x, (set, frozenset)))
+        TODO()
+
+    @encode.overload
     @encode_args
     def encode_unordered_collection(self,
         object: set|frozenset,
@@ -160,17 +161,19 @@ class Model(tc.utils.annotations.SupportsEncode[any]):
         instructions: enc[str],
         focus: like[str],
         examples: list):
-        pass
-    @encode.overload(x -> isinstance(x, Mapping))
+        TODO()
+
+    @encode.overload
     @encode_args
     def encode_mapping(self,
-        object: Mapping,
+        object: dict|Mapping,
         context: any,
         instructions: enc[str],
         focus: like[str],
         examples: list):
-        pass
-    @encode.overload(_ is code)
+        TODO()
+
+    @encode.overload
     @encode_args
     def encode_code(self,
         object: code,
@@ -178,7 +181,8 @@ class Model(tc.utils.annotations.SupportsEncode[any]):
         instructions: enc[str],
         focus: like[str],
         examples: list):
-        pass
+        TODO()
+
     
     # in child classes, directly write
     # @encode.overload(x -> x is Number)
