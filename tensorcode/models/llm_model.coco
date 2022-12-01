@@ -56,7 +56,7 @@ class LLMModel(Model):
         instructions: enc[str],
         focus: like[str],
         examples: list):
-        subclasses_should_implement()
+        TODO()
 
     @encode.overload
     @encode_args
@@ -83,7 +83,7 @@ class LLMModel(Model):
         examples: list):
         # use positional embeddings in NN implementation
         # use adjectives in LLM implementation
-        subclasses_should_implement()
+        TODO()
 
     @encode.overload
     @encode_args
@@ -97,7 +97,7 @@ class LLMModel(Model):
         # if that doesn't work, try parsing as a variable name
         # if that doesn't work, try parsing as a zero-argument function or iterator
         # otherwise, build semantic embedding of the string
-        subclasses_should_implement()
+        TODO()
 
     @encode.overload
     @encode_args
