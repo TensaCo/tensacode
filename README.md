@@ -11,3 +11,4 @@ TensorCode is a framework that introduces simple abstractions and functions for 
 1. arbitrary object encoding, decoding, and selection
 2. various code execution primitives (`if`, `while`, etc.) made differentiable
 3. runtime code-generation and execution for a given objective
+
