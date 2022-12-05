@@ -1,0 +1,2 @@
+# tensorcode
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/2a20df350ff44b8085254760c3d658f0)](https://app.codacy.com/gh/Limboid/tensorcode?utm_source=github.com&utm_medium=referral&utm_content=Limboid/tensorcode&utm_campaign=Badge_Grade_Settings)
