@@ -4,6 +4,8 @@ from tensorcode._utils.fp import Test
 import tensorcode as tc
 from tensorcode.utils.annotations import like, enc, encode_args, overloaded
 
+import ivy
+ivy.set_framework('numpy') # need to set a framework for ivy
 
 class NNModel(Model):
 
@@ -74,7 +76,7 @@ class NNModel(Model):
     @encode_args
     def encode_float(self,
         object: float,
-        bounds: (float, float) = None,
+        bounds: (float, float) = (-100, 100),
         epsilon: float = 0.01,
         context: any,
         instructions: enc[str],
@@ -82,7 +84,13 @@ class NNModel(Model):
         examples: list):
         # use positional embeddings in NN implementation
         # use adjectives in LLM implementation
-        TODO()
+
+        # create values for given bound and step
+        values = ivy.arange(start= bounds[0], stop= bounds[1], step= epsilon)
+        # create positional values for elements
+        position = ivy.arange(start= 0, stop= (bounds[1] - bounds[0])/epsilon, step = 1)
+        
+        return values * positions
 
     @encode.overload
     @encode_args
