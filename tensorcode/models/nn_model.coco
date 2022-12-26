@@ -4,9 +4,12 @@ from tensorcode._utils.fp import Test
 import tensorcode as tc
 from tensorcode.utils.annotations import like, enc, encode_args, overloaded
 
+import ivy
+ivy.set_framework('numpy') # need to set a framework for ivy
 
 class NNModel(Model):
 
+    dim: int
 
     @export
     @ledger.ledgered
@@ -59,30 +62,34 @@ class NNModel(Model):
 
     @encode.overload
     @encode_args
-    def encode_int(self,
-        object: int,
-        bounds: (int, int) = None,
-        context: any,
-        instructions: enc[str],
-        focus: like[str],
-        examples: list):
+    def encode_int(self, input: int, **kw):
         args = locals()
         args.pop('self')
-        return self.encode_float(epsilon=1., **args)
+        return self.encode_float(step=1., **args)
 
     @encode.overload
     @encode_args
-    def encode_float(self,
-        object: float,
-        bounds: (float, float) = None,
-        epsilon: float = 0.01,
-        context: any,
-        instructions: enc[str],
-        focus: like[str],
-        examples: list):
-        # use positional embeddings in NN implementation
-        # use adjectives in LLM implementation
-        TODO()
+    def encode_float(self, input: float, step: float = 1e-2, **kw):
+        """Encode float using positional embeddings"""
+        
+        # generate frequencies for PE
+        k = ivy.arange(start=0, stop=self.dim//2, step=1)
+        frequencies = 1 / (base**(2*k/self.dim))
+        
+        # make 1 step = 1 unit
+        input = input / step
+        
+        # compute PE
+        pe_sin = sin(2*pi*frequencies*input)
+        pe_cos = sin(2*pi*frequencies*input)
+        pe = ivy.concat([pe_sin, pe_cos], axis=-1)
+        
+        # handle odd depth case
+        if self.dim % 2:
+            # pad with extra 0
+            pe = ivy.concat([pe, ivy.zeros_like(pe)[..., :1]], axis=-1)
+        
+        return pe
 
     @encode.overload
     @encode_args
