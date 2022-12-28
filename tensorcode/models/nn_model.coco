@@ -79,7 +79,7 @@ class NNModel(Model):
         
         # compute PE
         pe_sin = sin(2*pi*frequencies*input)
-        pe_cos = sin(2*pi*frequencies*input)
+        pe_cos = cos(2*pi*frequencies*input)
         pe = ivy.concat([pe_sin, pe_cos], axis=-1)
         
         # handle odd depth case
