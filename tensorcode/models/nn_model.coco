@@ -54,7 +54,7 @@ class NNModel(Model):
     @encode_args
     def encode_bool(self, input: bool, **kw):
       """Encode boolean input"""
-      tensor = ivy.full((1, self.dim), fill_value= input, dtype= bool).astype('uint8')
+      tensor = ivy.full((self.dim, ), fill_value= input, dtype= bool).astype(ivy.int32)
 
       return tensor
 
