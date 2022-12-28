@@ -52,13 +52,11 @@ class NNModel(Model):
 
     @encode.overload
     @encode_args
-    def encode_bool(self,
-        obj: bool,
-        context: any,
-        instructions: enc[str],
-        focus: like[str],
-        examples: list):
-        TODO()
+    def encode_bool(self, input: bool, **kw):
+      """Encode boolean input"""
+      tensor = ivy.full((1, self.dim), fill_value= input, dtype= bool).astype('uint8')
+
+      return tensor
 
     @encode.overload
     @encode_args
