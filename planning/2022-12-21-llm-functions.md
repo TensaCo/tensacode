@@ -23,6 +23,17 @@ def encode_object(input, name=None, context=None, max_depth=3):
     return output
 
   # smart encoding, using members for context, recursively
+
+"""
+my_obj:
+  a = 3
+  b = 6
+  c = [1, 6,7,3,5]
+  d = 'summary of d'
+  the_whole_entire_book = "short summary"
+"""
+
+
   name = name or input.__name__
   member_triples = [
     (
@@ -61,8 +72,8 @@ def encode_object(input, name=None, context=None, max_depth=3):
   prompt = Template(dedent('''\
     {% if context -%}
     {{context}}
-    {%- endif %}
 
+    {%- endif %}{{name}}:
     {{stringified_input}}
 
     Provide a concise description of {{name}}:
@@ -128,6 +139,8 @@ print(f'Answer: {answer}')
 
 Compresses strings longer than the context length
 
+TODO: there are many ways to summarize from the field of prompt engineering. Look up some examples.
+
 ```python
 def summarize(input: str):
   segments = segment(input)
@@ -147,7 +160,21 @@ def summarize(input: str):
 Breaks up long pieces of text into shorter ones which, ideally, represent independant pieces of information.
 
 ```python
+"""
+once upon a time ....
+
+....
+
+... regserthg
+
+...
+
+"""
+
+
+
 def segment(input):
+  # TODO: look up information extraction and the latest in attention to give us an idea of what we can use
   pass # TODO
 ```
 
@@ -157,7 +184,7 @@ Decide is used for making programs 'smart'.
 
 ```python
 def decide(prompt, context):
-  return create(prompt, bool, context)
+  return create(prompt, type=bool, context=context)
 ```
 
 ### Example
@@ -217,6 +244,7 @@ def call(fn, context):
       return create(prompt=name, type=type, context={**context})
     elif selection_mode == 'reference existing variable':
       # TODO: we need to be passing the calling frame around, because I need to get the locals from that frame (running `locals()` here just gives me the locals in *this* function, which is not useful for users)
+      # return select('Select what variable', options={**globals(), **locals()})
       return get('Get a variable to supply for {name}')
     else:
       raise Error('Invalid selection mode {selection_mode}')
@@ -396,6 +424,11 @@ def create_object(prompt: str, type: type = None, context: str = None):
 - composite-type instantiation
   ```python
   model = tc.create(tf.keras.Model, 'a residual AlexNet')
+  ```
+
+- type construction
+  ```python
+  person = tc.create(type, 'a class representing an SQL execution strategy')
   ```
 
 
