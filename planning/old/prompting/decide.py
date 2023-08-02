@@ -1,6 +1,6 @@
 """Decide a boolean value based on a prompt and possibly a context."""
 
-from tensorcode.prompting.prompt import prompt as _prompt
+from tensacode.prompting.prompt import prompt as _prompt
 
 @tensorcode.export("tensorcode.prompting.decide")
 def decide(prompt, context=None, **kwargs):

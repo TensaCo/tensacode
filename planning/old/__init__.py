@@ -5,11 +5,11 @@ Copyright (c) 2022 Jacob F Valdez. Released under the MIT License
 TODO: introduction
 """
 
-from tensorcode.models.model import Model
-from tensorcode.operations.operation import Operation
-from tensorcode.utils.export_helpers import make_export_helpers
-from tensorcode.utils.registry import Registry
-from tensorcode.utils.stacked import stacked
+from tensacode.models.model import Model
+from tensacode.operations.operation import Operation
+from tensacode.utils.export_helpers import make_export_helpers
+from tensacode.utils.registry import Registry
+from tensacode.utils.stacked import stacked
 
 # directly specify configs in their native packages
 import openai

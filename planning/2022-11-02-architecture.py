@@ -1,4 +1,4 @@
-import tensorcode as tc
+import tensacode as tc
 
 # the global module acts like a Model
 # each Model provides most of the API that the global module does

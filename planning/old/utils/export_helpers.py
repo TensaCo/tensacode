@@ -1,4 +1,4 @@
-from tensorcode.utils.stacked import stacked
+from tensacode.utils.stacked import stacked
 
 def make_export_helpers(__all__, __dict__):
   """Used to push and pop variables to the top-level module namespace"""

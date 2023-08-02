@@ -1,6 +1,6 @@
 import inspect
 
-from tensorcode import __all__, __dict__ as main_all, main_dict
+from tensacode import __all__, __dict__ as main_all, main_dict
 
 
 # FEATURE: currently, `name` refers to an attr directly under __main__

@@ -1,9 +1,9 @@
 """Select N items from a list of items, possibly based on a context."""
 
 import jinja2
-from tensorcode.prompting.oracle import PromptingException
+from tensacode.prompting.oracle import PromptingException
 
-from tensorcode.prompting.prompt import prompt as _prompt
+from tensacode.prompting.prompt import prompt as _prompt
 
 SELECTION_CONTEXT_TEMPLATE = jinja2.Template("""
 {% if context is not None %}

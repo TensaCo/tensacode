@@ -79,7 +79,7 @@ You can find more examples in the [examples](examples) directory.
 
 ```
 
-### An AGI
+### A self-improving cognitive architecture
 
 ```python
 # the prompt should be "increase understanding, minimize suffering, maximize peace and prosperity"
@@ -87,7 +87,7 @@ You can find more examples in the [examples](examples) directory.
 ```
 
 
-## Contributing
+## Architecture
 
 ### Code Organization
 
@@ -133,3 +133,140 @@ poetry.lock
 pyproject.toml
 .gitignore
 ```
+
+### Python types
+
+We recognize the following Python types:
+
+- int
+- bool
+- float
+- str
+- bytes
+- set (or set-like)
+- tuple (or immutable list)
+- list (or list-like)
+- dict (or dict-like)
+- code
+- enums
+- classes
+- modules
+- objects
+
+### Intermediate Representation
+
+The intermediate representation can be a natural language description or a 1D, 2D, or 3D-vector embedding, or a graph of homo/heterogenous embeddings.
+
+### Operations
+
+Operations are the core abstraction TensaCode provides. They take in an engine, and some number of arguments, and typically return a result. In some cases, the inputs and outputs can be passed as the annotated python type or as the intermediate representation. This is useful when you want to chain ops without loosing differentiability. Also, operation functions are decorated with the `autoencode` decorator (later).
+
+```python
+@autoencode
+def op(engine, *args, **kwargs):
+    ...
+    return result
+```
+
+The operations are overloaded for each major type. So `encode` actually dispatches to `encode_bool`, `encode_int`, etc.
+
+
+
+### LanguageOperations
+
+### VectorNDOperations
+
+### VectorGraphOperations
+
+### Engine
+
+The engine is the core of TensaCode. It is responsible for dispatching operations to the appropriate implementation, for tracking calls and learning from feedback. It also stores the config parameters, eg, which LLM to use, what hidden state dimension, etc.
+
+It looks like this:
+
+```python
+class Engine:
+    model(self, input_nodes: list, output_nodes: list) -> Model: ...
+    
+    add_loss(self, loss: float) -> None: ...
+    reward(self, reward: float) -> None: ...
+
+class TextEngine(Engine): ...
+class LocalTextEngine(TextEngine): ...
+class RemoteTextEngine(TextEngine): ...
+
+class VectorEngine(Engine): ...
+class LocalVectorEngine(VectorEngine): ...
+class RemoteVectorEngine(VectorEngine): ...
+
+class Vector1DEngine(VectorEngine): ...
+class LocalVector1DEngine(Vector1DEngine, LocalVectorEngine): ...
+class RemoteVector1DEngine(Vector1DEngine, RemoteVectorEngine): ...
+
+class Vector2DEngine(VectorEngine): ...
+class LocalVector2DEngine(Vector2DEngine, LocalVectorEngine): ...
+class RemoteVector2DEngine(Vector2DEngine, RemoteVectorEngine): ...
+
+class Vector3DEngine(VectorEngine): ...
+class LocalVector3DEngine(Vector3DEngine, LocalVectorEngine): ...
+class RemoteVector3DEngine(Vector3DEngine, RemoteVectorEngine): ...
+
+class GraphEngine(Engine): ...
+class LocalGraphEngine(GraphEngine): ...
+class RemoteGraphEngine(GraphEngine): ...
+```
+
+The engine manages
+- instantiating weights / training / add_loss
+- check-pointing/loading/saving
+- authenticating with service / deploying NN's
+
+### The computation graph
+
+Graph data is stored in the `.__tensacode__` dict attr of the python object. We exploit this information to choose graph-based over tree-based algorithms when possible.
+
+We attach various properties to the objects `.__tensacode__` dict attr. We artificially subclass the python primitives to make this possible. For example, `int` is actually `TensaCodeInt` which is a subclass of `int` that has a `.__tensacode__` dict attr. This allows us to attach properties to the object without having to wrap it in a class. We also use this to attach the engine to the object, so that we can dispatch operations to the appropriate implementation. However our code is designed to handle not having the ability to attach properties to objects, so we can also use a dict to store the graph.
+
+### Export keras/torch/jax models
+
+You can export your programs as ML models with `engine.model()`. And if you only want to export a subset of the op graph, just call `engine.model(input_nodes, output_nodes)`. **Note: the python native parts of the op graph are not exported, so you won't necesarily be able to run the model end-to-end.** For example, if you have a op chain like this: `vector -> vector ops -> decode -> python object -> python code -> encode -> vector -> more vector ops`, then only the vector ops will be exported.
+
+### Arbitrary object encoding and decoding
+
+As a convenience, we shadow the builtin types with our own such that their constructor will attempt to perform a decode(T, encode(arg)) operation when `T(arg)` is not valid for the builtin.
+
+### Runtime code generation and execution
+
+### Decorators
+
+TensaCode provides a number of decorators to make your life easier.
+
+- `@encode_inputs()`: Inputs that expect an IR can be passed a python object, and TensaCode will automatically encode it for you. This is increadibly convenient when you just want to pass a natural language description as a string. You may optionally specify the engine to use, otherwise the default engine will be used. You can also specify the input and output types, otherwise all parameters annotated with the engine's IR type will be used. For example:
+
+    ```python
+    from tensacode import Vector1DEngine, encode_inputs
+    from python_functinoal_library import use_state, uses_state
+
+    Dhidden = 128
+    engine = Vector1DEngine(hidden_dim=Dhidden)
+
+    @uses_state
+    @encode_inputs()
+    def brainstorm_new_ideas(*context: list[R], seed: R = "Something creative and origonal") -> str:
+        print(f"Context: {context}") # context is a list of 1D-vector embeddings
+        print(f"Seed: {seed}") # seed is a 1D-vector embedding
+
+        # do some brainstorming
+        will_this_work_nn, _ = use_state(lambda : MLP([(Dhidden, Dhidden), Dhidden]))
+        if decide(will_this_work_nn(context, seed)):
+            seed = engine.combine(seed, context)
+    
+        # decode the result
+        return engine.create(str, seed)
+    ```
+
+- `encode_outputs` does the same thing as `encode_inputs`, but for outputs.
+- `decode_inputs` is similar to `encode_inputs`, but instead it decodes the inputs with a python type annotation that are passed an IR.
+- `decode_outputs` does the same thing as `decode_inputs`, but for outputs.
+
+*You cann specify individual parameters to encode/decode by passing their name as a string to the decorator, eg, `@encode_inputs("context", "seed")`. You can also use the `enc[T]` and `dec[T]` generics to force the decorator's wrapper to only encode or decode specific parameters. Whichever approach you prefer, this is useful when you want to mix convenience encoding, decoding, and untouched args.*

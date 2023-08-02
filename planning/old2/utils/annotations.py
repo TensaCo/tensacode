@@ -6,7 +6,7 @@ from typing import TypeVar, Generic, Protocol
 
 import ivy
 
-from tensorcode._utils.registry import Registry, HighestScore
+from tensacode._utils.registry import Registry, HighestScore
 
 
 type NumericalTensor = float|int|ivy.Array # TODO: syntax not correct

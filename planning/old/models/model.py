@@ -1,10 +1,10 @@
 from enum import Enum
 from typing import List
 
-from tensorcode import pop_export, push_export
-from tensorcode.operations.operation import Operation
-from tensorcode.utils.inject_subclasses import inject_into_subclasses_epilog
-from tensorcode.utils.unique import unique
+from tensacode import pop_export, push_export
+from tensacode.operations.operation import Operation
+from tensacode.utils.inject_subclasses import inject_into_subclasses_epilog
+from tensacode.utils.unique import unique
 
 
 class Model:

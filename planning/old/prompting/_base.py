@@ -5,7 +5,7 @@ from typing import List, Dict,  Any, Callable, Union, Optional, Tuple, Protocol,
 from dataclasses import dataclass
 from textwrap import dedent
 
-from tensorcode.prompting.oracles.oracle import Oracle
+from tensacode.prompting.oracles.oracle import Oracle
 
 decide
 select

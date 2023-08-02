@@ -31,12 +31,12 @@ def step(obs: Observation) -> Action:
 
 # TensorCode performs arbitrary object (modality) encoding and decoding
 
-import tensorcode
+import tensacode
 
 def step(obs: Observation) -> Action:
-    latent = tensorcode.encode(obs)
+    latent = tensacode.encode(obs)
     action = mlp(latent)
-    return tensorcode.decode(action, Action)
+    return tensacode.decode(action, Action)
     
 # Internally, tensorcode.encode and decode are implemented by recursively calling themselves down to fundamental Python types str, int, bool, list, set, dict. A perciever-style transformer uses the object's name as the query, its field names as the keys, and the associated objects themselves as values. Values that can be further reduced along tensor axes are directly attended to by an additional attention operation to minimize information loss 
 

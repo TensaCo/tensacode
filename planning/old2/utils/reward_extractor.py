@@ -2,7 +2,7 @@
 
 import logging
 
-import tensorcode
+import tensacode
 
 # Make this optional, not instant
 # @logging.add_handler

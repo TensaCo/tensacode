@@ -4,8 +4,8 @@ from math import inf
 import logging
 from typing import Callable, Hashable, List, MutableMapping, Optional, Tuple, TypeVar
 
-from tensorcode.utils.assertions import exactly_one
-from tensorcode.utils.fp import MapFn, Number, Predicate, ScoringFn
+from tensacode.utils.assertions import exactly_one
+from tensacode.utils.fp import MapFn, Number, Predicate, ScoringFn
 
 
 _V = TypeVar("_V")

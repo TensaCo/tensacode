@@ -1,7 +1,7 @@
 from typing import Callable, Dict
-from tensorcode.utils.fp import ConstFn
+from tensacode.utils.fp import ConstFn
 
-from tensorcode.utils.registry import FirstMatch, HighestScore, LookupStrategy, Registry
+from tensacode.utils.registry import FirstMatch, HighestScore, LookupStrategy, Registry
 
 
 class Operation:

@@ -1,8 +1,8 @@
 from copy import deepcopy
 from functools import wraps
 
-from tensorcode._utils.helpers import join, Lockable, if_unlocked
-from tensorcode._utils.registry import Registry, HighestScore
+from tensacode._utils.helpers import join, Lockable, if_unlocked
+from tensacode._utils.registry import Registry, HighestScore
 
 class Ledger(Lockable):
     """Provides method wrapper `ledgered` to track the actions

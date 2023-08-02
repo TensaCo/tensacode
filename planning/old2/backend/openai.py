@@ -1,5 +1,5 @@
 # reuse import to conserve api keys
-from tensorcode import openai
+from tensacode import openai
 
 
 def query_gpt3(prompt: str, context=None) -> str:

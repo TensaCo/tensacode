@@ -1,9 +1,9 @@
 """Instantiate an object from a description and possibly a context."""
 
 import traceback
-from tensorcode.prompting.oracle import PromptingException
+from tensacode.prompting.oracle import PromptingException
 
-from tensorcode.prompting.prompt import prompt as _prompt
+from tensacode.prompting.prompt import prompt as _prompt
 
 @tensorcode.export("tensorcode.prompting.create")
 def create(prompt, context=None, **kwargs):

@@ -4,11 +4,11 @@ from dataclasses import dataclass
 from typing import Callable
 from types import Mapping
 
-from tensorcode._utils.export import export, ContextManaged
-from tensorcode._utils.ledger import Ledger
-from tensorcode._utils.fp import Test
-import tensorcode as tc
-from tensorcode.utils.annotations import like, enc, encode_args, overloaded
+from tensacode._utils.export import export, ContextManaged
+from tensacode._utils.ledger import Ledger
+from tensacode._utils.fp import Test
+import tensacode as tc
+from tensacode.utils.annotations import like, enc, encode_args, overloaded
 
 
 @ContextManaged

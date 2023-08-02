@@ -2,4 +2,4 @@
 
 import jinja2
 
-from tensorcode import prompting
+from tensacode import prompting

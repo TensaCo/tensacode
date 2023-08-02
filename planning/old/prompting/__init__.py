@@ -1,1 +1,1 @@
-from tensorcode.prompting.oracles.oracle import Oracle
+from tensacode.prompting.oracles.oracle import Oracle

@@ -1,4 +1,4 @@
-from tensorcode.operations.operation import Operation
+from tensacode.operations.operation import Operation
 
 
 class Create(Operation):

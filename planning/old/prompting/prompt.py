@@ -3,8 +3,8 @@ from typing import Callable, List, Tuple, Union
 
 import jinja2
 
-from tensorcode.prompting import Oracle
-from tensorcode.prompting.oracle import PromptingException
+from tensacode.prompting import Oracle
+from tensacode.prompting.oracle import PromptingException
 
 
 PROMPT_TEMPLATE = jinja2.Template(
