@@ -1,6 +1,6 @@
 ![](assets/img/logo-color.png)
 
-# TensorCode: Machine Learning + Software Engineering + Runtime Introspection and Code Generation = Programming 2.0
+# TensaCode: Neural Networks + Language Models + Introspection = Programming 2.0
 
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/e312dd5bba3641b0a5dafbb55b426f67)](https://www.codacy.com/gh/Limboid/tensorcode/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Limboid/tensorcode&amp;utm_campaign=Badge_Grade)
 
