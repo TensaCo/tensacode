@@ -1,4 +1,4 @@
-from old3._external import inspect_mate
+ from old3._external import inspect_mate
 
 
 def decorate_all_members(decorator_fn, condition=None, exclude=None):

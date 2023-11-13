@@ -173,13 +173,15 @@ def op(engine, *args, **kwargs):
 
 The operations are overloaded for each major type. So `encode` actually dispatches to `encode_bool`, `encode_int`, etc.
 
+Raw operations are decorated with `@track_invocations`. The top level call happens at the engine stub link.
+
 ```python
 def encode(
     engine,
     input: object,
     max_depth: int = 3,
     context: object = None,
-    introspect=False
+    introspect=True
     ) -> R: ...
 
 def encode_as_generator(
@@ -187,7 +189,7 @@ def encode_as_generator(
     input: object,
     max_depth: int = 3,
     context: object = None,
-    introspect=False
+    introspect=True
     ) -> Generator[R, None, None]: ...
 
 def decode(
@@ -196,14 +198,14 @@ def decode(
     input: R,
     max_depth: int = 3,
     context: object = None,
-    introspect=False
+    introspect=True
     ) -> T: ...
 
 def decide(
     engine,
     instructions: R,
     context: object = None,
-    introspect=False
+    introspect=True
     ): ...
 
 def choice(
@@ -212,28 +214,98 @@ def choice(
     options: list[object],
     option_encs: list[R] = None,
     context: object = None,
-    introspect=False
+    introspect=True
     ) -> object: ...
 
 def codegen(
     engine,
     instructions: R,
     context: object = None,
-    introspect=False
+    introspect=True
     ) -> Callable: ...
 
 def exec(
     engine,
     instructions: R,
     context: object = None,
-    introspect=False
+    introspect=True
     ) -> object or None: ...
 
 def similarity(engine, a: R, b: R) -> float: ...
 
 def combine(engine, dst: R, *srcs: list[object]) -> R: ...
 
+def select(
+    engine,
+    instructions: R,
+    *inputs: object = None, # inputs gathered via introspection if not provided
+    introspect=True
+    ) -> list[object]: ...
 
+def modify(
+    engine,
+    instructions: R,
+    *inputs: object = None, # inputs gathered via introspection if not provided
+    introspect=True
+    ) -> R: ...
+
+def sort(
+    engine,
+    instructions: R,
+    *inputs: object = None, # inputs gathered via introspection if not provided
+    introspect=True
+    ) -> object: ...
+
+def anomalies(
+    engine,
+    instructions: R,
+    *inputs: object = None, # inputs gathered via introspection if not provided
+    introspect=True
+    ) -> range[0, 1]: ...
+
+def patterns(
+    engine,
+    instructions: R,
+    *inputs: list[object] = None, # inputs gathered via introspection if not provided
+    introspect=True
+    ) -> str: ...
+
+def group(
+    engine,
+    instructions: R,
+    *inputs: object = None, # inputs gathered via introspection if not provided
+    introspect=True
+    ) -> object: ...
+
+def filter(
+    engine,
+    instructions: R,
+    inputs: list[object],
+    ) -> object: ...
+
+def predict(
+    engine,
+    inputs: list[object],
+    ) -> object: ...
+
+# differentiable predict
+def predict(
+    engine,
+    inputs: list[R],
+    ) -> R: ...
+
+def combine(
+    engine,
+    inputs: list[object],
+    ) -> object: ...
+
+def fix(
+    engine,
+    error: Error,
+    context: object = None, # inputs gathered via introspection if not provided
+    introspect=True
+    ) -> object: ...
+    '''Useful in smart try-catch auto-debugging, especially when theres runtime code generation happening inside the try block.'''
 ```
 
 ### Engine
