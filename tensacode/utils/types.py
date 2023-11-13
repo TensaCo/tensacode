@@ -40,7 +40,19 @@ R = TypeVar("R")
 TKeyGroupPair = tuple[Tkey, tuple[T, ...]]
 
 
-atomic_types = bool | int | float | complex | str | bytes | bytearray | NoneType | None
+atomic_types = (
+    bool
+    | int
+    | float
+    | complex
+    | str
+    | bytes
+    | bytearray
+    | NoneType
+    | None
+    | Generic
+    | TypeVar
+)
 container_types = (
     tuple
     | list
@@ -66,12 +78,12 @@ composite_types = (
 tree_types = atomic_types | container_types | composite_types | "tree"
 
 
-class tree:
+class Tree:
     _T: tree_types
 
     def __class_getitem__(cls, item):
         assert item in tree_types
-        return type(f"tree[{item.__name__}]", (tree,), {"_T": item})
+        return type(f"tree[{item.__name__}]", (Tree,), {"_T": item})
 
     def __new__(cls, val: tree_types, /):
         if cls._T:
@@ -82,5 +94,5 @@ class tree:
     def __instancecheck__(self, __instance: Any) -> bool:
         return super().__instancecheck__(__instance) or isinstance(__instance, self._T)
 
-    def __subclasscheck__(cls: tree, subclass: type) -> bool:
+    def __subclasscheck__(cls: Tree, subclass: type) -> bool:
         return super().__subclasscheck__(subclass) or issubclass(subclass, cls._T)
