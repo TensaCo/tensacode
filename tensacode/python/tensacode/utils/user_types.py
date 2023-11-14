@@ -29,15 +29,27 @@ from types import (
 )
 from abc import ABC, abstractmethod
 from collections import namedtuple
-
 import dataclasses
+import typing
+
+import typingx
 import attr
 import pydantic
 
-Tkey = str | int | None
+K = str | int | None
 T = TypeVar("T")
-R = TypeVar("R")
-TKeyGroupPair = tuple[Tkey, tuple[T, ...]]
+
+
+class enc(Generic[T], ABC):
+    """
+    Nonfunctional annotation.
+    Indicates that a type is the encoded form of its generic parameter.
+    Prefer annotating with the encoded type itself where possible
+    since we can't enforce this constraint.
+    """
+
+
+R = TypeVar("R", bound=enc)
 
 
 atomic_types = (
@@ -78,21 +90,13 @@ composite_types = (
 tree_types = atomic_types | container_types | composite_types | "tree"
 
 
-class Tree:
-    _T: tree_types
-
-    def __class_getitem__(cls, item):
-        assert item in tree_types
-        return type(f"tree[{item.__name__}]", (Tree,), {"_T": item})
-
-    def __new__(cls, val: tree_types, /):
-        if cls._T:
-            return cls._T(val)
-        else:
-            return val
-
+class tree(Generic[T]):
     def __instancecheck__(self, __instance: Any) -> bool:
-        return super().__instancecheck__(__instance) or isinstance(__instance, self._T)
+        return super().__instancecheck__(__instance) or typingx.isinstancex(
+            __instance, tree_types
+        )
 
-    def __subclasscheck__(cls: Tree, subclass: type) -> bool:
-        return super().__subclasscheck__(subclass) or issubclass(subclass, cls._T)
+    def __subclasscheck__(self, __subclass: type) -> bool:
+        return super().__subclasscheck__(__subclass) or typingx.issubclassx(
+            __subclass, tree_types
+        )
