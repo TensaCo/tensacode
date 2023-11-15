@@ -13,8 +13,11 @@ class Default:
 class Decorator(callable):
     prologue: Callable[..., None] = lambda *a, **kw: (a, kw)
     epilogue: Callable[..., None] = lambda retval, *a, **kw: retval
+    fn: Callable[..., Any] = None
 
     def __call__(self, fn):
+        self.fn = fn
+
         @functools.wraps(fn)
         def wrapper(*args, **kwargs):
             args, kwargs = self.prologue(*args, **kwargs)
