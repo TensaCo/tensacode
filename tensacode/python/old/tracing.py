@@ -1,6 +1,6 @@
 import functools, loguru
 from pydantic import BaseModel, Field
-from tensacode.utils.string import invokation
+from tensacode.utils.string import render_invocation
 
 
 class Trace(BaseModel):
@@ -18,13 +18,13 @@ class Tracer(BaseModel):
             @functools.wraps(fn)
             def wrapper(*args, **kwargs):
                 if record_input:
-                    self.logger.info(invokation(fn, args, kwargs))
+                    self.logger.info(render_invocation(fn, args, kwargs))
                 with self.logger.catch():
                     # TODO: trace stack leading to here. This is vital for the tensacode agent to do anything
 
                     result = fn(*args, **kwargs)
                 if record_output:
-                    self.logger.info(invokation(fn, args, kwargs, result))
+                    self.logger.info(render_invocation(fn, args, kwargs, result))
                 return result
 
             return wrapper

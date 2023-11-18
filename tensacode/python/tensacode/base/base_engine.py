@@ -4,10 +4,8 @@ from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from copy import deepcopy
 import functools
-from functools import singledispatchmethod
 import inspect
 from pathlib import Path
-import pickle
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -16,24 +14,20 @@ from typing import (
     Generator,
     Generic,
     Literal,
-    Optional,
     Sequence,
     TypeVar,
 )
-from box import Box
 from uuid import uuid4
 import attr
 import loguru
-from glom import glom
 from pydantic import Field
-from tensacode.base.base_engine import BaseEngine
 import typingx
 
 
 import tensacode as tc
 from tensacode.utils.decorators import Decorator, Default, dynamic_defaults
 from tensacode.utils.oo import HasDefault, Namespace
-from tensacode.utils.string import render_invocation, render_stacktrace
+from tensacode.utils.string import render_invocation
 from tensacode.utils.user_types import (
     enc,
     T,
@@ -47,189 +41,45 @@ from tensacode.utils.user_types import (
 from tensacode.utils.internal_types import nested_dict
 
 
-class Engine(Generic[T, R], BaseEngine[T, R], ABC):
+class BaseEngine(Generic[T, R], HasDefault, Namespace[R], ABC):
     #######################################
-    ############### meta ##################
+    ############# metadata ################
     #######################################
 
     T: ClassVar[type[T]] = T
     R: ClassVar[type[R]] = R
 
-    class _HasThisEngine(ABC):
-        _engine: ClassVar[BaseEngine]
-
-    class _EngineDecorator(Decorator, _HasThisEngine, ABC):
-        pass
-
     @attr.s(auto_attribs=True)
-    class DefaultParam(Default, _HasThisEngine):
+    class DefaultParam(Default):
         initial_value: Any | None = attr.ib(default=None)
         initializer: Callable[[BaseEngine], Any] | None = attr.ib(default=None)
 
-        def __init__(self, initializer_or_initial_value: Any = None, /, **kw):
-            if typingx.isinstance(self.default, Callable[[BaseEngine], Any]):
-                self.initializer = initializer_or_initial_value
-            else:
-                self.initial_value = initializer_or_initial_value
-            self.kw = kw
-            super().__init__(get=self.get)
-
-        def get(self, *a, **kw) -> Any:
-            initial_val: Any
-            if self.initial_value is not None:
-                initial_val = self.initial_value
-            elif self.initializer is not None:
-                initial_val = self.initializer(self._engine)
-            else:
-                initial_val = None
-            return self._engine.param(initial_val, **self.kw)
-
     @attr.s(auto_attribs=True)
-    class trace(_EngineDecorator):
+    class trace(Decorator):
         trace_args = attr.ib(default=True)
         trace_result = attr.ib(default=True)
 
-        def prologue(self, *a, **kw):
-            if self.trace_args:
-                stacktrace = render_stacktrace(
-                    skip_frames=3,
-                    depth=self._engine.DefaultParam(qualname="hparams.trace.depth"),
-                )
-                self._engine.inform(stacktrace)
-            return super().prologue(*a, **kw)
-
-        def epilogue(self, retval, *a, **kw):
-            if self.trace_result:
-                stacktrace = render_stacktrace(
-                    skip_frames=3,
-                    depth=self._engine.DefaultParam(qualname="hparams.trace.depth"),
-                )
-                self._engine.inform(stacktrace)
-            return super().epilogue(retval, *a, **kw)
-
     @attr.s(auto_attribs=True)
-    class encoded_args(_EngineDecorator):
+    class encoded_args(Decorator):
         encode_args: bool = attr.ib(True)
         decode_retval: bool = attr.ib(True)
 
-        def prologue(self, *a, **kw):
-            if self.encode_args:
-                # bind params to their values
-                signature = inspect.signature(self.fn)
-                bound_args = signature.bind_partial(*a, **kw)
-                bound_args.apply_defaults()
-                bound_args = bound_args.arguments
-                # encode the params that are annotated with `enc[...]`
-                for param_name, param in signature.parameters.items():
-                    if param.annotation is not param.empty and typingx.issubclassx(
-                        param.annotation, enc
-                    ):
-                        if param_name in bound_args:
-                            bound_args[param_name] = self._engine.encode(
-                                bound_args[param_name]
-                            )
-                # unpack the bound args
-                a, kw = [], {}
-                for arg, value in bound_args.items():
-                    if arg in signature.parameters:
-                        if signature.parameters[arg].kind in (
-                            signature.parameters[arg].POSITIONAL_ONLY,
-                            signature.parameters[arg].POSITIONAL_OR_KEYWORD,
-                        ):
-                            a.append(value)
-                        elif signature.parameters[arg].kind in (
-                            signature.parameters[arg].VAR_POSITIONAL,
-                            signature.parameters[arg].KEYWORD_ONLY,
-                            signature.parameters[arg].VAR_KEYWORD,
-                        ):
-                            kw[arg] = value
-                a = tuple(a)
-
-            return super().prologue(*a, **kw)
-
-        def epilogue(self, retval, *a, **kw):
-            if self.decode_retval:
-                # get the return annotation from the function signature
-                signature = inspect.signature(self.fn)
-                return_annotation = signature.return_annotation
-
-                # check if the return value is annotated with `enc[...]`
-                if return_annotation is not signature.empty and typingx.issubclassx(
-                    return_annotation, enc
-                ):
-                    # decode the retval
-                    retval = self._engine.decode(retval)
-
-            return super().epilogue(retval, *a, **kw)
-
+    @abstractmethod
     def is_encoded(self, object: T | R) -> bool:
-        if TYPE_CHECKING:
-            return isinstance(object, R)
-        return self._is_encoded(object)
+        raise NotImplementedError()
 
     #######################################
     ############### config ################
     #######################################
 
-    PARAM_DEFAULTS = {
-        "hparams": {
-            "defaults": (defaults := {"depth_limit": 10}),
-            "trace": {"depth": 5},
-            "encode": {"depth_limit": defaults["depth_limit"], "instructions": None},
-            "decode": {"depth_limit": defaults["depth_limit"], "instructions": None},
-            "retrieve": {
-                "count": 5,
-                "depth_limit": defaults["depth_limit"],
-                "instructions": None,
-            },
-            "store": {"depth_limit": defaults["depth_limit"], "instructions": None},
-            "query": {"depth_limit": defaults["depth_limit"], "instructions": None},
-            "modify": {"depth_limit": defaults["depth_limit"], "instructions": None},
-            "combine": {"depth_limit": defaults["depth_limit"], "instructions": None},
-            "split": {
-                "num_splits": 2,
-                "depth_limit": defaults["depth_limit"],
-                "instructions": None,
-            },
-            "choice": {
-                "threshold": 0.5,
-                "randomness": 0.1,
-                "depth_limit": defaults["depth_limit"],
-                "instructions": None,
-            },
-            "decide": {
-                "threshold": 0.5,
-                "randomness": 0.1,
-                "depth_limit": defaults["depth_limit"],
-                "instructions": None,
-            },
-            "run": {"instructions": None, "budget": 1.0},
-            "similarity": {
-                "depth_limit": defaults["depth_limit"],
-                "instructions": None,
-            },
-            "predict": {"depth_limit": defaults["depth_limit"], "instructions": None},
-            "correct": {
-                "threshold": 0.5,
-                "depth_limit": defaults["depth_limit"],
-                "instructions": None,
-            },
-        }
-    }
-
+    PARAM_DEFAULTS: ClassVar[nested_dict[str, Any]]
     params: nested_dict[str, Any]
 
     #######################################
     ######## intelligence methods #########
-    #######################################
+    ######################################
 
-    def __init__(self, *args, **kwargs):
-        self.params = {}
-        for base in reversed(self.__class__.__mro__):
-            self.params.update(deepcopy(base.PARAM_DEFAULTS))
-        self._HasThisEngine._engine = self  # TODO: this is wrong! It doesn't work with multiple instances or with subclassing
-        super().__init__(*args, **kwargs)
-
+    @abstractmethod
     @encoded_args()
     def param(
         self, initial_value: enc[T] = None, name: str = None, qualname: str = None
@@ -278,99 +128,50 @@ class Engine(Generic[T, R], BaseEngine[T, R], ABC):
             This enables your anonymous `engine.param()` will be able to re-run and still use the same param values.
 
         """
+        raise NotImplementedError()
 
-        match name, qualname:
-            case None, None:
-                # `use_state`-like mechanism that tracks the stack hierarchy and order of calling to make param calls idempotent. (Tracking can be overriden with the `.namespace(str)` method).
-                name = self._anonymous_params_in_qualpath.setdefault(self.qualpath, 0)
-                self._anonymous_params_in_qualpath[self.qualpath] += 1
-                qualname = self.qualpath + "." + name
-            case None, _:
-                # keep qualname as is
-                pass
-            case _, None:
-                qualname = self.qualpath + "." + name
-            case _, _:
-                # qualname overrides name
-                pass
-        if glom(self.params, qualname) is None:
-            glom(self.params, qualname, default=initial_value)
-        return glom(self.params, qualname)
-
-    _anonymous_params_in_qualpath: dict[str, int] = attr.ib(factory=dict, init=False)
-
-    messages: list[str] = attr.ib(factory=list, init=False)
-
+    @abstractmethod
     @encoded_args()
     @trace()
-    @functools.singledispatchmethod
     def inform(self, message: enc[T]):
-        self.messages.append(message)
+        raise NotImplementedError()
 
-    @inform.register
-    def _(self, messages: list[T | enc[T]]):
-        # don't worry about pre-encoding your list. self.inform(single T) will do that for you.
-        for message in messages:
-            self.inform(message)
-
+    @abstractmethod
     @encoded_args()
     @trace()
     def chat(self, message: enc[T]) -> enc[T]:
-        raise NotImplementedError('Subclass must implement "chat"')
+        raise NotImplementedError()
 
+    @abstractmethod
     @trace()
     def self_reflect(self):
-        raise NotImplementedError('Subclass must implement "self_reflect"')
+        raise NotImplementedError()
 
+    @abstractmethod
     @encoded_args()
     @trace()
     def reward(self, reward: enc[float]):
-        raise NotImplementedError('Subclass must implement "reward"')
+        raise NotImplementedError()
 
+    @abstractmethod
     @trace()
     def train(self):
-        raise NotImplementedError('Subclass must implement "train"')
+        raise NotImplementedError()
 
+    @abstractmethod
     @trace()
     def save(self, path: str | Path):
-        path = Path(path)
-        match path.suffix:
-            case "yaml", "yml":
-                Box(self.params).to_yaml(filename=path)
-            case "json":
-                Box(self.params).to_json(filename=path)
-            case "toml":
-                Box(self.params).to_toml(filename=path)
-            case "pickle", "pkl":
-                with path.open("wb") as f:
-                    pickle.dump(self.params, f)
-            case _:
-                raise ValueError(f"Invalid file extension: {path.suffix}")
+        pass
 
+    @abstractmethod
     @trace()
     def load(self, path: str | Path):
-        path = Path(path)
-        match path.suffix:
-            case "yaml", "yml":
-                new_params = Box.from_yaml(filename=path).to_dict()
-                self.params.update(new_params)
-            case "json":
-                new_params = Box.from_json(filename=path).to_dict()
-                self.params.update(new_params)
-            case "toml":
-                new_params = Box.from_toml(filename=path).to_dict()
-                self.params.update(new_params)
-            case "pickle", "pkl":
-                with path.open("rb") as f:
-                    new_params = pickle.load(f)
-                self.params.update(new_params)
-            case _:
-                raise ValueError(f"Invalid file extension: {path.suffix}")
+        pass
 
     #######################################
     ######## main operator methods ########
     #######################################
-
+    @abstractmethod
     @dynamic_defaults()
     @encoded_args()
     @trace()
@@ -405,21 +206,9 @@ class Engine(Generic[T, R], BaseEngine[T, R], ABC):
             >>> print(encoded_obj)
             # Output: <encoded representation of obj>
         """
-        try:
-            return type(object).__tc_encode__(
-                self,
-                object,
-                depth_limit=depth_limit,
-                instructions=instructions,
-                **kwargs,
-            )
-        except (NotImplementedError, AttributeError):
-            pass
+        pass
 
-        self._encode(
-            object, depth_limit=depth_limit, instructions=instructions, **kwargs
-        )
-
+    @abstractmethod
     @dynamic_defaults()
     @encoded_args()
     @trace()
@@ -454,27 +243,9 @@ class Engine(Generic[T, R], BaseEngine[T, R], ABC):
             >>> print(decoded_obj)
             # Output: <decoded representation of the object in the new type>
         """
+        pass
 
-        try:
-            return type(object_enc).__tc_decode__(
-                self,
-                object_enc,
-                type,
-                depth_limit=depth_limit,
-                instructions=instructions,
-                **kwargs,
-            )
-        except (NotImplementedError, AttributeError):
-            pass
-
-        self._decode(
-            object_enc,
-            type,
-            depth_limit=depth_limit,
-            instructions=instructions,
-            **kwargs,
-        )
-
+    @abstractmethod
     @dynamic_defaults()
     @encoded_args()
     @trace()
@@ -516,31 +287,9 @@ class Engine(Generic[T, R], BaseEngine[T, R], ABC):
             >>> john, teyoni, huimin = ... # create people
             >>> person = engine.retrieve(john, instructions="find john's least favorite friend")
         """
+        pass
 
-        try:
-            return type(object).__tc_retrieve__(
-                self,
-                object,
-                count=count,
-                allowed_glob=allowed_glob,
-                disallowed_glob=disallowed_glob,
-                depth_limit=depth_limit,
-                instructions=instructions,
-                **kwargs,
-            )
-        except (NotImplementedError, AttributeError):
-            pass
-
-        return self._retrieve(
-            object,
-            count=count,
-            allowed_glob=allowed_glob,
-            disallowed_glob=disallowed_glob,
-            depth_limit=depth_limit,
-            instructions=instructions,
-            **kwargs,
-        )
-
+    @abstractmethod
     @dynamic_defaults()
     @encoded_args()
     @trace()
@@ -584,30 +333,9 @@ class Engine(Generic[T, R], BaseEngine[T, R], ABC):
             >>> john, teyoni, huimin = ... # create people
             >>> person = engine.store(john, [huimin], instructions="she is his friend")
         """
-        try:
-            return type(object).__tc_store__(
-                self,
-                object,
-                values=values,
-                allowed_glob=allowed_glob,
-                disallowed_glob=disallowed_glob,
-                depth_limit=depth_limit,
-                instructions=instructions,
-                **kwargs,
-            )
-        except (NotImplementedError, AttributeError):
-            pass
+        pass
 
-        return self._store(
-            object,
-            values=values,
-            allowed_glob=allowed_glob,
-            disallowed_glob=disallowed_glob,
-            depth_limit=depth_limit,
-            instructions=instructions,
-            **kwargs,
-        )
-
+    @abstractmethod
     @dynamic_defaults()
     @encoded_args()
     @trace()
@@ -647,21 +375,9 @@ class Engine(Generic[T, R], BaseEngine[T, R], ABC):
             >>> engine.decode(info, type=bool)
             ... True
         """
+        pass
 
-        try:
-            return type(object).__tc_query__(
-                self,
-                object,
-                query=query,
-                depth_limit=depth_limit,
-                instructions=instructions,
-                **kwargs,
-            )
-        except (NotImplementedError, AttributeError):
-            pass
-
-        return self._query(object, query=query, depth_limit=depth_limit, **kwargs)
-
+    @abstractmethod
     @dynamic_defaults()
     @encoded_args()
     @trace()
@@ -695,19 +411,9 @@ class Engine(Generic[T, R], BaseEngine[T, R], ABC):
             >>> john, teyoni, huimin = ... # create people
             >>> engine.modify(john, instructions="john's favorite color is blue")
         """
-        try:
-            return type(object).__tc_modify__(
-                self,
-                object,
-                depth_limit=depth_limit,
-                instructions=instructions,
-                **kwargs,
-            )
-        except (NotImplementedError, AttributeError):
-            pass
+        pass
 
-        return self._modify(object, depth_limit=depth_limit, instructions=instructions)
-
+    @abstractmethod
     @dynamic_defaults()
     @encoded_args()
     @trace()
@@ -745,21 +451,9 @@ class Engine(Generic[T, R], BaseEngine[T, R], ABC):
             >>> print(group)
             ... Person(name="John, Teyoni, and Huimin", bio="...", thoughts=["...", "...", "..."], friends=[...])
         """
-        try:
-            return type(objects[0]).__tc_combine__(
-                self,
-                objects,
-                depth_limit=depth_limit,
-                instructions=instructions,
-                **kwargs,
-            )
-        except (NotImplementedError, AttributeError):
-            pass
+        pass
 
-        return self._combine(
-            objects, depth_limit=depth_limit, instructions=instructions, **kwargs
-        )
-
+    @abstractmethod
     @dynamic_defaults()
     @encoded_args()
     @trace()
@@ -800,26 +494,9 @@ class Engine(Generic[T, R], BaseEngine[T, R], ABC):
             >>> print(john_split)
             ... Person(name="John", bio="...", thoughts=["..."], friends=[...])
         """
-        try:
-            return type(object).__tc_split__(
-                self,
-                object,
-                num_splits=num_splits,
-                depth_limit=depth_limit,
-                instructions=instructions,
-                **kwargs,
-            )
-        except (NotImplementedError, AttributeError):
-            pass
+        pass
 
-        return self._split(
-            object,
-            num_splits=num_splits,
-            depth_limit=depth_limit,
-            instructions=instructions,
-            **kwargs,
-        )
-
+    @abstractmethod
     @dynamic_defaults()
     @encoded_args()
     @trace()
@@ -851,36 +528,9 @@ class Engine(Generic[T, R], BaseEngine[T, R], ABC):
         Returns:
             T: The result of the executed function corresponding to the winning condition.
         """
-        match mode:
-            case "first-winner":
-                # evaluate the conditions in order
-                # pick first one to surpass threshold
-                # default to default_case or raise ValueError if no default_case
-                return self._choice_first_winner(
-                    conditions_and_functions,
-                    default_case_idx=default_case_idx,
-                    threshold=threshold,
-                    randomness=randomness,
-                    depth_limit=depth_limit,
-                    instructions=instructions,
-                    **kwargs,
-                )
-            case "last-winner":
-                # evaluate all conditions
-                # pick global max
-                # default to default_case or raise ValueError if no default_case
-                return self._choice_last_winner(
-                    conditions_and_functions,
-                    default_case_idx=default_case_idx,
-                    threshold=threshold,
-                    randomness=randomness,
-                    depth_limit=depth_limit,
-                    instructions=instructions,
-                    **kwargs,
-                )
-            case _:
-                raise ValueError(f"Invalid mode: {mode}")
+        pass
 
+    @abstractmethod
     @dynamic_defaults()
     @encoded_args()
     @trace()
@@ -929,19 +579,9 @@ class Engine(Generic[T, R], BaseEngine[T, R], ABC):
             >>> engine.decide(person, if_true=lambda: print("John is a jerk"), if_false=lambda: print("John is a nice guy"))
             ... John is a jerk
         """
-        return self.choice(
-            [
-                (condition, if_true),
-                (lambda *a, **kw: not condition(*a, **kw), if_false),
-            ],
-            mode="last-winner",
-            threshold=threshold,
-            randomness=randomness,
-            depth_limit=depth_limit,
-            instructions=instructions,
-            **kwargs,
-        )
+        pass
 
+    @abstractmethod
     @dynamic_defaults()
     @encoded_args()
     @trace()
@@ -962,8 +602,9 @@ class Engine(Generic[T, R], BaseEngine[T, R], ABC):
         Returns:
             Any: The result of the engine run, if any.
         """
-        return self._run(instructions, budget=budget, **kwargs)
+        pass
 
+    @abstractmethod
     @dynamic_defaults()
     @encoded_args()
     @trace()
@@ -988,21 +629,9 @@ class Engine(Generic[T, R], BaseEngine[T, R], ABC):
         Returns:
             float: The similarity score between the objects.
         """
-        try:
-            return type(objects[0]).__tc_similarity__(
-                self,
-                objects,
-                depth_limit=depth_limit,
-                instructions=instructions,
-                **kwargs,
-            )
-        except (NotImplementedError, AttributeError):
-            pass
+        pass
 
-        return self._similarity(
-            objects, depth_limit=depth_limit, instructions=instructions, **kwargs
-        )
-
+    @abstractmethod
     @dynamic_defaults()
     @encoded_args()
     @trace()
@@ -1027,26 +656,9 @@ class Engine(Generic[T, R], BaseEngine[T, R], ABC):
         Returns:
             Generator[T, None, None]: A generator that yields the predicted elements.
         """
-        try:
-            return type(sequence[0]).__tc_predict__(
-                self,
-                sequence,
-                steps=steps,
-                depth_limit=depth_limit,
-                instructions=instructions,
-                **kwargs,
-            )
-        except (NotImplementedError, AttributeError):
-            pass
+        pass
 
-        return self._predict(
-            sequence,
-            steps=steps,
-            depth_limit=depth_limit,
-            instructions=instructions,
-            **kwargs,
-        )
-
+    @abstractmethod
     @dynamic_defaults()
     @encoded_args()
     @trace()
@@ -1071,29 +683,13 @@ class Engine(Generic[T, R], BaseEngine[T, R], ABC):
         Returns:
             T: The corrected object.
         """
-        try:
-            return type(object).__tc_correct__(
-                self,
-                object,
-                threshold=threshold,
-                depth_limit=depth_limit,
-                instructions=instructions,
-                **kwargs,
-            )
-        except (NotImplementedError, AttributeError):
-            pass
+        pass
 
-        return self._correct(
-            object,
-            threshold=threshold,
-            depth_limit=depth_limit,
-            instructions=instructions,
-            **kwargs,
-        )
-
+    @abstractmethod
     @dynamic_defaults()
     @encoded_args()
     @trace()
+    @abstractmethod
     def style_transfer(
         self,
         object: T,
@@ -1122,31 +718,13 @@ class Engine(Generic[T, R], BaseEngine[T, R], ABC):
         Returns:
             T: The object after style transfer.
         """
-        try:
-            return type(object).__tc_style_transfer__(
-                self,
-                object,
-                style=style,
-                exemplar=exemplar,
-                depth_limit=depth_limit,
-                instructions=instructions,
-                **kwargs,
-            )
-        except (NotImplementedError, AttributeError):
-            pass
+        pass
 
-        return self._style_transfer(
-            object,
-            style=style,
-            exemplar=exemplar,
-            depth_limit=depth_limit,
-            instructions=instructions,
-            **kwargs,
-        )
-
+    @abstractmethod
     @dynamic_defaults()
     @encoded_args()
     @trace()
+    @abstractmethod
     def semantic_transfer(
         self,
         object: T,
@@ -1175,228 +753,3 @@ class Engine(Generic[T, R], BaseEngine[T, R], ABC):
         Returns:
             T: The object after semantic transfer.
         """
-        try:
-            return type(object).__tc_semantic_transfer__(
-                self,
-                object,
-                semantics=semantics,
-                exemplar=exemplar,
-                depth_limit=depth_limit,
-                instructions=instructions,
-                **kwargs,
-            )
-        except (NotImplementedError, AttributeError):
-            pass
-
-        return self._semantic_transfer(
-            object,
-            semantics=semantics,
-            exemplar=exemplar,
-            depth_limit=depth_limit,
-            instructions=instructions,
-            **kwargs,
-        )
-
-    #######################################
-    ######## core operator methods ########
-    ##### (subclasasaes override here) ####
-    #######################################
-
-    def _is_encoded(self, object: T | R) -> bool:
-        return typingx.isinstancex(object, (self.R, self.enc[T]))
-
-    @abstractmethod
-    def _encode(
-        self,
-        object: T,
-        /,
-        depth_limit: int,
-        instructions: R,
-        **kwargs,
-    ) -> R:
-        raise NotImplementedError()
-
-    @abstractmethod
-    def _decode(
-        self,
-        object_enc: R,
-        type: type[T],
-        /,
-        depth_limit: int,
-        instructions: R,
-        **kwargs,
-    ) -> T:
-        raise NotImplementedError()
-
-    @abstractmethod
-    def _retrieve(
-        self,
-        object: composite_types[T],
-        /,
-        count: int,
-        allowed_glob: str,
-        disallowed_glob: str,
-        depth_limit: int,
-        instructions: R,
-        **kwargs,
-    ) -> T:
-        raise NotImplementedError()
-
-    @abstractmethod
-    def _store(
-        self,
-        object: composite_types[T],
-        /,
-        values: list[T],
-        allowed_glob: str,
-        disallowed_glob: str,
-        depth_limit: int,
-        instructions: R,
-        **kwargs,
-    ):
-        raise NotImplementedError()
-
-    @abstractmethod
-    def _query(
-        self,
-        object: T,
-        /,
-        query: R,
-        depth_limit: int,
-        instructions: R,
-        **kwargs,
-    ) -> R:
-        raise NotImplementedError()
-
-    @abstractmethod
-    def _modify(
-        self,
-        object: T,
-        /,
-        depth_limit: int,
-        instructions: R,
-        **kwargs,
-    ) -> T:
-        raise NotImplementedError()
-
-    @abstractmethod
-    def _combine(
-        self,
-        objects: Sequence[T],
-        /,
-        depth_limit: int,
-        instructions: R,
-        **kwargs,
-    ) -> T:
-        raise NotImplementedError()
-
-    @abstractmethod
-    def _split(
-        self,
-        object: T,
-        /,
-        num_splits: int,
-        depth_limit: int,
-        instructions: R,
-        **kwargs,
-    ) -> tuple[T]:
-        raise NotImplementedError()
-
-    @abstractmethod
-    def _choice_first_winner(
-        self,
-        conditions_and_functions: tuple[Callable[..., bool], Callable[..., T]],
-        /,
-        default_case_idx: int | None,
-        threshold: float,
-        randomness: float,
-        depth_limit: int,
-        instructions: R,
-        **kwargs,
-    ) -> T:
-        raise NotImplementedError()
-
-    @abstractmethod
-    def _choice_last_winner(
-        self,
-        conditions_and_functions: tuple[Callable[..., bool], Callable[..., T]],
-        /,
-        default_case_idx: int | None,
-        threshold: float,
-        randomness: float,
-        depth_limit: int,
-        instructions: R,
-        **kwargs,
-    ) -> T:
-        raise NotImplementedError()
-
-    @abstractmethod
-    def _run(
-        self,
-        instructions: R,
-        /,
-        budget: Optional[float],
-        **kwargs,
-    ) -> Any:
-        raise NotImplementedError()
-
-    @abstractmethod
-    def _similarity(
-        self,
-        objects: tuple[T],
-        /,
-        depth_limit: int,
-        instructions: R,
-        **kwargs,
-    ) -> float:
-        raise NotImplementedError()
-
-    @abstractmethod
-    def _predict(
-        self,
-        sequence: Sequence[T],
-        /,
-        steps: int,
-        depth_limit: int,
-        instructions: R,
-        **kwargs,
-    ) -> Generator[T, None, None]:
-        raise NotImplementedError()
-
-    @abstractmethod
-    def _correct(
-        self,
-        object: T,
-        /,
-        threshold: float,
-        depth_limit: int,
-        instructions: R,
-        **kwargs,
-    ) -> T:
-        raise NotImplementedError()
-
-    @abstractmethod
-    def _style_transfer(
-        self,
-        object: T,
-        style: R,
-        exemplar: T,
-        /,
-        depth_limit: int,
-        instructions: R,
-        **kwargs,
-    ) -> T:
-        raise NotImplementedError()
-
-    @abstractmethod
-    def _semantic_transfer(
-        self,
-        object: T,
-        semantics: R,
-        exemplar: T,
-        /,
-        depth_limit: int,
-        instructions: R,
-        **kwargs,
-    ) -> T:
-        raise NotImplementedError()

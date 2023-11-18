@@ -2,6 +2,8 @@ import functools
 import inspect
 from typing import Annotated, Any, Callable, get_type_hints
 
+from tensacode.utils.misc import call_with_applicable_args
+
 
 class Default:
     get: Callable[..., Any]  # should take in all the args supplied to the function
@@ -56,3 +58,65 @@ class dynamic_defaults(Decorator):
                     return retval()
 
         return retval  # this returns None if retval is None and not annotated
+
+
+class overloaded(Decorator):
+    """
+    A decorator that allows multiple versions of a function to be defined,
+    each with different behavior based on specified conditions.
+
+    The 'overloaded' decorator should be used to decorate a base function.
+    Additional versions of the function can be defined using the '.overload'
+    method of the decorated function. Each overloaded version has an associated
+    condition - a lambda or function that takes the same arguments as the base
+    function and returns a boolean. When the decorated function is called,
+    'overloaded' checks each condition in the order the overloads were defined.
+    It calls and returns the result of the first overload whose condition
+    evaluates to True. If no conditions are met, the base function is called.
+
+    Attributes:
+    overloads (list): A list of tuples, each containing a condition function
+                      and the associated overloaded function.
+
+    Example:
+        @overloaded
+        def my_fn(a, b, c):
+            return "base function", a, b, c
+
+        @my_fn.overload(lambda a, b, c: a == 3)
+        def _overload(a, b, c):
+            return "overloaded function", a, b, c
+
+        # Test calls
+        print(my_fn(1, 2, 3))  # Calls the base function
+        print(my_fn(3, 2, 1))  # Calls the overloaded function
+
+    Note:
+    - The base function is decorated normally.
+    - Overloads are defined using '@<function_name>.overload(<condition>)'.
+    - The order of overload definitions matters. The first overload to match
+      its condition is the one that gets executed.
+    - If no overload conditions are met, the base function is executed.
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.overloads = []
+
+    def __call__(self, fn):
+        self.fn = fn
+        self.base_fn = super().__call__(fn)
+        return self.overload_dispatcher
+
+    def overload_dispatcher(self, *args, **kwargs):
+        for condition, func in self.overloads:
+            if call_with_applicable_args(condition, args, kwargs):
+                return func(*args, **kwargs)
+        return self.base_fn(*args, **kwargs)
+
+    def overload(self, condition):
+        def decorator(fn):
+            self.overloads.append((condition, fn))
+            return fn
+
+        return decorator

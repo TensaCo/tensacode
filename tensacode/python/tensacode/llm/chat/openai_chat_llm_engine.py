@@ -1,10 +1,8 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from collections import namedtuple
 from contextlib import contextmanager
 from copy import deepcopy
-from dataclasses import dataclass
 import functools
 from functools import singledispatchmethod
 import inspect
@@ -12,14 +10,11 @@ from pathlib import Path
 from typing import (
     TYPE_CHECKING,
     Any,
-    AsyncIterator,
     Callable,
     ClassVar,
     Generator,
     Generic,
-    Iterator,
     Literal,
-    Mapping,
     Optional,
     Sequence,
     TypeVar,
@@ -27,11 +22,13 @@ from typing import (
 from uuid import uuid4
 import attr
 import loguru
-from pydantic import BaseModel, Field
+from pydantic import Field
 from tensacode.base.base_engine import BaseEngine
 from tensacode.base.engine import Engine
+from tensacode.llm.chat.chat_llm_engine import BaseChatLLMEngine
 import typingx
-from langchain.chat_models.base import BaseChatModel
+from langchain.chat_models.openai import ChatOpenAI
+
 
 import tensacode as tc
 from tensacode.utils.decorators import Decorator, Default, dynamic_defaults
@@ -42,49 +39,46 @@ from tensacode.utils.user_types import (
     atomic_types,
     container_types,
     composite_types,
-    function_types,
     tree_types,
     tree,
 )
 from tensacode.utils.internal_types import nested_dict
 
-T = Any
-R = str
+T = BaseChatLLMEngine.T
+R = BaseChatLLMEngine.R
 
 
-class BaseChatLLMEngine(Engine[T, R], ABC):
+class OpenAIChatLLMEngine(BaseChatLLMEngine):
     #######################################
     ############### meta ##################
     #######################################
 
-    T: ClassVar[type] = T
-    R: ClassVar[type] = R
-
     # import or override these from the parent Engine class
-    encoded_args = Engine.encoded_args
-    trace = Engine.trace
+    encoded_args = BaseChatLLMEngine.encoded_args
+    trace = BaseChatLLMEngine.trace
 
     #######################################
     ############### config ################
     #######################################
 
-    # TODO: make params into a BaseModel
     PARAM_DEFAULTS = {
-        "chat_model": BaseChatModel,
+        "chat_model": ChatOpenAI,
     }
 
     #######################################
     ######## intelligence methods #########
     #######################################
 
+    @abstractmethod
     @encoded_args()
     @trace()
-    def chat(self, message: enc[T]) -> enc[T]:
-        ...  # TODO: make a chatbot with the interaction data
+    def reward(self, reward: enc[float]):
+        loguru.logger.warning("Rewarding is not implemented yet.")
 
+    @abstractmethod
     @trace()
-    def self_reflect(self):
-        ...  # TODO: make a reflexion agent with the interaction data
+    def train(self):
+        loguru.logger.warning("Rewarding is not implemented yet.")
 
     #######################################
     ######## main operator methods ########
@@ -114,154 +108,13 @@ class BaseChatLLMEngine(Engine[T, R], ABC):
     @_encode.register
     def _encode(
         self,
-        object: atomic_types,
+        object: str,
         /,
         depth_limit: int,
         instructions: R,
         **kwargs,
     ) -> R:
-        return str(object)
-
-    @_encode.register
-    def _encode(
-        self,
-        object: function_types,
-        /,
-        depth_limit: int,
-        instructions: R,
-        **kwargs,
-    ) -> R:
-        return
-
-    @_encode.register
-    def _encode(
-        self,
-        object: Sequence[T],
-        /,
-        depth_limit: int,
-        instructions: R,
-        **kwargs,
-    ) -> R:
-        individual_encodings = [
-            self._encode(
-                item,
-                depth_limit=depth_limit - 1,
-                instructions=instructions,
-                **kwargs,
-            )
-            for item in object
-        ]
-        composite_encoding = ...  # make a chat completion
-        return composite_encoding
-
-    @_encode.register
-    def _encode(
-        self,
-        object: Mapping[Any, T],
-        /,
-        depth_limit: int,
-        instructions: R,
-        **kwargs,
-    ) -> R:
-        individual_encodings = {
-            key: self._encode(
-                value,
-                depth_limit=depth_limit - 1,
-                instructions=instructions,
-                **kwargs,
-            )
-            for key, value in object.items()
-        }
-        composite_encoding = ...  # make a chat completion
-        return composite_encoding
-
-    @_encode.register
-    def _encode(
-        self,
-        object: Iterator[T],
-        /,
-        depth_limit: int,
-        instructions: R,
-        **kwargs,
-    ) -> R:
-        return object
-
-    @_encode.register
-    def _encode(
-        self,
-        object: AsyncIterator[T],
-        /,
-        depth_limit: int,
-        instructions: R,
-        **kwargs,
-    ) -> R:
-        return object
-
-    @_encode.register
-    def _encode(
-        self,
-        object: namedtuple,
-        /,
-        depth_limit: int,
-        instructions: R,
-        **kwargs,
-    ) -> R:
-        return object
-
-    @_encode.register
-    def _encode(
-        self,
-        object: dataclass,
-        /,
-        depth_limit: int,
-        instructions: R,
-        **kwargs,
-    ) -> R:
-        return object
-
-    @_encode.register
-    def _encode(
-        self,
-        object: BaseModel,
-        /,
-        depth_limit: int,
-        instructions: R,
-        **kwargs,
-    ) -> R:
-        return object
-
-    @_encode.register
-    def _encode(
-        self,
-        object: ModuleType,
-        /,
-        depth_limit: int,
-        instructions: R,
-        **kwargs,
-    ) -> R:
-        return object
-
-    @_encode.register
-    def _encode(
-        self,
-        object: type,
-        /,
-        depth_limit: int,
-        instructions: R,
-        **kwargs,
-    ) -> R:
-        return object
-
-    @_encode.register
-    def _encode(
-        self,
-        object: object,
-        /,
-        depth_limit: int,
-        instructions: R,
-        **kwargs,
-    ) -> R:
-        return object
+        return self.params["forward_map"][object]
 
     @singledispatchmethod
     def _decode(
@@ -285,7 +138,7 @@ class BaseChatLLMEngine(Engine[T, R], ABC):
         instructions: R,
         **kwargs,
     ) -> str:
-        return object_enc
+        return self.params["reverse_map"][object_enc]
 
     # @abstractmethod
     # def _retrieve(

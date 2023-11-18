@@ -1,10 +1,8 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from collections import namedtuple
 from contextlib import contextmanager
 from copy import deepcopy
-from dataclasses import dataclass
 import functools
 from functools import singledispatchmethod
 import inspect
@@ -12,14 +10,11 @@ from pathlib import Path
 from typing import (
     TYPE_CHECKING,
     Any,
-    AsyncIterator,
     Callable,
     ClassVar,
     Generator,
     Generic,
-    Iterator,
     Literal,
-    Mapping,
     Optional,
     Sequence,
     TypeVar,
@@ -27,11 +22,11 @@ from typing import (
 from uuid import uuid4
 import attr
 import loguru
-from pydantic import BaseModel, Field
+from pydantic import Field
 from tensacode.base.base_engine import BaseEngine
 from tensacode.base.engine import Engine
 import typingx
-from langchain.chat_models.base import BaseChatModel
+
 
 import tensacode as tc
 from tensacode.utils.decorators import Decorator, Default, dynamic_defaults
@@ -42,23 +37,22 @@ from tensacode.utils.user_types import (
     atomic_types,
     container_types,
     composite_types,
-    function_types,
     tree_types,
     tree,
 )
 from tensacode.utils.internal_types import nested_dict
 
-T = Any
-R = str
+YourObjectType = Literal["one", "two", "three"]  # probabbly `Any`
+YourLatentType = Literal[1, 2, 3]
 
 
-class BaseChatLLMEngine(Engine[T, R], ABC):
+class ExampleEngineSubclass(Engine[YourObjectType, YourLatentType], ABC):
     #######################################
     ############### meta ##################
     #######################################
 
-    T: ClassVar[type] = T
-    R: ClassVar[type] = R
+    T: ClassVar[type] = YourObjectType
+    R: ClassVar[type] = YourLatentType
 
     # import or override these from the parent Engine class
     encoded_args = Engine.encoded_args
@@ -68,9 +62,9 @@ class BaseChatLLMEngine(Engine[T, R], ABC):
     ############### config ################
     #######################################
 
-    # TODO: make params into a BaseModel
     PARAM_DEFAULTS = {
-        "chat_model": BaseChatModel,
+        "forward_map": {"one": 1, "two": 2, "three": 3},
+        "reverse_map": {1: "one", 2: "two", 3: "three"},
     }
 
     #######################################
@@ -79,12 +73,29 @@ class BaseChatLLMEngine(Engine[T, R], ABC):
 
     @encoded_args()
     @trace()
-    def chat(self, message: enc[T]) -> enc[T]:
-        ...  # TODO: make a chatbot with the interaction data
+    def chat(self, message: enc[YourObjectType]) -> enc[YourObjectType]:
+        ...  # your implementation here
 
     @trace()
     def self_reflect(self):
-        ...  # TODO: make a reflexion agent with the interaction data
+        ...  # your implementation here
+
+    @encoded_args()
+    @trace()
+    def reward(self, reward: enc[float]):
+        ...  # your implementation here
+
+    @trace()
+    def train(self):
+        ...  # your implementation here
+
+    @trace()
+    def save(self, path: str | Path):
+        super().save(path)
+
+    @trace()
+    def load(self, path: str | Path):
+        return super().load(path)
 
     #######################################
     ######## main operator methods ########
@@ -103,189 +114,48 @@ class BaseChatLLMEngine(Engine[T, R], ABC):
     @singledispatchmethod
     def _encode(
         self,
-        object: T,
+        object: YourObjectType,
         /,
         depth_limit: int,
-        instructions: R,
+        instructions: YourLatentType,
         **kwargs,
-    ) -> R:
+    ) -> YourLatentType:
         raise NotImplementedError("Sorry, this is only a toy example.")
 
     @_encode.register
     def _encode(
         self,
-        object: atomic_types,
+        object: str,
         /,
         depth_limit: int,
-        instructions: R,
+        instructions: YourLatentType,
         **kwargs,
-    ) -> R:
-        return str(object)
-
-    @_encode.register
-    def _encode(
-        self,
-        object: function_types,
-        /,
-        depth_limit: int,
-        instructions: R,
-        **kwargs,
-    ) -> R:
-        return
-
-    @_encode.register
-    def _encode(
-        self,
-        object: Sequence[T],
-        /,
-        depth_limit: int,
-        instructions: R,
-        **kwargs,
-    ) -> R:
-        individual_encodings = [
-            self._encode(
-                item,
-                depth_limit=depth_limit - 1,
-                instructions=instructions,
-                **kwargs,
-            )
-            for item in object
-        ]
-        composite_encoding = ...  # make a chat completion
-        return composite_encoding
-
-    @_encode.register
-    def _encode(
-        self,
-        object: Mapping[Any, T],
-        /,
-        depth_limit: int,
-        instructions: R,
-        **kwargs,
-    ) -> R:
-        individual_encodings = {
-            key: self._encode(
-                value,
-                depth_limit=depth_limit - 1,
-                instructions=instructions,
-                **kwargs,
-            )
-            for key, value in object.items()
-        }
-        composite_encoding = ...  # make a chat completion
-        return composite_encoding
-
-    @_encode.register
-    def _encode(
-        self,
-        object: Iterator[T],
-        /,
-        depth_limit: int,
-        instructions: R,
-        **kwargs,
-    ) -> R:
-        return object
-
-    @_encode.register
-    def _encode(
-        self,
-        object: AsyncIterator[T],
-        /,
-        depth_limit: int,
-        instructions: R,
-        **kwargs,
-    ) -> R:
-        return object
-
-    @_encode.register
-    def _encode(
-        self,
-        object: namedtuple,
-        /,
-        depth_limit: int,
-        instructions: R,
-        **kwargs,
-    ) -> R:
-        return object
-
-    @_encode.register
-    def _encode(
-        self,
-        object: dataclass,
-        /,
-        depth_limit: int,
-        instructions: R,
-        **kwargs,
-    ) -> R:
-        return object
-
-    @_encode.register
-    def _encode(
-        self,
-        object: BaseModel,
-        /,
-        depth_limit: int,
-        instructions: R,
-        **kwargs,
-    ) -> R:
-        return object
-
-    @_encode.register
-    def _encode(
-        self,
-        object: ModuleType,
-        /,
-        depth_limit: int,
-        instructions: R,
-        **kwargs,
-    ) -> R:
-        return object
-
-    @_encode.register
-    def _encode(
-        self,
-        object: type,
-        /,
-        depth_limit: int,
-        instructions: R,
-        **kwargs,
-    ) -> R:
-        return object
-
-    @_encode.register
-    def _encode(
-        self,
-        object: object,
-        /,
-        depth_limit: int,
-        instructions: R,
-        **kwargs,
-    ) -> R:
-        return object
+    ) -> YourLatentType:
+        return self.params["forward_map"][object]
 
     @singledispatchmethod
     def _decode(
         self,
-        object_enc: R,
-        type: type[T],
+        object_enc: YourLatentType,
+        type: type[YourObjectType],
         /,
         depth_limit: int,
-        instructions: R,
+        instructions: YourLatentType,
         **kwargs,
-    ) -> T:
+    ) -> YourObjectType:
         raise NotImplementedError("Sorry, this is only a toy example.")
 
     @_decode.register
     def _decode(
         self,
-        object_enc: R,
+        object_enc: YourLatentType,
         type: type[str],
         /,
         depth_limit: int,
-        instructions: R,
+        instructions: YourLatentType,
         **kwargs,
     ) -> str:
-        return object_enc
+        return self.params["reverse_map"][object_enc]
 
     # @abstractmethod
     # def _retrieve(

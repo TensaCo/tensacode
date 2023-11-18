@@ -27,6 +27,7 @@ from types import (
     GeneratorType,
     AsyncGeneratorType,
 )
+from types import FunctionType, MethodType, ModuleType
 from abc import ABC, abstractmethod
 from collections import namedtuple
 import dataclasses
@@ -86,6 +87,7 @@ composite_types = (
     | type
     | object
 )
+function_types = Callable | FunctionType | MethodType | classmethod | staticmethod
 
 tree_types = atomic_types | container_types | composite_types | "tree"
 
