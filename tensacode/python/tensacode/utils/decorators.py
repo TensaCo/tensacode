@@ -103,10 +103,10 @@ class overloaded(Decorator):
         super().__init__()
         self.overloads = []
 
-    def __call__(self, fn):
-        self.fn = fn
-        self.base_fn = super().__call__(fn)
-        return self.overload_dispatcher
+    # def __call__(self, fn):
+    #     self.fn = fn
+    #     self.base_fn = super().__call__(fn)
+    #     return self.overload_dispatcher
 
     def overload_dispatcher(self, *args, **kwargs):
         for condition, func in self.overloads:

@@ -34,7 +34,7 @@ import typingx
 from langchain.chat_models.base import BaseChatModel
 
 import tensacode as tc
-from tensacode.utils.decorators import Decorator, Default, dynamic_defaults
+from tensacode.utils.decorators import Decorator, Default, dynamic_defaults, overloaded
 from tensacode.utils.oo import HasDefault, Namespace
 from tensacode.utils.string import render_invocation, render_stacktrace
 from tensacode.utils.user_types import (
@@ -100,7 +100,7 @@ class BaseChatLLMEngine(Engine[T, R], ABC):
     # use `singledispatchmethod` to overload on the type of the object
     # (only applies to methods with an `object` argument)
 
-    @singledispatchmethod
+    @overloaded  # TODO: i need to maek it able to have its overloadeds subclasses and make it lookup by overload name and clsself key instead of exposing to the parent
     def _encode(
         self,
         object: T,
