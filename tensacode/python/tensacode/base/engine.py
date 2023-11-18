@@ -15,14 +15,18 @@ from typing import (
     ClassVar,
     Generator,
     Generic,
+    Iterable,
     Literal,
+    Mapping,
     Optional,
     Sequence,
+    Set,
     TypeVar,
 )
 from box import Box
 from uuid import uuid4
 import attr
+from jinja2 import Template
 import loguru
 from glom import glom
 from pydantic import Field
@@ -31,7 +35,7 @@ import typingx
 
 
 import tensacode as tc
-from tensacode.utils.decorators import Decorator, Default, dynamic_defaults
+from tensacode.utils.decorators import Decorator, Default, dynamic_defaults, overloaded
 from tensacode.utils.oo import HasDefault, Namespace
 from tensacode.utils.string import render_invocation, render_stacktrace
 from tensacode.utils.user_types import (
@@ -1205,7 +1209,7 @@ class Engine(Generic[T, R], BaseEngine[T, R], ABC):
     def _is_encoded(self, object: T | R) -> bool:
         return typingx.isinstancex(object, (self.R, self.enc[T]))
 
-    @abstractmethod
+    @overloaded
     def _encode(
         self,
         object: T,
@@ -1214,7 +1218,204 @@ class Engine(Generic[T, R], BaseEngine[T, R], ABC):
         instructions: R,
         **kwargs,
     ) -> R:
-        raise NotImplementedError()
+        # default implementation if no other overloads match
+        return self._encode_object(
+            object,
+            depth_limit=depth_limit,
+            instructions=instructions,
+            **kwargs,
+        )
+
+    @_encode.overload(lambda object: typingx.isinstance(object, object))
+    def _encode_object(
+        self,
+        object: object,
+        /,
+        depth_limit: int,
+        instructions: R,
+        **kwargs,
+    ) -> R:
+        dict = get_members(object)
+        # TODO: render as a dict
+        # then format into a block with the instance's qualname
+        # include the __module__ and __class__ attributes with the pythonic <module>.<class> name only str rendering format
+        # get rid of BaseEngine
+        # add priority management and transform support to the @overloaded decorator.
+        # then finish the engine operators
+        # then move the relevant ones over the text engine class and make the base Engine class' operations NotImplemented
+
+        encoded_items = [
+            (
+                self._encode(k, depth_limit=depth_limit - 1, instructions=instructions),
+                self._encode(v, depth_limit=depth_limit - 1, instructions=instructions),
+            )
+            for k, v in object.items()
+        ]
+        return Template(r"{%for k, v in items%}{{k}}: {{v}}{%endfor%}").render(
+            items=encoded_items
+        )
+
+    @_encode.overload(lambda object: object is None)
+    def _encode_none(
+        self,
+        object: None,
+        /,
+        depth_limit: int,
+        instructions: R,
+        **kwargs,
+    ) -> R:
+        return None
+
+    @_encode.overload(lambda object: isinstance(object, bool))
+    def _encode_bool(
+        self,
+        object: bool,
+        /,
+        depth_limit: int,
+        instructions: R,
+        **kwargs,
+    ) -> R:
+        return str(object)
+
+    @_encode.overload(lambda object: isinstance(object, int))
+    def _encode_int(
+        self,
+        object: int,
+        /,
+        depth_limit: int,
+        instructions: R,
+        **kwargs,
+    ) -> R:
+        return self.p.number_to_words(object)
+
+    @_encode.overload(lambda object: isinstance(object, float))
+    def _encode_float(
+        self,
+        object: float,
+        /,
+        depth_limit: int,
+        instructions: R,
+        **kwargs,
+    ) -> R:
+        precision_threshold = 1
+
+        decimal_part = object - int(object)
+        if decimal_part * 10**precision_threshold != int(
+            decimal_part * 10**precision_threshold
+        ):
+            return self.p.number_to_words(object)
+        else:
+            return str(object)
+
+    @_encode.overload(lambda object: isinstance(object, complex))
+    def _encode_complex(
+        self,
+        object: complex,
+        /,
+        depth_limit: int,
+        instructions: R,
+        **kwargs,
+    ) -> R:
+        return str(object).replace("j", "i")
+
+    @_encode.overload(lambda object: isinstance(object, str))
+    def _encode_str(
+        self,
+        object: str,
+        /,
+        depth_limit: int,
+        instructions: R,
+        **kwargs,
+    ) -> R:
+        return object
+
+    @_encode.overload(lambda object: isinstance(object, bytes))
+    def _encode_bytes(
+        self,
+        object: bytes,
+        /,
+        depth_limit: int,
+        instructions: R,
+        bytes_per_group=4,
+        **kwargs,
+    ) -> R:
+        result = ""
+        for i in range(0, len(object), bytes_per_group):
+            group = object[i : i + bytes_per_group]
+            result += "".join(f"{byte:02x}" for byte in group) + " "
+        if len(object) % bytes_per_group != 0:  # handle remainder bytes
+            remainder = object[(len(object) // bytes_per_group) * bytes_per_group :]
+            result += "".join(f"{byte:02x}" for byte in remainder)
+        return result.strip()
+
+    @_encode.overload(lambda object: isinstance(object, Iterable))
+    def _encode_iterable(
+        self,
+        object: Iterable,
+        /,
+        depth_limit: int,
+        instructions: R,
+        ordered: bool = True,
+        **kwargs,
+    ) -> R:
+        return self._encode_seq(
+            list(object),
+            depth_limit - 1,
+            instructions,
+            ordered,
+            **kwargs,
+        )
+
+    @_encode.overload(lambda object: typingx.isinstance(object, Sequence[T]))
+    def _encode_seq(
+        self,
+        object: Sequence,
+        /,
+        depth_limit: int,
+        instructions: R,
+        **kwargs,
+    ) -> R:
+        items = [
+            self._encode(item, depth_limit=depth_limit - 1, instructions=instructions)
+            for item in object
+        ]
+        return self.R(items)
+
+    @_encode.overload(lambda object: typingx.isinstance(object, Set[T]))
+    def _encode_set(
+        self,
+        object: set,
+        /,
+        depth_limit: int,
+        instructions: R,
+        **kwargs,
+    ) -> R:
+        return self._encode_seq(
+            object,
+            depth_limit=depth_limit,  # don't decrement since this is only a horizontal call
+            instructions=instructions,
+            **kwargs,
+        )
+
+    @_encode.overload(lambda object: typingx.isinstance(object, Mapping[Any, T]))
+    def _encode_map(
+        self,
+        object: Mapping,
+        /,
+        depth_limit: int,
+        instructions: R,
+        **kwargs,
+    ) -> R:
+        encoded_items = [
+            (
+                self._encode(k, depth_limit=depth_limit - 1, instructions=instructions),
+                self._encode(v, depth_limit=depth_limit - 1, instructions=instructions),
+            )
+            for k, v in object.items()
+        ]
+        return Template(r"{%for k, v in items%}{{k}}: {{v}}{%endfor%}").render(
+            items=encoded_items
+        )
 
     @abstractmethod
     def _decode(

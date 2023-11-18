@@ -111,7 +111,51 @@ class BaseChatLLMEngine(Engine[T, R], ABC):
     ) -> R:
         raise NotImplementedError("Sorry, this is only a toy example.")
 
-    @_encode.register
+    @_encode.overload(lambda object: isinstance(object, atomic_types))
+    def _encode(
+        self,
+        object: atomic_types,
+        /,
+        depth_limit: int,
+        instructions: R,
+        **kwargs,
+    ) -> R:
+        return str(object)
+
+    @_encode.overload(lambda object: isinstance(object, bool))
+    def _encode_bool(
+        self,
+        object: bool,
+        /,
+        depth_limit: int,
+        instructions: R,
+        **kwargs,
+    ) -> R:
+        return str(object)
+
+    @_encode.overload(lambda object: isinstance(object, atomic_types))
+    def _encode(
+        self,
+        object: atomic_types,
+        /,
+        depth_limit: int,
+        instructions: R,
+        **kwargs,
+    ) -> R:
+        return str(object)
+
+    @_encode.overload(lambda object: isinstance(object, atomic_types))
+    def _encode(
+        self,
+        object: atomic_types,
+        /,
+        depth_limit: int,
+        instructions: R,
+        **kwargs,
+    ) -> R:
+        return str(object)
+
+    @_encode.overload(lambda object: isinstance(object, atomic_types))
     def _encode(
         self,
         object: atomic_types,

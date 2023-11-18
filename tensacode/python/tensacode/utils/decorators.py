@@ -114,9 +114,9 @@ class overloaded(Decorator):
                 return func(*args, **kwargs)
         return self.base_fn(*args, **kwargs)
 
-    def overload(self, condition):
+    def overload(self, condition, transform=None):
         def decorator(fn):
-            self.overloads.append((condition, fn))
+            self.overloads.append((condition, transform, fn))
             return fn
 
         return decorator
