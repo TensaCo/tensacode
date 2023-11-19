@@ -1,0 +1,1 @@
+decode(..., type=choice(...))

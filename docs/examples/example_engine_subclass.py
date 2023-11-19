@@ -24,7 +24,7 @@ import attr
 import loguru
 from pydantic import Field
 from old.base_engine import Engine
-from tensacode.base.engine import Engine
+from tensacode.base.old_engine import Engine
 import typingx
 
 

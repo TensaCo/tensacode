@@ -3,7 +3,7 @@ from functools import singledispatchmethod
 from typing import Generator, Generic, Sequence
 from old.base_engine import Engine
 
-from tensacode.base.engine import Engine
+from tensacode.base.old_engine import Engine
 from tensacode.utils.types import R, T, composite_types
 import typingx
 

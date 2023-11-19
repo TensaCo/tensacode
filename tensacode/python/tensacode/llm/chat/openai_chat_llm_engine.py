@@ -24,7 +24,7 @@ import attr
 import loguru
 from pydantic import Field
 from old.base_engine import Engine
-from tensacode.base.engine import Engine
+from tensacode.base.old_engine import Engine
 from tensacode.llm.chat.chat_llm_engine import BaseChatLLMEngine
 import typingx
 from langchain.chat_models.openai import ChatOpenAI

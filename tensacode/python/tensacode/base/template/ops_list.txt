@@ -1,5 +1,6 @@
 encode
 decode
+create
 retrieve
 store
 query

@@ -75,7 +75,7 @@ from tensacode.utils.internal_types import nested_dict
 from tensacode.base.mixins.mixin_base import MixinBase
 
 
-class HasModify(Generic[T, R], MixinBase[T, R], ABC):
+class HasCreate(Generic[T, R], MixinBase[T, R], ABC):
     # copied from MixinBase for aesthetic consistency
     trace = MixinBase.trace
     DefaultParam = MixinBase.DefaultParam
