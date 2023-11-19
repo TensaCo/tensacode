@@ -8,7 +8,7 @@ import attr
 import glom
 
 from tensacode.utils.internal_types import nested_dict
-from tensacode.utils.user_types import R
+from tensacode.utils.types import R
 
 
 class HasDefault(ABC):

@@ -1,8 +1,13 @@
 import functools
 import inspect
 from typing import Annotated, Any, Callable, get_type_hints
+from tensacode.utils.internal_types import Predicate
 
 from tensacode.utils.misc import call_with_applicable_args
+from typingx import isinstancex, issubclassx
+import pydantic, sqlalchemy, dataclasses, attr, typing
+
+py_object = object
 
 
 class Default:
@@ -99,24 +104,23 @@ class overloaded(Decorator):
     - If no overload conditions are met, the base function is executed.
     """
 
-    def __init__(self):
-        super().__init__()
-        self.overloads = []
+    overloads: tuple[Predicate, Callable | None, Callable] = []
 
-    # def __call__(self, fn):
-    #     self.fn = fn
-    #     self.base_fn = super().__call__(fn)
-    #     return self.overload_dispatcher
+    def __call__(self, fn):
+        self.fn = fn
+        self.base_fn = super().__call__(fn)
+        return self._overload_dispatcher
 
-    def overload_dispatcher(self, *args, **kwargs):
+    def _overload_dispatcher(self, *args, **kwargs):
         for condition, func in self.overloads:
             if call_with_applicable_args(condition, args, kwargs):
                 return func(*args, **kwargs)
         return self.base_fn(*args, **kwargs)
 
     def overload(self, condition, transform=None):
-        def decorator(fn):
-            self.overloads.append((condition, transform, fn))
-            return fn
+        def decorator(overload):
+            self.overloads.append((condition, transform, overload))
+            return overload
 
         return decorator
+

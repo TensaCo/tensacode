@@ -28,7 +28,7 @@ import tensacode as tc
 from tensacode.utils.decorators import Decorator, Default, dynamic_defaults
 from tensacode.utils.oo import HasDefault, Namespace
 from tensacode.utils.string import render_invocation
-from tensacode.utils.user_types import (
+from tensacode.utils.types import (
     enc,
     T,
     R,
@@ -41,7 +41,7 @@ from tensacode.utils.user_types import (
 from tensacode.utils.internal_types import nested_dict
 
 
-class BaseEngine(Generic[T, R], HasDefault, Namespace[R], ABC):
+class Engine(Generic[T, R], HasDefault, Namespace[R], ABC):
     #######################################
     ############# metadata ################
     #######################################
@@ -52,7 +52,7 @@ class BaseEngine(Generic[T, R], HasDefault, Namespace[R], ABC):
     @attr.s(auto_attribs=True)
     class DefaultParam(Default):
         initial_value: Any | None = attr.ib(default=None)
-        initializer: Callable[[BaseEngine], Any] | None = attr.ib(default=None)
+        initializer: Callable[[Engine], Any] | None = attr.ib(default=None)
 
     @attr.s(auto_attribs=True)
     class trace(Decorator):

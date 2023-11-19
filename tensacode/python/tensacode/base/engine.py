@@ -3,6 +3,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from copy import deepcopy
+from dataclasses import _DataclassT, dataclass
 import functools
 from functools import singledispatchmethod
 import inspect
@@ -18,6 +19,7 @@ from typing import (
     Iterable,
     Literal,
     Mapping,
+    NamedTuple,
     Optional,
     Sequence,
     Set,
@@ -30,15 +32,34 @@ from jinja2 import Template
 import loguru
 from glom import glom
 from pydantic import Field
-from tensacode.base.base_engine import BaseEngine
+from old.base_engine import Engine
 import typingx
+import pydantic, sqlalchemy
+from _typeshed import DataclassInstance
 
 
 import tensacode as tc
-from tensacode.utils.decorators import Decorator, Default, dynamic_defaults, overloaded
+from tensacode.utils.decorators import (
+    Decorator,
+    Default,
+    dynamic_defaults,
+    is_attrs_instance,
+    is_attrs_type,
+    is_dataclass_instance,
+    is_dataclass_type,
+    is_namedtuple_instance,
+    is_namedtuple_type,
+    is_object_instance,
+    is_type,
+    is_pydantic_model_instance,
+    is_pydantic_model_type,
+    is_sqlalchemy_instance,
+    is_sqlalchemy_model_type,
+    overloaded,
+)
 from tensacode.utils.oo import HasDefault, Namespace
 from tensacode.utils.string import render_invocation, render_stacktrace
-from tensacode.utils.user_types import (
+from tensacode.utils.types import (
     enc,
     T,
     R,
@@ -51,7 +72,7 @@ from tensacode.utils.user_types import (
 from tensacode.utils.internal_types import nested_dict
 
 
-class Engine(Generic[T, R], BaseEngine[T, R], ABC):
+class Engine(Generic[T, R], Engine[T, R], ABC):
     #######################################
     ############### meta ##################
     #######################################
@@ -60,7 +81,7 @@ class Engine(Generic[T, R], BaseEngine[T, R], ABC):
     R: ClassVar[type[R]] = R
 
     class _HasThisEngine(ABC):
-        _engine: ClassVar[BaseEngine]
+        _engine: ClassVar[Engine]
 
     class _EngineDecorator(Decorator, _HasThisEngine, ABC):
         pass
@@ -68,10 +89,10 @@ class Engine(Generic[T, R], BaseEngine[T, R], ABC):
     @attr.s(auto_attribs=True)
     class DefaultParam(Default, _HasThisEngine):
         initial_value: Any | None = attr.ib(default=None)
-        initializer: Callable[[BaseEngine], Any] | None = attr.ib(default=None)
+        initializer: Callable[[Engine], Any] | None = attr.ib(default=None)
 
         def __init__(self, initializer_or_initial_value: Any = None, /, **kw):
-            if typingx.isinstance(self.default, Callable[[BaseEngine], Any]):
+            if typingx.isinstance(self.default, Callable[[Engine], Any]):
                 self.initializer = initializer_or_initial_value
             else:
                 self.initial_value = initializer_or_initial_value
@@ -1214,10 +1235,13 @@ class Engine(Generic[T, R], BaseEngine[T, R], ABC):
         self,
         object: T,
         /,
-        depth_limit: int,
-        instructions: R,
+        depth_limit: int | None,
+        instructions: R | None,
         **kwargs,
     ) -> R:
+        if depth_limit is not None and depth_limit <= 0:
+            return
+
         # default implementation if no other overloads match
         return self._encode_object(
             object,
@@ -1226,16 +1250,19 @@ class Engine(Generic[T, R], BaseEngine[T, R], ABC):
             **kwargs,
         )
 
-    @_encode.overload(lambda object: typingx.isinstance(object, object))
+    @_encode.overload(is_object_instance)
     def _encode_object(
         self,
         object: object,
         /,
-        depth_limit: int,
-        instructions: R,
+        depth_limit: int | None,
+        instructions: R | None,
         **kwargs,
     ) -> R:
-        dict = get_members(object)
+        if depth_limit is not None and depth_limit <= 0:
+            return
+
+        dict = inspect_mate_pp(object)
         # TODO: render as a dict
         # then format into a block with the instance's qualname
         # include the __module__ and __class__ attributes with the pythonic <module>.<class> name only str rendering format
@@ -1255,15 +1282,142 @@ class Engine(Generic[T, R], BaseEngine[T, R], ABC):
             items=encoded_items
         )
 
+    @_encode.overload(is_pydantic_model_instance)
+    def _encode_pydantic_model_instance(
+        self,
+        object: pydantic.BaseModel,
+        /,
+        depth_limit: int | None,
+        instructions: R | None,
+        **kwargs,
+    ) -> R:
+        if depth_limit is not None and depth_limit <= 0:
+            return
+
+        return None
+
+    @_encode.overload(is_namedtuple_instance)
+    def _encode_namedtuple_instance(
+        self,
+        object: NamedTuple,
+        /,
+        depth_limit: int | None,
+        instructions: R | None,
+        **kwargs,
+    ) -> R:
+        if depth_limit is not None and depth_limit <= 0:
+            return
+
+        return None
+
+    @_encode.overload(is_dataclass_instance)
+    def _encode_dataclass_instance(
+        self,
+        object: DataclassInstance,
+        /,
+        depth_limit: int | None,
+        instructions: R | None,
+        **kwargs,
+    ) -> R:
+        if depth_limit is not None and depth_limit <= 0:
+            return
+
+        return None
+
+    @_encode.overload(is_type)
+    def _encode_type(
+        self,
+        object: type,
+        /,
+        depth_limit: int | None,
+        instructions: R | None,
+        **kwargs,
+    ) -> R:
+        if depth_limit is not None and depth_limit <= 0:
+            return
+
+        converted_type = object  # TODO
+        return self._encode_type(
+            converted_type,
+            depth_limit=depth_limit,
+            instructions=instructions,
+            **kwargs,
+        )
+
+    @_encode.overload(is_pydantic_model_type)
+    def _encode_pydantic_model_type(
+        self,
+        object: type[pydantic.BaseModel],
+        /,
+        depth_limit: int | None,
+        instructions: R | None,
+        **kwargs,
+    ) -> R:
+        if depth_limit is not None and depth_limit <= 0:
+            return
+
+        converted_type = object  # TODO
+        return self._encode_type(
+            converted_type,
+            depth_limit=depth_limit,
+            instructions=instructions,
+            **kwargs,
+        )
+
+    @_encode.overload(is_namedtuple_type)
+    def _encode_namedtuple_type(
+        self,
+        object: type[NamedTuple],
+        /,
+        depth_limit: int | None,
+        instructions: R | None,
+        **kwargs,
+    ) -> R:
+        if depth_limit is not None and depth_limit <= 0:
+            return
+
+        converted_type = object  # TODO
+        return self._encode_type(
+            converted_type,
+            depth_limit=depth_limit,
+            instructions=instructions,
+            **kwargs,
+        )
+
+    @_encode.overload(is_dataclass_type)
+    def _encode_dataclass_type(
+        self,
+        object: type,
+        /,
+        depth_limit: int | None,
+        instructions: R | None,
+        **kwargs,
+    ) -> R:
+        if depth_limit is not None and depth_limit <= 0:
+            return
+
+        converted_type = object  # TODO
+        return self._encode_type(
+            converted_type,
+            depth_limit=depth_limit,
+            instructions=instructions,
+            **kwargs,
+        )
+
+    # TOD: BaseEngine and refactor the engine into operator specific mixin classes. That way specific engines can support specific operations. Maybe just make an operator class. Then the operator mixin wraps around all those methods in the operator instance on the engine. And it still allows mixins but it keeps the mixins small so that single-inheritance languages aren't too hard to port to.
+
     @_encode.overload(lambda object: object is None)
     def _encode_none(
         self,
         object: None,
         /,
-        depth_limit: int,
-        instructions: R,
+        depth_limit: int | None,
+        instructions: R | None,
         **kwargs,
     ) -> R:
+        if depth_limit is not None and depth_limit <= 0:
+            return
+
         return None
 
     @_encode.overload(lambda object: isinstance(object, bool))
@@ -1271,10 +1425,13 @@ class Engine(Generic[T, R], BaseEngine[T, R], ABC):
         self,
         object: bool,
         /,
-        depth_limit: int,
-        instructions: R,
+        depth_limit: int | None,
+        instructions: R | None,
         **kwargs,
     ) -> R:
+        if depth_limit is not None and depth_limit <= 0:
+            return
+
         return str(object)
 
     @_encode.overload(lambda object: isinstance(object, int))
@@ -1282,10 +1439,13 @@ class Engine(Generic[T, R], BaseEngine[T, R], ABC):
         self,
         object: int,
         /,
-        depth_limit: int,
-        instructions: R,
+        depth_limit: int | None,
+        instructions: R | None,
         **kwargs,
     ) -> R:
+        if depth_limit is not None and depth_limit <= 0:
+            return
+
         return self.p.number_to_words(object)
 
     @_encode.overload(lambda object: isinstance(object, float))
@@ -1293,10 +1453,13 @@ class Engine(Generic[T, R], BaseEngine[T, R], ABC):
         self,
         object: float,
         /,
-        depth_limit: int,
-        instructions: R,
+        depth_limit: int | None,
+        instructions: R | None,
         **kwargs,
     ) -> R:
+        if depth_limit is not None and depth_limit <= 0:
+            return
+
         precision_threshold = 1
 
         decimal_part = object - int(object)
@@ -1312,10 +1475,13 @@ class Engine(Generic[T, R], BaseEngine[T, R], ABC):
         self,
         object: complex,
         /,
-        depth_limit: int,
-        instructions: R,
+        depth_limit: int | None,
+        instructions: R | None,
         **kwargs,
     ) -> R:
+        if depth_limit is not None and depth_limit <= 0:
+            return
+
         return str(object).replace("j", "i")
 
     @_encode.overload(lambda object: isinstance(object, str))
@@ -1323,10 +1489,13 @@ class Engine(Generic[T, R], BaseEngine[T, R], ABC):
         self,
         object: str,
         /,
-        depth_limit: int,
-        instructions: R,
+        depth_limit: int | None,
+        instructions: R | None,
         **kwargs,
     ) -> R:
+        if depth_limit is not None and depth_limit <= 0:
+            return
+
         return object
 
     @_encode.overload(lambda object: isinstance(object, bytes))
@@ -1334,11 +1503,14 @@ class Engine(Generic[T, R], BaseEngine[T, R], ABC):
         self,
         object: bytes,
         /,
-        depth_limit: int,
-        instructions: R,
+        depth_limit: int | None,
+        instructions: R | None,
         bytes_per_group=4,
         **kwargs,
     ) -> R:
+        if depth_limit is not None and depth_limit <= 0:
+            return
+
         result = ""
         for i in range(0, len(object), bytes_per_group):
             group = object[i : i + bytes_per_group]
@@ -1353,11 +1525,14 @@ class Engine(Generic[T, R], BaseEngine[T, R], ABC):
         self,
         object: Iterable,
         /,
-        depth_limit: int,
-        instructions: R,
+        depth_limit: int | None,
+        instructions: R | None,
         ordered: bool = True,
         **kwargs,
     ) -> R:
+        if depth_limit is not None and depth_limit <= 0:
+            return
+
         return self._encode_seq(
             list(object),
             depth_limit - 1,
@@ -1371,10 +1546,13 @@ class Engine(Generic[T, R], BaseEngine[T, R], ABC):
         self,
         object: Sequence,
         /,
-        depth_limit: int,
-        instructions: R,
+        depth_limit: int | None,
+        instructions: R | None,
         **kwargs,
     ) -> R:
+        if depth_limit is not None and depth_limit <= 0:
+            return
+
         items = [
             self._encode(item, depth_limit=depth_limit - 1, instructions=instructions)
             for item in object
@@ -1386,10 +1564,13 @@ class Engine(Generic[T, R], BaseEngine[T, R], ABC):
         self,
         object: set,
         /,
-        depth_limit: int,
-        instructions: R,
+        depth_limit: int | None,
+        instructions: R | None,
         **kwargs,
     ) -> R:
+        if depth_limit is not None and depth_limit <= 0:
+            return
+
         return self._encode_seq(
             object,
             depth_limit=depth_limit,  # don't decrement since this is only a horizontal call
@@ -1402,10 +1583,13 @@ class Engine(Generic[T, R], BaseEngine[T, R], ABC):
         self,
         object: Mapping,
         /,
-        depth_limit: int,
-        instructions: R,
+        depth_limit: int | None,
+        instructions: R | None,
         **kwargs,
     ) -> R:
+        if depth_limit is not None and depth_limit <= 0:
+            return
+
         encoded_items = [
             (
                 self._encode(k, depth_limit=depth_limit - 1, instructions=instructions),
@@ -1413,6 +1597,7 @@ class Engine(Generic[T, R], BaseEngine[T, R], ABC):
             )
             for k, v in object.items()
         ]
+        # this is fundamental to the other _encode_(dict-like) methods so we don't outsource it to other methods
         return Template(r"{%for k, v in items%}{{k}}: {{v}}{%endfor%}").render(
             items=encoded_items
         )
@@ -1423,8 +1608,8 @@ class Engine(Generic[T, R], BaseEngine[T, R], ABC):
         object_enc: R,
         type: type[T],
         /,
-        depth_limit: int,
-        instructions: R,
+        depth_limit: int | None,
+        instructions: R | None,
         **kwargs,
     ) -> T:
         raise NotImplementedError()
@@ -1437,8 +1622,8 @@ class Engine(Generic[T, R], BaseEngine[T, R], ABC):
         count: int,
         allowed_glob: str,
         disallowed_glob: str,
-        depth_limit: int,
-        instructions: R,
+        depth_limit: int | None,
+        instructions: R | None,
         **kwargs,
     ) -> T:
         raise NotImplementedError()
@@ -1451,8 +1636,8 @@ class Engine(Generic[T, R], BaseEngine[T, R], ABC):
         values: list[T],
         allowed_glob: str,
         disallowed_glob: str,
-        depth_limit: int,
-        instructions: R,
+        depth_limit: int | None,
+        instructions: R | None,
         **kwargs,
     ):
         raise NotImplementedError()
@@ -1463,8 +1648,8 @@ class Engine(Generic[T, R], BaseEngine[T, R], ABC):
         object: T,
         /,
         query: R,
-        depth_limit: int,
-        instructions: R,
+        depth_limit: int | None,
+        instructions: R | None,
         **kwargs,
     ) -> R:
         raise NotImplementedError()
@@ -1474,8 +1659,8 @@ class Engine(Generic[T, R], BaseEngine[T, R], ABC):
         self,
         object: T,
         /,
-        depth_limit: int,
-        instructions: R,
+        depth_limit: int | None,
+        instructions: R | None,
         **kwargs,
     ) -> T:
         raise NotImplementedError()
@@ -1485,8 +1670,8 @@ class Engine(Generic[T, R], BaseEngine[T, R], ABC):
         self,
         objects: Sequence[T],
         /,
-        depth_limit: int,
-        instructions: R,
+        depth_limit: int | None,
+        instructions: R | None,
         **kwargs,
     ) -> T:
         raise NotImplementedError()
@@ -1497,8 +1682,8 @@ class Engine(Generic[T, R], BaseEngine[T, R], ABC):
         object: T,
         /,
         num_splits: int,
-        depth_limit: int,
-        instructions: R,
+        depth_limit: int | None,
+        instructions: R | None,
         **kwargs,
     ) -> tuple[T]:
         raise NotImplementedError()
@@ -1511,8 +1696,8 @@ class Engine(Generic[T, R], BaseEngine[T, R], ABC):
         default_case_idx: int | None,
         threshold: float,
         randomness: float,
-        depth_limit: int,
-        instructions: R,
+        depth_limit: int | None,
+        instructions: R | None,
         **kwargs,
     ) -> T:
         raise NotImplementedError()
@@ -1525,8 +1710,8 @@ class Engine(Generic[T, R], BaseEngine[T, R], ABC):
         default_case_idx: int | None,
         threshold: float,
         randomness: float,
-        depth_limit: int,
-        instructions: R,
+        depth_limit: int | None,
+        instructions: R | None,
         **kwargs,
     ) -> T:
         raise NotImplementedError()
@@ -1534,7 +1719,7 @@ class Engine(Generic[T, R], BaseEngine[T, R], ABC):
     @abstractmethod
     def _run(
         self,
-        instructions: R,
+        instructions: R | None,
         /,
         budget: Optional[float],
         **kwargs,
@@ -1546,8 +1731,8 @@ class Engine(Generic[T, R], BaseEngine[T, R], ABC):
         self,
         objects: tuple[T],
         /,
-        depth_limit: int,
-        instructions: R,
+        depth_limit: int | None,
+        instructions: R | None,
         **kwargs,
     ) -> float:
         raise NotImplementedError()
@@ -1558,8 +1743,8 @@ class Engine(Generic[T, R], BaseEngine[T, R], ABC):
         sequence: Sequence[T],
         /,
         steps: int,
-        depth_limit: int,
-        instructions: R,
+        depth_limit: int | None,
+        instructions: R | None,
         **kwargs,
     ) -> Generator[T, None, None]:
         raise NotImplementedError()
@@ -1570,8 +1755,8 @@ class Engine(Generic[T, R], BaseEngine[T, R], ABC):
         object: T,
         /,
         threshold: float,
-        depth_limit: int,
-        instructions: R,
+        depth_limit: int | None,
+        instructions: R | None,
         **kwargs,
     ) -> T:
         raise NotImplementedError()
@@ -1583,8 +1768,8 @@ class Engine(Generic[T, R], BaseEngine[T, R], ABC):
         style: R,
         exemplar: T,
         /,
-        depth_limit: int,
-        instructions: R,
+        depth_limit: int | None,
+        instructions: R | None,
         **kwargs,
     ) -> T:
         raise NotImplementedError()
@@ -1596,8 +1781,8 @@ class Engine(Generic[T, R], BaseEngine[T, R], ABC):
         semantics: R,
         exemplar: T,
         /,
-        depth_limit: int,
-        instructions: R,
+        depth_limit: int | None,
+        instructions: R | None,
         **kwargs,
     ) -> T:
         raise NotImplementedError()

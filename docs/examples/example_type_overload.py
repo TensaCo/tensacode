@@ -1,10 +1,10 @@
 from abc import ABC
 from functools import singledispatchmethod
 from typing import Generator, Generic, Sequence
-from tensacode.base.base_engine import BaseEngine
+from old.base_engine import Engine
 
 from tensacode.base.engine import Engine
-from tensacode.utils.user_types import R, T, composite_types
+from tensacode.utils.types import R, T, composite_types
 import typingx
 
 
@@ -33,14 +33,14 @@ class ExampleOverload(Generic[T, R], ABC):
 
     @singledispatchmethod
     @classmethod
-    def __tc_is_encoded__(self, engine: BaseEngine, object: T | R) -> bool:
+    def __tc_is_encoded__(self, engine: Engine, object: T | R) -> bool:
         raise NotImplementedError()
 
     @singledispatchmethod
     @classmethod
     def __tc_encode__(
         self,
-        engine: BaseEngine,
+        engine: Engine,
         object: T,
         /,
         depth_limit: int,
@@ -53,7 +53,7 @@ class ExampleOverload(Generic[T, R], ABC):
     @classmethod
     def __tc_decode__(
         self,
-        engine: BaseEngine,
+        engine: Engine,
         object_enc: R,
         type: type[T],
         /,
@@ -67,7 +67,7 @@ class ExampleOverload(Generic[T, R], ABC):
     @classmethod
     def __tc_retrieve__(
         self,
-        engine: BaseEngine,
+        engine: Engine,
         object: composite_types[T],
         /,
         count: int,
@@ -83,7 +83,7 @@ class ExampleOverload(Generic[T, R], ABC):
     @classmethod
     def __tc_store__(
         self,
-        engine: BaseEngine,
+        engine: Engine,
         object: composite_types[T],
         /,
         values: list[T],
@@ -99,7 +99,7 @@ class ExampleOverload(Generic[T, R], ABC):
     @classmethod
     def __tc_query__(
         self,
-        engine: BaseEngine,
+        engine: Engine,
         object: T,
         /,
         query: R,
@@ -113,7 +113,7 @@ class ExampleOverload(Generic[T, R], ABC):
     @classmethod
     def __tc_modify__(
         self,
-        engine: BaseEngine,
+        engine: Engine,
         object: T,
         /,
         depth_limit: int,
@@ -126,7 +126,7 @@ class ExampleOverload(Generic[T, R], ABC):
     @classmethod
     def __tc_combine__(
         self,
-        engine: BaseEngine,
+        engine: Engine,
         objects: Sequence[T],
         /,
         depth_limit: int,
@@ -139,7 +139,7 @@ class ExampleOverload(Generic[T, R], ABC):
     @classmethod
     def __tc_split__(
         self,
-        engine: BaseEngine,
+        engine: Engine,
         object: T,
         /,
         num_splits: int,
@@ -153,7 +153,7 @@ class ExampleOverload(Generic[T, R], ABC):
     @classmethod
     def __tc_similarity__(
         self,
-        engine: BaseEngine,
+        engine: Engine,
         objects: tuple[T],
         /,
         depth_limit: int,
@@ -166,7 +166,7 @@ class ExampleOverload(Generic[T, R], ABC):
     @classmethod
     def __tc_predict__(
         self,
-        engine: BaseEngine,
+        engine: Engine,
         sequence: Sequence[T],
         /,
         steps: int,
@@ -180,7 +180,7 @@ class ExampleOverload(Generic[T, R], ABC):
     @classmethod
     def __tc_correct__(
         self,
-        engine: BaseEngine,
+        engine: Engine,
         object: T,
         /,
         threshold: float,
@@ -194,7 +194,7 @@ class ExampleOverload(Generic[T, R], ABC):
     @classmethod
     def __tc_style_transfer__(
         self,
-        engine: BaseEngine,
+        engine: Engine,
         object: T,
         style: R,
         exemplar: T,
@@ -209,7 +209,7 @@ class ExampleOverload(Generic[T, R], ABC):
     @classmethod
     def __tc_semantic_transfer__(
         self,
-        engine: BaseEngine,
+        engine: Engine,
         object: T,
         semantics: R,
         exemplar: T,

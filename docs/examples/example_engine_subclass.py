@@ -23,7 +23,7 @@ from uuid import uuid4
 import attr
 import loguru
 from pydantic import Field
-from tensacode.base.base_engine import BaseEngine
+from old.base_engine import Engine
 from tensacode.base.engine import Engine
 import typingx
 
@@ -32,7 +32,7 @@ import tensacode as tc
 from tensacode.utils.decorators import Decorator, Default, dynamic_defaults
 from tensacode.utils.oo import HasDefault, Namespace
 from tensacode.utils.string import render_invocation, render_stacktrace
-from tensacode.utils.user_types import (
+from tensacode.utils.types import (
     enc,
     atomic_types,
     container_types,

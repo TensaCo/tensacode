@@ -4,3 +4,5 @@ from typing import TypeVar
 
 K, V = TypeVar("K"), TypeVar("V")
 nested_dict = dict[K, "nested_dict[K, V]"] | dict[K, V]
+
+Predicate = TypeVar("Predicate", bound=callable[..., bool])

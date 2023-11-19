@@ -15,6 +15,7 @@ langchain = { version = "^0.0.335", extras = ["llm"] }
 jinja2 = { version = "^3.1.2", extras = ["llm"] }
 black = { version = "^23.11.0", extras = ["llm"] }
 pydantic = { version = "^2.5.0", extras = ["llm"] }
+inflect = { version = "^7.0.0", extras = ["llm"] }
 ivy = { version = "^0.0.4.0", extras = ["nn"] }
 deap = { version = "^1.4.1", extras = ["evo"] }
 glom = "^23.4.0"

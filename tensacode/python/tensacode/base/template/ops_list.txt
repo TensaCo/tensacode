@@ -1,0 +1,16 @@
+encode
+decode
+retrieve
+store
+query
+modify
+combine
+split
+choice
+decide
+run
+similarity
+predict
+correct
+style_transfer
+semantic_transfer
