@@ -33,7 +33,7 @@ from jinja2 import Template
 import loguru
 from glom import glom
 from pydantic import Field
-from old.base_engine import Engine
+from old.base_engine import FullEngine
 import typingx
 import pydantic, sqlalchemy, dataclasses, attr, typing
 
@@ -72,11 +72,74 @@ from tensacode.utils.types import (
     AttrsInstance,
 )
 from tensacode.utils.internal_types import nested_dict
-from tensacode.base.mixins.mixin_base import MixinBase
+from tensacode.base.engine_base import EngineBase
 
 
-class HasCombine(Generic[T, R], MixinBase[T, R], ABC):
+class HasCombineMixin(Generic[T, R], EngineBase[T, R], ABC):
     # copied from MixinBase for aesthetic consistency
-    trace = MixinBase.trace
-    DefaultParam = MixinBase.DefaultParam
-    encoded_args = MixinBase.encoded_args
+    trace = EngineBase.trace
+    DefaultParam = EngineBase.DefaultParam
+    encoded_args = EngineBase.encoded_args
+
+    @dynamic_defaults()
+    @encoded_args()
+    @trace()
+    def combine(
+        self,
+        objects: Sequence[T],
+        /,
+        depth_limit: int = DefaultParam(qualname="hparams.combine.depth_limit"),
+        instructions: enc[str] = DefaultParam(qualname="hparams.combine.instructions"),
+        **kwargs,
+    ) -> T:
+        """
+        Combines multiple objects into a single object.
+
+        This method is used to combine multiple objects into a single object based on the provided parameters. The combined object is returned in the form specified by the 'objects' parameter.
+
+        Args:
+            objects (Sequence[T]): The sequence of objects to be combined.
+            depth_limit (int): The maximum depth to which the combination process should recurse. This is useful for controlling the complexity of the combination, especially for deeply nested structures. Default is set in the engine's hyperparameters.
+            instructions (enc[str]): Additional instructions to the combination algorithm. This could be used to customize the combination process, for example by specifying certain areas of the search space to prioritize or ignore.
+            **kwargs: Additional keyword arguments that might be needed for specific combination algorithms. Varies by `Engine`.
+
+        Returns:
+            T: The combined object. The exact type and structure of this depends on the `Engine` used.
+
+        Example:
+            >>> engine = Engine()
+            >>> class Person:
+            ...    name: str
+            ...    bio: str
+            ...    thoughts: list[str]
+            ...    friends: list[Person]
+            >>> john, teyoni, huimin = ... # create people
+            >>> group = engine.combine([john, teyoni, huimin], instructions="make them into a composite person")
+            >>> print(group)
+            ... Person(name="John, Teyoni, and Huimin", bio="...", thoughts=["...", "...", "..."], friends=[...])
+        """
+        try:
+            return type(objects[0]).__tc_combine__(
+                self,
+                objects,
+                depth_limit=depth_limit,
+                instructions=instructions,
+                **kwargs,
+            )
+        except (NotImplementedError, AttributeError):
+            pass
+
+        return self._combine(
+            objects, depth_limit=depth_limit, instructions=instructions, **kwargs
+        )
+
+    @abstractmethod
+    def _combine(
+        self,
+        objects: Sequence[T],
+        /,
+        depth_limit: int | None,
+        instructions: R | None,
+        **kwargs,
+    ) -> T:
+        raise NotImplementedError()

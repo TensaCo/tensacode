@@ -23,7 +23,7 @@ from uuid import uuid4
 import attr
 import loguru
 from pydantic import Field
-from old.base_engine import Engine
+from old.base_engine import FullEngine
 from tensacode.base.old_engine import Engine
 import typingx
 
@@ -46,7 +46,7 @@ YourObjectType = Literal["one", "two", "three"]  # probabbly `Any`
 YourLatentType = Literal[1, 2, 3]
 
 
-class ExampleEngineSubclass(Engine[YourObjectType, YourLatentType], ABC):
+class ExampleEngineSubclass(FullEngine[YourObjectType, YourLatentType], ABC):
     #######################################
     ############### meta ##################
     #######################################
@@ -55,8 +55,8 @@ class ExampleEngineSubclass(Engine[YourObjectType, YourLatentType], ABC):
     R: ClassVar[type] = YourLatentType
 
     # import or override these from the parent Engine class
-    encoded_args = Engine.encoded_args
-    trace = Engine.trace
+    encoded_args = FullEngine.encoded_args
+    trace = FullEngine.trace
 
     #######################################
     ############### config ################

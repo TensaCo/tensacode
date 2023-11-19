@@ -32,7 +32,7 @@ from jinja2 import Template
 import loguru
 from glom import glom
 from pydantic import Field
-from old.base_engine import Engine
+from old.base_engine import FullEngine
 import typingx
 import pydantic, sqlalchemy
 from _typeshed import DataclassInstance
@@ -72,7 +72,7 @@ from tensacode.utils.types import (
 from tensacode.utils.internal_types import nested_dict
 
 
-class MixinBase(Generic[T, R], ABC):
+class EngineBase(Generic[T, R], ABC):
     #######################################
     ############### meta ##################
     #######################################
@@ -81,7 +81,7 @@ class MixinBase(Generic[T, R], ABC):
     R: ClassVar[type[R]] = R
 
     class _HasThisEngine(ABC):
-        _engine: ClassVar[Engine]
+        _engine: ClassVar[FullEngine]
 
     class _EngineDecorator(Decorator, _HasThisEngine, ABC):
         pass
@@ -89,10 +89,10 @@ class MixinBase(Generic[T, R], ABC):
     @attr.s(auto_attribs=True)
     class DefaultParam(Default, _HasThisEngine):
         initial_value: Any | None = attr.ib(default=None)
-        initializer: Callable[[Engine], Any] | None = attr.ib(default=None)
+        initializer: Callable[[FullEngine], Any] | None = attr.ib(default=None)
 
         def __init__(self, initializer_or_initial_value: Any = None, /, **kw):
-            if typingx.isinstance(self.default, Callable[[Engine], Any]):
+            if typingx.isinstance(self.default, Callable[[FullEngine], Any]):
                 self.initializer = initializer_or_initial_value
             else:
                 self.initial_value = initializer_or_initial_value
@@ -248,12 +248,9 @@ class MixinBase(Generic[T, R], ABC):
     ######## intelligence methods #########
     #######################################
 
-    ops: ClassVar[list[Operation]]
-
     def __init_subclass__(cls):
         # cls._engine = Engine() # TODO: figure this out
         super().__init_subclass__()
-        cls.ops = [sub.ops for sub in cls.__mro__ if hasattr(sub, "ops")]
 
     def __init__(self, *args, **kwargs):
         self.params = {}
@@ -398,3 +395,6 @@ class MixinBase(Generic[T, R], ABC):
                 self.params.update(new_params)
             case _:
                 raise ValueError(f"Invalid file extension: {path.suffix}")
+
+    def _is_encoded(self, object: T | R) -> bool:
+        return typingx.isinstancex(object, (self.R, self.enc[T]))

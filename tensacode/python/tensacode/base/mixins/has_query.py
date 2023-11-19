@@ -33,7 +33,7 @@ from jinja2 import Template
 import loguru
 from glom import glom
 from pydantic import Field
-from old.base_engine import Engine
+from old.base_engine import FullEngine
 import typingx
 import pydantic, sqlalchemy, dataclasses, attr, typing
 
@@ -72,11 +72,77 @@ from tensacode.utils.types import (
     AttrsInstance,
 )
 from tensacode.utils.internal_types import nested_dict
-from tensacode.base.mixins.mixin_base import MixinBase
+from tensacode.base.engine_base import EngineBase
 
 
-class HasQuery(Generic[T, R], MixinBase[T, R], ABC):
+class HasQueryMixin(Generic[T, R], EngineBase[T, R], ABC):
     # copied from MixinBase for aesthetic consistency
-    trace = MixinBase.trace
-    DefaultParam = MixinBase.DefaultParam
-    encoded_args = MixinBase.encoded_args
+    trace = EngineBase.trace
+    DefaultParam = EngineBase.DefaultParam
+    encoded_args = EngineBase.encoded_args
+
+    @dynamic_defaults()
+    @encoded_args()
+    @trace()
+    def query(
+        self,
+        object: T,
+        /,
+        query: enc[T],
+        depth_limit: int = DefaultParam(qualname="hparams.query.depth_limit"),
+        instructions: enc[str] = DefaultParam(qualname="hparams.query.instructions"),
+        **kwargs,
+    ) -> R:
+        """
+        Extracts latent information from the `object` based on the `query`.
+
+        This method is used to extract information from the `object` based on the `query`. The `query` is a encoded string that specifies what information to extract from the `object`.
+
+        Args:
+            object (T): The object to extract information from.
+            query (enc[T]): The query specifying what information to extract.
+            depth_limit (int, optional): The maximum depth to which the extraction process should recurse. Defaults to engine's hyperparameters.
+            instructions (enc[str], optional): Additional instructions to the extraction algorithm. Defaults to engine's hyperparameters.
+            **kwargs: Additional keyword arguments that might be needed for specific extraction algorithms.
+
+        Returns:
+            R: The extracted information. The exact type and structure of this depends on the `Engine` used.
+
+        Example:
+            >>> engine = Engine()
+            >>> class Person:
+            ...    name: str
+            ...    bio: str
+            ...    thoughts: list[str]
+            ...    friends: list[Person]
+            >>> john, teyoni, huimin = ... # create people
+            >>> info = engine.query(john, query="Does John know that Teyoni has a crush on him?")
+            >>> engine.decode(info, type=bool)
+            ... True
+        """
+
+        try:
+            return type(object).__tc_query__(
+                self,
+                object,
+                query=query,
+                depth_limit=depth_limit,
+                instructions=instructions,
+                **kwargs,
+            )
+        except (NotImplementedError, AttributeError):
+            pass
+
+        return self._query(object, query=query, depth_limit=depth_limit, **kwargs)
+
+    @abstractmethod
+    def _query(
+        self,
+        object: T,
+        /,
+        query: R,
+        depth_limit: int | None,
+        instructions: R | None,
+        **kwargs,
+    ) -> R:
+        raise NotImplementedError()

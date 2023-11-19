@@ -33,7 +33,7 @@ from jinja2 import Template
 import loguru
 from glom import glom
 from pydantic import Field
-from old.base_engine import Engine
+from old.base_engine import FullEngine
 import typingx
 import pydantic, sqlalchemy, dataclasses, attr, typing
 
@@ -72,11 +72,67 @@ from tensacode.utils.types import (
     AttrsInstance,
 )
 from tensacode.utils.internal_types import nested_dict
-from tensacode.base.mixins.mixin_base import MixinBase
+from tensacode.base.engine_base import EngineBase
 
 
-class HasCorrect(Generic[T, R], MixinBase[T, R], ABC):
+class HasCorrectMixin(Generic[T, R], EngineBase[T, R], ABC):
     # copied from MixinBase for aesthetic consistency
-    trace = MixinBase.trace
-    DefaultParam = MixinBase.DefaultParam
-    encoded_args = MixinBase.encoded_args
+    trace = EngineBase.trace
+    DefaultParam = EngineBase.DefaultParam
+    encoded_args = EngineBase.encoded_args
+
+    @dynamic_defaults()
+    @encoded_args()
+    @trace()
+    def correct(
+        self,
+        object: T,
+        /,
+        threshold: float = DefaultParam(qualname="hparams.correct.threshold"),
+        depth_limit: int = DefaultParam(qualname="hparams.correct.depth_limit"),
+        instructions: enc[str] = DefaultParam(qualname="hparams.correct.instructions"),
+        **kwargs,
+    ) -> T:
+        """
+        Corrects the given object based on the provided threshold, depth limit, and instructions.
+
+        Args:
+            object (T): The object to correct.
+            threshold (float, optional): The threshold for correction. Defaults to hparams.correct.threshold.
+            depth_limit (int, optional): The maximum depth to explore for correction. Defaults to hparams.correct.depth_limit.
+            instructions (enc[str], optional): Encoded instructions for the engine. Defaults to hparams.correct.instructions.
+
+        Returns:
+            T: The corrected object.
+        """
+        try:
+            return type(object).__tc_correct__(
+                self,
+                object,
+                threshold=threshold,
+                depth_limit=depth_limit,
+                instructions=instructions,
+                **kwargs,
+            )
+        except (NotImplementedError, AttributeError):
+            pass
+
+        return self._correct(
+            object,
+            threshold=threshold,
+            depth_limit=depth_limit,
+            instructions=instructions,
+            **kwargs,
+        )
+
+    @abstractmethod
+    def _correct(
+        self,
+        object: T,
+        /,
+        threshold: float,
+        depth_limit: int | None,
+        instructions: R | None,
+        **kwargs,
+    ) -> T:
+        raise NotImplementedError()

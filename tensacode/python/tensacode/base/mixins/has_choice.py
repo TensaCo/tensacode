@@ -33,7 +33,7 @@ from jinja2 import Template
 import loguru
 from glom import glom
 from pydantic import Field
-from old.base_engine import Engine
+from old.base_engine import FullEngine
 import typingx
 import pydantic, sqlalchemy, dataclasses, attr, typing
 
@@ -72,11 +72,100 @@ from tensacode.utils.types import (
     AttrsInstance,
 )
 from tensacode.utils.internal_types import nested_dict
-from tensacode.base.mixins.mixin_base import MixinBase
+from tensacode.base.engine_base import EngineBase
 
 
-class HasChoice(Generic[T, R], MixinBase[T, R], ABC):
+class HasChoiceMixin(Generic[T, R], EngineBase[T, R], ABC):
     # copied from MixinBase for aesthetic consistency
-    trace = MixinBase.trace
-    DefaultParam = MixinBase.DefaultParam
-    encoded_args = MixinBase.encoded_args
+    trace = EngineBase.trace
+    DefaultParam = EngineBase.DefaultParam
+    encoded_args = EngineBase.encoded_args
+
+    @dynamic_defaults()
+    @encoded_args()
+    @trace()
+    def choice(
+        self,
+        conditions_and_functions: tuple[Callable[..., bool], Callable[..., T]],
+        /,
+        mode: Literal["first-winner", "last-winner"] = "first-winner",
+        default_case_idx: int | None = None,
+        threshold: float = DefaultParam("hparams.choice.threshold"),
+        randomness: float = DefaultParam("hparams.choice.randomness"),
+        depth_limit: int = DefaultParam(qualname="hparams.choice.depth_limit"),
+        instructions: enc[str] = DefaultParam(qualname="hparams.choice.instructions"),
+        **kwargs,
+    ) -> T:
+        """
+        Executes a choice operation based on the provided conditions and functions.
+
+        Args:
+            conditions_and_functions (tuple): A tuple of callables representing conditions and corresponding functions.
+            mode (str): The mode of operation. Can be either "first-winner" or "last-winner".
+            default_case_idx (int, optional): The index of the default case to use if no condition surpasses the threshold. Defaults to None.
+            threshold (float): The threshold value for condition evaluation.
+            randomness (float): The randomness factor in choice selection.
+            depth_limit (int): The maximum depth for recursion.
+            instructions (str): Additional instructions for the choice operation.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            T: The result of the executed function corresponding to the winning condition.
+        """
+        match mode:
+            case "first-winner":
+                # evaluate the conditions in order
+                # pick first one to surpass threshold
+                # default to default_case or raise ValueError if no default_case
+                return self._choice_first_winner(
+                    conditions_and_functions,
+                    default_case_idx=default_case_idx,
+                    threshold=threshold,
+                    randomness=randomness,
+                    depth_limit=depth_limit,
+                    instructions=instructions,
+                    **kwargs,
+                )
+            case "last-winner":
+                # evaluate all conditions
+                # pick global max
+                # default to default_case or raise ValueError if no default_case
+                return self._choice_last_winner(
+                    conditions_and_functions,
+                    default_case_idx=default_case_idx,
+                    threshold=threshold,
+                    randomness=randomness,
+                    depth_limit=depth_limit,
+                    instructions=instructions,
+                    **kwargs,
+                )
+            case _:
+                raise ValueError(f"Invalid mode: {mode}")
+
+    @abstractmethod
+    def _choice_first_winner(
+        self,
+        conditions_and_functions: tuple[Callable[..., bool], Callable[..., T]],
+        /,
+        default_case_idx: int | None,
+        threshold: float,
+        randomness: float,
+        depth_limit: int | None,
+        instructions: R | None,
+        **kwargs,
+    ) -> T:
+        raise NotImplementedError()
+
+    @abstractmethod
+    def _choice_last_winner(
+        self,
+        conditions_and_functions: tuple[Callable[..., bool], Callable[..., T]],
+        /,
+        default_case_idx: int | None,
+        threshold: float,
+        randomness: float,
+        depth_limit: int | None,
+        instructions: R | None,
+        **kwargs,
+    ) -> T:
+        raise NotImplementedError()

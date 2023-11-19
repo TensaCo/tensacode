@@ -33,7 +33,7 @@ from jinja2 import Template
 import loguru
 from glom import glom
 from pydantic import Field
-from old.base_engine import Engine
+from old.base_engine import FullEngine
 import typingx
 import pydantic, sqlalchemy, dataclasses, attr, typing
 
@@ -72,14 +72,14 @@ from tensacode.utils.types import (
     AttrsInstance,
 )
 from tensacode.utils.internal_types import nested_dict
-from tensacode.base.mixins.mixin_base import MixinBase
+from tensacode.base.engine_base import EngineBase
 
 
-class HasDecode(Generic[T, R], MixinBase[T, R], ABC):
+class HasDecodeMixin(Generic[T, R], EngineBase[T, R], ABC):
     # copied from MixinBase for aesthetic consistency
-    trace = MixinBase.trace
-    DefaultParam = MixinBase.DefaultParam
-    encoded_args = MixinBase.encoded_args
+    trace = EngineBase.trace
+    DefaultParam = EngineBase.DefaultParam
+    encoded_args = EngineBase.encoded_args
 
     @dynamic_defaults()
     @trace()

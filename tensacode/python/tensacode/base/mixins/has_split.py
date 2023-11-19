@@ -33,7 +33,7 @@ from jinja2 import Template
 import loguru
 from glom import glom
 from pydantic import Field
-from old.base_engine import Engine
+from old.base_engine import FullEngine
 import typingx
 import pydantic, sqlalchemy, dataclasses, attr, typing
 
@@ -72,11 +72,83 @@ from tensacode.utils.types import (
     AttrsInstance,
 )
 from tensacode.utils.internal_types import nested_dict
-from tensacode.base.mixins.mixin_base import MixinBase
+from tensacode.base.engine_base import EngineBase
 
 
-class HasSplit(Generic[T, R], MixinBase[T, R], ABC):
+class HasSplitMixin(Generic[T, R], EngineBase[T, R], ABC):
     # copied from MixinBase for aesthetic consistency
-    trace = MixinBase.trace
-    DefaultParam = MixinBase.DefaultParam
-    encoded_args = MixinBase.encoded_args
+    trace = EngineBase.trace
+    DefaultParam = EngineBase.DefaultParam
+    encoded_args = EngineBase.encoded_args
+
+    @dynamic_defaults()
+    @encoded_args()
+    @trace()
+    def split(
+        self,
+        object: T,
+        /,
+        num_splits: int = DefaultParam(qualname="hparams.split.num_splits"),
+        depth_limit: int = DefaultParam(qualname="hparams.split.depth_limit"),
+        instructions: enc[str] = DefaultParam(qualname="hparams.split.instructions"),
+        **kwargs,
+    ) -> tuple[T]:
+        """
+        Splits an object into a specified number of parts.
+
+        This method is used to split an object into a specified number of parts based on the provided parameters. The object is split in the form specified by the 'object' parameter.
+
+        Args:
+            object (T): The object to be split.
+            num_splits (int): The number of parts to split the object into. Default is set in the engine's hyperparameters.
+            depth_limit (int): The maximum depth to which the splitting process should recurse. This is useful for controlling the complexity of the splitting, especially for deeply nested structures. Default is set in the engine's hyperparameters.
+            instructions (enc[str]): Additional instructions to the splitting algorithm. This could be used to customize the splitting process, for example by specifying certain areas of the search space to prioritize or ignore.
+            **kwargs: Additional keyword arguments that might be needed for specific splitting algorithms. Varies by `Engine`.
+
+        Returns:
+            tuple[T]: The split parts of the object. The exact type and structure of this depends on the `Engine` used.
+
+        Example:
+            >>> engine = Engine()
+            >>> class Person:
+            ...    name: str
+            ...    bio: str
+            ...    thoughts: list[str]
+            ...    friends: list[Person]
+            >>> john, teyoni, huimin = ... # create people
+            >>> group = engine.combine([john, teyoni, huimin], instructions="make them into a composite person")
+            >>> john_split, teyoni_split, huimin_split = engine.split(group, instructions="split them into their original forms")
+            >>> print(john_split)
+            ... Person(name="John", bio="...", thoughts=["..."], friends=[...])
+        """
+        try:
+            return type(object).__tc_split__(
+                self,
+                object,
+                num_splits=num_splits,
+                depth_limit=depth_limit,
+                instructions=instructions,
+                **kwargs,
+            )
+        except (NotImplementedError, AttributeError):
+            pass
+
+        return self._split(
+            object,
+            num_splits=num_splits,
+            depth_limit=depth_limit,
+            instructions=instructions,
+            **kwargs,
+        )
+
+    @abstractmethod
+    def _split(
+        self,
+        object: T,
+        /,
+        num_splits: int,
+        depth_limit: int | None,
+        instructions: R | None,
+        **kwargs,
+    ) -> tuple[T]:
+        raise NotImplementedError()

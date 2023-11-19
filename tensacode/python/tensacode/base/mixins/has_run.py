@@ -33,7 +33,7 @@ from jinja2 import Template
 import loguru
 from glom import glom
 from pydantic import Field
-from old.base_engine import Engine
+from old.base_engine import FullEngine
 import typingx
 import pydantic, sqlalchemy, dataclasses, attr, typing
 
@@ -72,11 +72,43 @@ from tensacode.utils.types import (
     AttrsInstance,
 )
 from tensacode.utils.internal_types import nested_dict
-from tensacode.base.mixins.mixin_base import MixinBase
+from tensacode.base.engine_base import EngineBase
 
 
-class HasRun(Generic[T, R], MixinBase[T, R], ABC):
+class HasRunMixin(Generic[T, R], EngineBase[T, R], ABC):
     # copied from MixinBase for aesthetic consistency
-    trace = MixinBase.trace
-    DefaultParam = MixinBase.DefaultParam
-    encoded_args = MixinBase.encoded_args
+    trace = EngineBase.trace
+    DefaultParam = EngineBase.DefaultParam
+    encoded_args = EngineBase.encoded_args
+
+    @dynamic_defaults()
+    @encoded_args()
+    @trace()
+    def run(
+        self,
+        instructions: enc[str] = DefaultParam(qualname="hparams.run.instructions"),
+        /,
+        budget: Optional[float] = DefaultParam(qualname="hparams.run.budget"),
+        **kwargs,
+    ) -> Any:
+        """
+        Executes the engine with the given instructions and an optional budget.
+
+        Args:
+            instructions (enc[str]): Encoded instructions for the engine.
+            budget (float, optional): The budget for the engine to run. Defaults to None.
+
+        Returns:
+            Any: The result of the engine run, if any.
+        """
+        return self._run(instructions, budget=budget, **kwargs)
+
+    @abstractmethod
+    def _run(
+        self,
+        instructions: R | None,
+        /,
+        budget: Optional[float],
+        **kwargs,
+    ) -> Any:
+        raise NotImplementedError()

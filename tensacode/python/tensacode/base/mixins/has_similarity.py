@@ -33,7 +33,7 @@ from jinja2 import Template
 import loguru
 from glom import glom
 from pydantic import Field
-from old.base_engine import Engine
+from old.base_engine import FullEngine
 import typingx
 import pydantic, sqlalchemy, dataclasses, attr, typing
 
@@ -72,11 +72,61 @@ from tensacode.utils.types import (
     AttrsInstance,
 )
 from tensacode.utils.internal_types import nested_dict
-from tensacode.base.mixins.mixin_base import MixinBase
+from tensacode.base.engine_base import EngineBase
 
 
-class HasSimilarity(Generic[T, R], MixinBase[T, R], ABC):
+class HasSimilarityMixin(Generic[T, R], EngineBase[T, R], ABC):
     # copied from MixinBase for aesthetic consistency
-    trace = MixinBase.trace
-    DefaultParam = MixinBase.DefaultParam
-    encoded_args = MixinBase.encoded_args
+    trace = EngineBase.trace
+    DefaultParam = EngineBase.DefaultParam
+    encoded_args = EngineBase.encoded_args
+
+    @dynamic_defaults()
+    @encoded_args()
+    @trace()
+    def similarity(
+        self,
+        objects: tuple[T],
+        /,
+        depth_limit: int = DefaultParam(qualname="hparams.similarity.depth_limit"),
+        instructions: enc[str] = DefaultParam(
+            qualname="hparams.similarity.instructions"
+        ),
+        **kwargs,
+    ) -> float:
+        """
+        Calculates the similarity between the given objects.
+
+        Args:
+            objects (tuple[T]): The objects to compare.
+            depth_limit (int, optional): The maximum depth to explore. Defaults to hparams.similarity.depth_limit.
+            instructions (enc[str], optional): Encoded instructions for the engine. Defaults to hparams.similarity.instructions.
+
+        Returns:
+            float: The similarity score between the objects.
+        """
+        try:
+            return type(objects[0]).__tc_similarity__(
+                self,
+                objects,
+                depth_limit=depth_limit,
+                instructions=instructions,
+                **kwargs,
+            )
+        except (NotImplementedError, AttributeError):
+            pass
+
+        return self._similarity(
+            objects, depth_limit=depth_limit, instructions=instructions, **kwargs
+        )
+
+    @abstractmethod
+    def _similarity(
+        self,
+        objects: tuple[T],
+        /,
+        depth_limit: int | None,
+        instructions: R | None,
+        **kwargs,
+    ) -> float:
+        raise NotImplementedError()

@@ -1,7 +1,7 @@
-from tensacode.base.mixins.mixin_base import MixinBase
+from tensacode.base.engine_base import EngineBase
 
 
-class HasEncodeMixin(MixinBase):
+class HasEncodeMixin(EngineBase):
     @dynamic_defaults()
     @encoded_args()
     @trace()

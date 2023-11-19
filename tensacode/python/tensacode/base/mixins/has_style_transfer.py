@@ -33,7 +33,7 @@ from jinja2 import Template
 import loguru
 from glom import glom
 from pydantic import Field
-from old.base_engine import Engine
+from old.base_engine import FullEngine
 import typingx
 import pydantic, sqlalchemy, dataclasses, attr, typing
 
@@ -72,11 +72,77 @@ from tensacode.utils.types import (
     AttrsInstance,
 )
 from tensacode.utils.internal_types import nested_dict
-from tensacode.base.mixins.mixin_base import MixinBase
+from tensacode.base.engine_base import EngineBase
 
 
-class HasStyleTransfer(Generic[T, R], MixinBase[T, R], ABC):
+class HasStyleTransferMixin(Generic[T, R], EngineBase[T, R], ABC):
     # copied from MixinBase for aesthetic consistency
-    trace = MixinBase.trace
-    DefaultParam = MixinBase.DefaultParam
-    encoded_args = MixinBase.encoded_args
+    trace = EngineBase.trace
+    DefaultParam = EngineBase.DefaultParam
+    encoded_args = EngineBase.encoded_args
+
+    @dynamic_defaults()
+    @encoded_args()
+    @trace()
+    def style_transfer(
+        self,
+        object: T,
+        style: enc[T] = None,
+        exemplar: T = None,
+        /,
+        depth_limit: int = DefaultParam(
+            qualname="hparams.style_transfer.depth_limit",
+        ),
+        instructions: enc[str] = DefaultParam(
+            qualname="hparams.style_transfer.instructions",
+        ),
+        **kwargs,
+    ) -> T:
+        """
+        Performs style transfer on the given object.
+
+        Args:
+            object (T): The object to perform style transfer on.
+            style (enc[T], optional): The style to transfer. If not provided, an exemplar must be given. Defaults to None.
+            exemplar (T, optional): An exemplar object to guide the style transfer. If not provided, a style must be given. Defaults to None.
+            depth_limit (int, optional): The maximum depth to explore for style transfer. Defaults to engine.correct.depth_limit.
+            instructions (enc[str], optional): Encoded instructions for the engine. Defaults to engine.correct.instructions.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            T: The object after style transfer.
+        """
+        try:
+            return type(object).__tc_style_transfer__(
+                self,
+                object,
+                style=style,
+                exemplar=exemplar,
+                depth_limit=depth_limit,
+                instructions=instructions,
+                **kwargs,
+            )
+        except (NotImplementedError, AttributeError):
+            pass
+
+        return self._style_transfer(
+            object,
+            style=style,
+            exemplar=exemplar,
+            depth_limit=depth_limit,
+            instructions=instructions,
+            **kwargs,
+        )
+
+    @abstractmethod
+    def _style_transfer(
+        self,
+        object: T,
+        style: R,
+        exemplar: T,
+        /,
+        depth_limit: int | None,
+        instructions: R | None,
+        **kwargs,
+    ) -> T:
+        raise NotImplementedError()

@@ -33,7 +33,7 @@ from jinja2 import Template
 import loguru
 from glom import glom
 from pydantic import Field
-from old.base_engine import Engine
+from old.base_engine import FullEngine
 import typingx
 import pydantic, sqlalchemy, dataclasses, attr, typing
 
@@ -72,11 +72,67 @@ from tensacode.utils.types import (
     AttrsInstance,
 )
 from tensacode.utils.internal_types import nested_dict
-from tensacode.base.mixins.mixin_base import MixinBase
+from tensacode.base.engine_base import EngineBase
 
 
-class HasPredict(Generic[T, R], MixinBase[T, R], ABC):
+class HasPredictMixin(Generic[T, R], EngineBase[T, R], ABC):
     # copied from MixinBase for aesthetic consistency
-    trace = MixinBase.trace
-    DefaultParam = MixinBase.DefaultParam
-    encoded_args = MixinBase.encoded_args
+    trace = EngineBase.trace
+    DefaultParam = EngineBase.DefaultParam
+    encoded_args = EngineBase.encoded_args
+
+    @dynamic_defaults()
+    @encoded_args()
+    @trace()
+    def predict(
+        self,
+        sequence: Sequence[T],
+        /,
+        steps: int = 1,
+        depth_limit: int = DefaultParam(qualname="hparams.predict.depth_limit"),
+        instructions: enc[str] = DefaultParam(qualname="hparams.predict.instructions"),
+        **kwargs,
+    ) -> Generator[T, None, None]:
+        """
+        Predicts the next elements in a sequence.
+
+        Args:
+            sequence (Sequence[T]): The sequence to predict.
+            steps (int, optional): The number of steps to predict. Defaults to 1.
+            depth_limit (int, optional): The maximum depth to explore. Defaults to hparams.predict.depth_limit.
+            instructions (enc[str], optional): Encoded instructions for the engine. Defaults to hparams.predict.instructions.
+
+        Returns:
+            Generator[T, None, None]: A generator that yields the predicted elements.
+        """
+        try:
+            return type(sequence[0]).__tc_predict__(
+                self,
+                sequence,
+                steps=steps,
+                depth_limit=depth_limit,
+                instructions=instructions,
+                **kwargs,
+            )
+        except (NotImplementedError, AttributeError):
+            pass
+
+        return self._predict(
+            sequence,
+            steps=steps,
+            depth_limit=depth_limit,
+            instructions=instructions,
+            **kwargs,
+        )
+
+    @abstractmethod
+    def _predict(
+        self,
+        sequence: Sequence[T],
+        /,
+        steps: int,
+        depth_limit: int | None,
+        instructions: R | None,
+        **kwargs,
+    ) -> Generator[T, None, None]:
+        raise NotImplementedError()
