@@ -33,6 +33,7 @@ from jinja2 import Template
 import loguru
 from glom import glom
 from pydantic import Field
+from tensacode.llm.llm_engine_base import LLMEngineBase
 from old.base_engine import FullEngine
 import typingx
 import pydantic, sqlalchemy, dataclasses, attr, typing
@@ -73,9 +74,12 @@ from tensacode.utils.types import (
 )
 from tensacode.utils.internal_types import nested_dict
 from tensacode.base.engine_base import EngineBase
+import tensacode.base.mixins as mixins
 
 
-class SupportsRetrieveMixin(Generic[T, R], EngineBase[T, R], ABC):
+class SupportsRetrieveMixin(
+    Generic[T, R], LLMEngineBase[T, R], mixins.SupportsRetrieveMixin[T, R], ABC
+):
     # copied from MixinBase for aesthetic consistency
     trace = EngineBase.trace
     DefaultParam = EngineBase.DefaultParam

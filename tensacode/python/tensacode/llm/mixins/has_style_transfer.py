@@ -33,6 +33,7 @@ from jinja2 import Template
 import loguru
 from glom import glom
 from pydantic import Field
+from tensacode.llm.llm_engine_base import LLMEngineBase
 from old.base_engine import FullEngine
 import typingx
 import pydantic, sqlalchemy, dataclasses, attr, typing
@@ -73,9 +74,12 @@ from tensacode.utils.types import (
 )
 from tensacode.utils.internal_types import nested_dict
 from tensacode.base.engine_base import EngineBase
+import tensacode.base.mixins as mixins
 
 
-class SupportsSemanticTransferMixin(Generic[T, R], EngineBase[T, R], ABC):
+class SupportsStyleTransferMixin(
+    Generic[T, R], LLMEngineBase[T, R], mixins.SupportsStyleTransferMixin[T, R], ABC
+):
     # copied from MixinBase for aesthetic consistency
     trace = EngineBase.trace
     DefaultParam = EngineBase.DefaultParam
@@ -84,39 +88,39 @@ class SupportsSemanticTransferMixin(Generic[T, R], EngineBase[T, R], ABC):
     @dynamic_defaults()
     @encoded_args()
     @trace()
-    def semantic_transfer(
+    def style_transfer(
         self,
         object: T,
-        semantics: enc[T] = None,
+        style: enc[T] = None,
         exemplar: T = None,
         /,
         depth_limit: int = DefaultParam(
-            qualname="hparams.semantic_transfer.depth_limit",
+            qualname="hparams.style_transfer.depth_limit",
         ),
         instructions: enc[str] = DefaultParam(
-            qualname="hparams.semantic_transfer.instructions",
+            qualname="hparams.style_transfer.instructions",
         ),
         **kwargs,
     ) -> T:
         """
-        Performs semantic transfer on the given object.
+        Performs style transfer on the given object.
 
         Args:
-            object (T): The object to perform semantic transfer on.
-            semantics (enc[T], optional): The semantics to transfer. If not provided, an exemplar must be given. Defaults to None.
-            exemplar (T, optional): An exemplar object to guide the semantic transfer. If not provided, a semantics must be given. Defaults to None.
-            depth_limit (int, optional): The maximum depth to explore for semantic transfer. Defaults to engine.correct.depth_limit.
+            object (T): The object to perform style transfer on.
+            style (enc[T], optional): The style to transfer. If not provided, an exemplar must be given. Defaults to None.
+            exemplar (T, optional): An exemplar object to guide the style transfer. If not provided, a style must be given. Defaults to None.
+            depth_limit (int, optional): The maximum depth to explore for style transfer. Defaults to engine.correct.depth_limit.
             instructions (enc[str], optional): Encoded instructions for the engine. Defaults to engine.correct.instructions.
             **kwargs: Additional keyword arguments.
 
         Returns:
-            T: The object after semantic transfer.
+            T: The object after style transfer.
         """
         try:
-            return type(object).__tc_semantic_transfer__(
+            return type(object).__tc_style_transfer__(
                 self,
                 object,
-                semantics=semantics,
+                style=style,
                 exemplar=exemplar,
                 depth_limit=depth_limit,
                 instructions=instructions,
@@ -125,9 +129,9 @@ class SupportsSemanticTransferMixin(Generic[T, R], EngineBase[T, R], ABC):
         except (NotImplementedError, AttributeError):
             pass
 
-        return self._semantic_transfer(
+        return self._style_transfer(
             object,
-            semantics=semantics,
+            style=style,
             exemplar=exemplar,
             depth_limit=depth_limit,
             instructions=instructions,
@@ -135,10 +139,10 @@ class SupportsSemanticTransferMixin(Generic[T, R], EngineBase[T, R], ABC):
         )
 
     @abstractmethod
-    def _semantic_transfer(
+    def _style_transfer(
         self,
         object: T,
-        semantics: R,
+        style: R,
         exemplar: T,
         /,
         depth_limit: int | None,

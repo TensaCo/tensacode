@@ -33,6 +33,7 @@ from jinja2 import Template
 import loguru
 from glom import glom
 from pydantic import Field
+from tensacode.llm.llm_engine_base import LLMEngineBase
 from old.base_engine import FullEngine
 import typingx
 import pydantic, sqlalchemy, dataclasses, attr, typing
@@ -73,9 +74,12 @@ from tensacode.utils.types import (
 )
 from tensacode.utils.internal_types import nested_dict
 from tensacode.base.engine_base import EngineBase
+import tensacode.base.mixins as mixins
 
 
-class SupportsSemanticTransferMixin(Generic[T, R], EngineBase[T, R], ABC):
+class SupportsCombineMixin(
+    Generic[T, R], LLMEngineBase[T, R], mixins.SupportsCombineMixin[T, R], ABC
+):
     # copied from MixinBase for aesthetic consistency
     trace = EngineBase.trace
     DefaultParam = EngineBase.DefaultParam
@@ -84,40 +88,44 @@ class SupportsSemanticTransferMixin(Generic[T, R], EngineBase[T, R], ABC):
     @dynamic_defaults()
     @encoded_args()
     @trace()
-    def semantic_transfer(
+    def combine(
         self,
-        object: T,
-        semantics: enc[T] = None,
-        exemplar: T = None,
+        objects: Sequence[T],
         /,
-        depth_limit: int = DefaultParam(
-            qualname="hparams.semantic_transfer.depth_limit",
-        ),
-        instructions: enc[str] = DefaultParam(
-            qualname="hparams.semantic_transfer.instructions",
-        ),
+        depth_limit: int = DefaultParam(qualname="hparams.combine.depth_limit"),
+        instructions: enc[str] = DefaultParam(qualname="hparams.combine.instructions"),
         **kwargs,
     ) -> T:
         """
-        Performs semantic transfer on the given object.
+        Combines multiple objects into a single object.
+
+        This method is used to combine multiple objects into a single object based on the provided parameters. The combined object is returned in the form specified by the 'objects' parameter.
 
         Args:
-            object (T): The object to perform semantic transfer on.
-            semantics (enc[T], optional): The semantics to transfer. If not provided, an exemplar must be given. Defaults to None.
-            exemplar (T, optional): An exemplar object to guide the semantic transfer. If not provided, a semantics must be given. Defaults to None.
-            depth_limit (int, optional): The maximum depth to explore for semantic transfer. Defaults to engine.correct.depth_limit.
-            instructions (enc[str], optional): Encoded instructions for the engine. Defaults to engine.correct.instructions.
-            **kwargs: Additional keyword arguments.
+            objects (Sequence[T]): The sequence of objects to be combined.
+            depth_limit (int): The maximum depth to which the combination process should recurse. This is useful for controlling the complexity of the combination, especially for deeply nested structures. Default is set in the engine's hyperparameters.
+            instructions (enc[str]): Additional instructions to the combination algorithm. This could be used to customize the combination process, for example by specifying certain areas of the search space to prioritize or ignore.
+            **kwargs: Additional keyword arguments that might be needed for specific combination algorithms. Varies by `Engine`.
 
         Returns:
-            T: The object after semantic transfer.
+            T: The combined object. The exact type and structure of this depends on the `Engine` used.
+
+        Example:
+            >>> engine = Engine()
+            >>> class Person:
+            ...    name: str
+            ...    bio: str
+            ...    thoughts: list[str]
+            ...    friends: list[Person]
+            >>> john, teyoni, huimin = ... # create people
+            >>> group = engine.combine([john, teyoni, huimin], instructions="make them into a composite person")
+            >>> print(group)
+            ... Person(name="John, Teyoni, and Huimin", bio="...", thoughts=["...", "...", "..."], friends=[...])
         """
         try:
-            return type(object).__tc_semantic_transfer__(
+            return type(objects[0]).__tc_combine__(
                 self,
-                object,
-                semantics=semantics,
-                exemplar=exemplar,
+                objects,
                 depth_limit=depth_limit,
                 instructions=instructions,
                 **kwargs,
@@ -125,21 +133,14 @@ class SupportsSemanticTransferMixin(Generic[T, R], EngineBase[T, R], ABC):
         except (NotImplementedError, AttributeError):
             pass
 
-        return self._semantic_transfer(
-            object,
-            semantics=semantics,
-            exemplar=exemplar,
-            depth_limit=depth_limit,
-            instructions=instructions,
-            **kwargs,
+        return self._combine(
+            objects, depth_limit=depth_limit, instructions=instructions, **kwargs
         )
 
     @abstractmethod
-    def _semantic_transfer(
+    def _combine(
         self,
-        object: T,
-        semantics: R,
-        exemplar: T,
+        objects: Sequence[T],
         /,
         depth_limit: int | None,
         instructions: R | None,

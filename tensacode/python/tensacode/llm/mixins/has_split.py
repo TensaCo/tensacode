@@ -33,6 +33,7 @@ from jinja2 import Template
 import loguru
 from glom import glom
 from pydantic import Field
+from tensacode.llm.llm_engine_base import LLMEngineBase
 from old.base_engine import FullEngine
 import typingx
 import pydantic, sqlalchemy, dataclasses, attr, typing
@@ -73,9 +74,12 @@ from tensacode.utils.types import (
 )
 from tensacode.utils.internal_types import nested_dict
 from tensacode.base.engine_base import EngineBase
+import tensacode.base.mixins as mixins
 
 
-class SupportsSemanticTransferMixin(Generic[T, R], EngineBase[T, R], ABC):
+class SupportsSplitMixin(
+    Generic[T, R], LLMEngineBase[T, R], mixins.SupportsSplitMixin[T, R], ABC
+):
     # copied from MixinBase for aesthetic consistency
     trace = EngineBase.trace
     DefaultParam = EngineBase.DefaultParam
@@ -84,40 +88,48 @@ class SupportsSemanticTransferMixin(Generic[T, R], EngineBase[T, R], ABC):
     @dynamic_defaults()
     @encoded_args()
     @trace()
-    def semantic_transfer(
+    def split(
         self,
         object: T,
-        semantics: enc[T] = None,
-        exemplar: T = None,
         /,
-        depth_limit: int = DefaultParam(
-            qualname="hparams.semantic_transfer.depth_limit",
-        ),
-        instructions: enc[str] = DefaultParam(
-            qualname="hparams.semantic_transfer.instructions",
-        ),
+        num_splits: int = DefaultParam(qualname="hparams.split.num_splits"),
+        depth_limit: int = DefaultParam(qualname="hparams.split.depth_limit"),
+        instructions: enc[str] = DefaultParam(qualname="hparams.split.instructions"),
         **kwargs,
-    ) -> T:
+    ) -> tuple[T]:
         """
-        Performs semantic transfer on the given object.
+        Splits an object into a specified number of parts.
+
+        This method is used to split an object into a specified number of parts based on the provided parameters. The object is split in the form specified by the 'object' parameter.
 
         Args:
-            object (T): The object to perform semantic transfer on.
-            semantics (enc[T], optional): The semantics to transfer. If not provided, an exemplar must be given. Defaults to None.
-            exemplar (T, optional): An exemplar object to guide the semantic transfer. If not provided, a semantics must be given. Defaults to None.
-            depth_limit (int, optional): The maximum depth to explore for semantic transfer. Defaults to engine.correct.depth_limit.
-            instructions (enc[str], optional): Encoded instructions for the engine. Defaults to engine.correct.instructions.
-            **kwargs: Additional keyword arguments.
+            object (T): The object to be split.
+            num_splits (int): The number of parts to split the object into. Default is set in the engine's hyperparameters.
+            depth_limit (int): The maximum depth to which the splitting process should recurse. This is useful for controlling the complexity of the splitting, especially for deeply nested structures. Default is set in the engine's hyperparameters.
+            instructions (enc[str]): Additional instructions to the splitting algorithm. This could be used to customize the splitting process, for example by specifying certain areas of the search space to prioritize or ignore.
+            **kwargs: Additional keyword arguments that might be needed for specific splitting algorithms. Varies by `Engine`.
 
         Returns:
-            T: The object after semantic transfer.
+            tuple[T]: The split parts of the object. The exact type and structure of this depends on the `Engine` used.
+
+        Example:
+            >>> engine = Engine()
+            >>> class Person:
+            ...    name: str
+            ...    bio: str
+            ...    thoughts: list[str]
+            ...    friends: list[Person]
+            >>> john, teyoni, huimin = ... # create people
+            >>> group = engine.combine([john, teyoni, huimin], instructions="make them into a composite person")
+            >>> john_split, teyoni_split, huimin_split = engine.split(group, instructions="split them into their original forms")
+            >>> print(john_split)
+            ... Person(name="John", bio="...", thoughts=["..."], friends=[...])
         """
         try:
-            return type(object).__tc_semantic_transfer__(
+            return type(object).__tc_split__(
                 self,
                 object,
-                semantics=semantics,
-                exemplar=exemplar,
+                num_splits=num_splits,
                 depth_limit=depth_limit,
                 instructions=instructions,
                 **kwargs,
@@ -125,24 +137,22 @@ class SupportsSemanticTransferMixin(Generic[T, R], EngineBase[T, R], ABC):
         except (NotImplementedError, AttributeError):
             pass
 
-        return self._semantic_transfer(
+        return self._split(
             object,
-            semantics=semantics,
-            exemplar=exemplar,
+            num_splits=num_splits,
             depth_limit=depth_limit,
             instructions=instructions,
             **kwargs,
         )
 
     @abstractmethod
-    def _semantic_transfer(
+    def _split(
         self,
         object: T,
-        semantics: R,
-        exemplar: T,
         /,
+        num_splits: int,
         depth_limit: int | None,
         instructions: R | None,
         **kwargs,
-    ) -> T:
+    ) -> tuple[T]:
         raise NotImplementedError()

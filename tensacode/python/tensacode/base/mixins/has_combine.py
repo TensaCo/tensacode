@@ -75,7 +75,7 @@ from tensacode.utils.internal_types import nested_dict
 from tensacode.base.engine_base import EngineBase
 
 
-class HasCombineMixin(Generic[T, R], EngineBase[T, R], ABC):
+class SupportsCombineMixin(Generic[T, R], EngineBase[T, R], ABC):
     # copied from MixinBase for aesthetic consistency
     trace = EngineBase.trace
     DefaultParam = EngineBase.DefaultParam

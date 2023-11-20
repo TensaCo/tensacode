@@ -33,6 +33,7 @@ from jinja2 import Template
 import loguru
 from glom import glom
 from pydantic import Field
+from tensacode.llm.llm_engine_base import LLMEngineBase
 from old.base_engine import FullEngine
 import typingx
 import pydantic, sqlalchemy, dataclasses, attr, typing
@@ -74,8 +75,12 @@ from tensacode.utils.types import (
 from tensacode.utils.internal_types import nested_dict
 from tensacode.base.engine_base import EngineBase
 
+import tensacode.base.mixins as mixins
 
-class SupportsRetrieveMixin(Generic[T, R], EngineBase[T, R], ABC):
+
+class SupportsStoreMixin(
+    Generic[T, R], LLMEngineBase[T, R], mixins.SupportsStoreMixin[T, R], ABC
+):
     # copied from MixinBase for aesthetic consistency
     trace = EngineBase.trace
     DefaultParam = EngineBase.DefaultParam
@@ -84,33 +89,35 @@ class SupportsRetrieveMixin(Generic[T, R], EngineBase[T, R], ABC):
     @dynamic_defaults()
     @encoded_args()
     @trace()
-    def retrieve(
+    def store(
         self,
         object: composite_types[T],
         /,
-        count: int = DefaultParam(qualname="hparams.retrieve.count"),
+        values: list[T] = None,
         allowed_glob: str = None,
         disallowed_glob: str = None,
-        depth_limit: int = DefaultParam(qualname="hparams.retrieve.depth_limit"),
-        instructions: enc[str] = DefaultParam(qualname="hparams.retrieve.instructions"),
+        depth_limit: int = DefaultParam(qualname="hparams.store.depth_limit"),
+        instructions: enc[str] = DefaultParam(qualname="hparams.store.instructions"),
         **kwargs,
-    ) -> T:
+    ):
         """
-        Retrieves an object from the engine.
+        Stores the `object` with the given `values`.
 
-        This method is used to retrieve an object from the engine based on the provided parameters. The object is retrieved in the form specified by the 'object' parameter.
+        This method uses a specific storage algorithm (which can be customized) to store the input object along with its values. The storage process can be controlled by the `allowed_glob`, `disallowed_glob`, and `depth_limit` parameters.
+
+        You can customize the storage algorithm by either subclassing `Engine` or adding a `__tc_store__` classmethod to `object`'s type class. The `__tc_store__` method should take in the same arguments as `Engine.store` and perform the storage operation.
 
         Args:
-            object (composite_types[T]): The type of object to be retrieved.
-            count (int): The number of objects to retrieve. Default is set in the engine's hyperparameters.
-            allowed_glob (str): A glob pattern that the retrieved object's qualname (relative to `object`) must match. If None, no name filtering is applied.
-            disallowed_glob (str): A glob pattern that the retrieved object's qualname (relative to `object`) must not match. If None, no name filtering is applied.
-            depth_limit (int): The maximum depth to which the retrieval process should recurse. This is useful for controlling the complexity of the retrieval, especially for deeply nested structures. Default is set in the engine's hyperparameters.
-            instructions (enc[str]): Additional instructions to the retrieval algorithm. This could be used to customize the retrieval process, for example by specifying certain areas of the search space to prioritize or ignore.
-            **kwargs: Additional keyword arguments that might be needed for specific retrieval algorithms. Varies by `Engine`.
+            object (T): The object to be stored. This could be any data structure like a list, dictionary, custom class, etc.
+            values (list[T]): The values to be stored along with the object.
+            allowed_glob (str): A glob pattern that specifies which parts of the object are allowed to be stored. Default is None, which means all parts are allowed.
+            disallowed_glob (str): A glob pattern that specifies which parts of the object are not allowed to be stored. Default is None, which means no parts are disallowed.
+            depth_limit (int): The maximum depth to which the storage process should recurse. This is useful for controlling the complexity of the storage, especially for deeply nested structures. Default is set in the engine's parameters.
+            instructions (enc[str]): Additional instructions to the storage algorithm. This could be used to customize the storage process, for example by specifying certain features to focus on or ignore.
+            **kwargs: Additional keyword arguments that might be needed for specific storage algorithms.
 
         Returns:
-            T: The retrieved object. The exact type and structure of this depends on the `Engine` used.
+            None
 
         Example:
             >>> engine = Engine()
@@ -120,14 +127,13 @@ class SupportsRetrieveMixin(Generic[T, R], EngineBase[T, R], ABC):
             ...    thoughts: list[str]
             ...    friends: list[Person]
             >>> john, teyoni, huimin = ... # create people
-            >>> person = engine.retrieve(john, instructions="find john's least favorite friend")
+            >>> person = engine.store(john, [huimin], instructions="she is his friend")
         """
-
         try:
-            return type(object).__tc_retrieve__(
+            return type(object).__tc_store__(
                 self,
                 object,
-                count=count,
+                values=values,
                 allowed_glob=allowed_glob,
                 disallowed_glob=disallowed_glob,
                 depth_limit=depth_limit,
@@ -137,9 +143,9 @@ class SupportsRetrieveMixin(Generic[T, R], EngineBase[T, R], ABC):
         except (NotImplementedError, AttributeError):
             pass
 
-        return self._retrieve(
+        return self._store(
             object,
-            count=count,
+            values=values,
             allowed_glob=allowed_glob,
             disallowed_glob=disallowed_glob,
             depth_limit=depth_limit,
@@ -148,15 +154,15 @@ class SupportsRetrieveMixin(Generic[T, R], EngineBase[T, R], ABC):
         )
 
     @abstractmethod
-    def _retrieve(
+    def _store(
         self,
         object: composite_types[T],
         /,
-        count: int,
+        values: list[T],
         allowed_glob: str,
         disallowed_glob: str,
         depth_limit: int | None,
         instructions: R | None,
         **kwargs,
-    ) -> T:
+    ):
         raise NotImplementedError()
