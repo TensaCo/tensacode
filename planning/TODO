@@ -1,0 +1,5 @@
+[] implement the protected override methods for all the other base.mixins.<operation> mixin classes
+[] update llm.mixins.encode.SupportsEncodeMixin method signatures to match the updated base.mixins.supports_encode.py mixin methods
+[] also just finish llm.mixins.encode.SupportsEncodeMixin. I should make sure the encode_type method encodes the type with an awareness of its generic args. I need an encode_type_annotation and a separate encode_type. One shows the contents, the other only shows the generic args, if any.
+[] implement the rest of the llm engine mixin methods
+[] re-structure into evo, text, and nn subpackages. But then have a submodule inside each for the base_text/nn/evo engine. So its two-layers of hierarchy, but the inheritence is horizontal
