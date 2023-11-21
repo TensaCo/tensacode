@@ -57,7 +57,7 @@ from tensacode.utils.decorators import (
     overloaded,
 )
 from tensacode.utils.oo import HasDefault, Namespace
-from tensacode.utils.string import render_invocation, render_stacktrace
+from tensacode.utils.string0 import render_invocation, render_stacktrace
 from tensacode.utils.types import (
     enc,
     T,
@@ -84,8 +84,11 @@ class SupportsSimilarityMixin(
         self,
         objects: tuple[T],
         /,
-        depth_limit: int | None,
-        instructions: R | None,
+        depth_limit: int | None = None,
+        instructions: R | None = None,
+        visibility: Literal["public", "protected", "private"] = "public",
+        inherited_members: bool = True,
+        force_inline: bool = False,
         **kwargs,
     ) -> float:
         raise NotImplementedError()

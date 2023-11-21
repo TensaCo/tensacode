@@ -46,6 +46,7 @@ from _typeshed import DataclassInstance
 
 K = str | int | None
 T = TypeVar("T")
+pyobject = object
 
 
 class enc(Generic[T], ABC):

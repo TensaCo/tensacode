@@ -58,7 +58,7 @@ from tensacode.utils.decorators import (
     overloaded,
 )
 from tensacode.utils.oo import HasDefault, Namespace
-from tensacode.utils.string import render_invocation, render_stacktrace
+from tensacode.utils.string0 import render_invocation, render_stacktrace
 from tensacode.utils.types import (
     enc,
     T,
@@ -141,11 +141,21 @@ class SupportsEncodeMixin(BaseEngine):
         self,
         object: T,
         /,
-        depth_limit: int | None,
-        instructions: R | None,
+        depth_limit: int | None = None,
+        instructions: R | None = None,
+        visibility: Literal["public", "protected", "private"] = "public",
+        inherited_members: bool = True,
+        force_inline: bool = False,
         **kwargs,
     ) -> R:
-        raise NotImplementedError("Subclass should implement this method.")
+        if depth_limit is not None and depth_limit <= 0:
+            return
+        return self._encode_object(
+            object,
+            depth_limit=depth_limit,
+            instructions=instructions,
+            **kwargs,
+        )
 
     @_encode.overload(is_object_instance)
     @abstractmethod
@@ -153,8 +163,11 @@ class SupportsEncodeMixin(BaseEngine):
         self,
         object: object,
         /,
-        depth_limit: int | None,
-        instructions: R | None,
+        depth_limit: int | None = None,
+        instructions: R | None = None,
+        visibility: Literal["public", "protected", "private"] = "public",
+        inherited_members: bool = True,
+        force_inline: bool = False,
         **kwargs,
     ) -> R:
         raise NotImplementedError("Subclass should implement this method.")
@@ -165,11 +178,19 @@ class SupportsEncodeMixin(BaseEngine):
         self,
         object: Callable,
         /,
-        depth_limit: int | None,
-        instructions: R | None,
+        depth_limit: int | None = None,
+        instructions: R | None = None,
+        visibility: Literal["public", "protected", "private"] = "public",
+        inherited_members: bool = True,
+        force_inline: bool = False,
         **kwargs,
     ) -> R:
-        raise NotImplementedError("Subclass should implement this method.")
+        return self._ecode(
+            object,
+            depth_limit=depth_limit,
+            instructions=instructions,
+            **kwargs,
+        )
 
     @_encode.overload(is_pydantic_model_instance)
     @abstractmethod
@@ -177,11 +198,19 @@ class SupportsEncodeMixin(BaseEngine):
         self,
         object: pydantic.BaseModel,
         /,
-        depth_limit: int | None,
-        instructions: R | None,
+        depth_limit: int | None = None,
+        instructions: R | None = None,
+        visibility: Literal["public", "protected", "private"] = "public",
+        inherited_members: bool = True,
+        force_inline: bool = False,
         **kwargs,
     ) -> R:
-        raise NotImplementedError("Subclass should implement this method.")
+        return self._ecode(
+            object,
+            depth_limit=depth_limit,
+            instructions=instructions,
+            **kwargs,
+        )
 
     @_encode.overload(is_namedtuple_instance)
     @abstractmethod
@@ -189,32 +218,47 @@ class SupportsEncodeMixin(BaseEngine):
         self,
         object: NamedTuple,
         /,
-        depth_limit: int | None,
-        instructions: R | None,
+        depth_limit: int | None = None,
+        instructions: R | None = None,
+        visibility: Literal["public", "protected", "private"] = "public",
+        inherited_members: bool = True,
+        force_inline: bool = False,
         **kwargs,
     ) -> R:
-        raise NotImplementedError("Subclass should implement this method.")
-
-    @_encode.overload(is_dataclass_instance)
-    @abstractmethod
-    def _encode_dataclass_instance(
-        self,
-        object: DataclassInstance,
-        /,
-        depth_limit: int | None,
-        instructions: R | None,
-        **kwargs,
-    ) -> R:
-        raise NotImplementedError("Subclass should implement this method.")
+        return self._ecode(
+            object,
+            depth_limit=depth_limit,
+            instructions=instructions,
+            **kwargs,
+        )
 
     @_encode.overload(is_type)
     @abstractmethod
-    def _encode_type(
+    def _encode_type_definition(
         self,
         object: type,
         /,
-        depth_limit: int | None,
-        instructions: R | None,
+        depth_limit: int | None = None,
+        instructions: R | None = None,
+        visibility: Literal["public", "protected", "private"] = "public",
+        inherited_members: bool = True,
+        force_inline: bool = False,
+        **kwargs,
+    ) -> R:
+        return self._ecode(
+            object,
+            depth_limit=depth_limit,
+            instructions=instructions,
+            **kwargs,
+        )
+
+    @_encode.overload(is_pydantic_model_type)
+    @abstractmethod
+    def _encode_type_value(
+        self,
+        object: type,
+        /,
+        depth_limit: int | None = None,
         **kwargs,
     ) -> R:
         raise NotImplementedError("Subclass should implement this method.")
@@ -225,11 +269,19 @@ class SupportsEncodeMixin(BaseEngine):
         self,
         object: type[pydantic.BaseModel],
         /,
-        depth_limit: int | None,
-        instructions: R | None,
+        depth_limit: int | None = None,
+        instructions: R | None = None,
+        visibility: Literal["public", "protected", "private"] = "public",
+        inherited_members: bool = True,
+        force_inline: bool = False,
         **kwargs,
     ) -> R:
-        raise NotImplementedError("Subclass should implement this method.")
+        return self._ecode(
+            object,
+            depth_limit=depth_limit,
+            instructions=instructions,
+            **kwargs,
+        )
 
     @_encode.overload(is_namedtuple_type)
     @abstractmethod
@@ -237,23 +289,19 @@ class SupportsEncodeMixin(BaseEngine):
         self,
         object: type[NamedTuple],
         /,
-        depth_limit: int | None,
-        instructions: R | None,
+        depth_limit: int | None = None,
+        instructions: R | None = None,
+        visibility: Literal["public", "protected", "private"] = "public",
+        inherited_members: bool = True,
+        force_inline: bool = False,
         **kwargs,
     ) -> R:
-        raise NotImplementedError("Subclass should implement this method.")
-
-    @_encode.overload(is_dataclass_type)
-    @abstractmethod
-    def _encode_dataclass_type(
-        self,
-        object: type,
-        /,
-        depth_limit: int | None,
-        instructions: R | None,
-        **kwargs,
-    ) -> R:
-        raise NotImplementedError("Subclass should implement this method.")
+        return self._ecode(
+            object,
+            depth_limit=depth_limit,
+            instructions=instructions,
+            **kwargs,
+        )
 
     @_encode.overload(lambda object: isinstance(object, ModuleType))
     @abstractmethod
@@ -261,11 +309,19 @@ class SupportsEncodeMixin(BaseEngine):
         self,
         object: ModuleType,
         /,
-        depth_limit: int | None,
-        instructions: R | None,
+        depth_limit: int | None = None,
+        instructions: R | None = None,
+        visibility: Literal["public", "protected", "private"] = "public",
+        inherited_members: bool = True,
+        force_inline: bool = False,
         **kwargs,
     ) -> R:
-        raise NotImplementedError("Subclass should implement this method.")
+        return self._ecode(
+            object,
+            depth_limit=depth_limit,
+            instructions=instructions,
+            **kwargs,
+        )
 
     @_encode.overload(lambda object: isinstance(object, Iterable))
     @abstractmethod
@@ -273,12 +329,20 @@ class SupportsEncodeMixin(BaseEngine):
         self,
         object: Iterable,
         /,
-        depth_limit: int | None,
-        instructions: R | None,
+        depth_limit: int | None = None,
+        instructions: R | None = None,
+        visibility: Literal["public", "protected", "private"] = "public",
+        inherited_members: bool = True,
+        force_inline: bool = False,
         ordered: bool = True,
         **kwargs,
     ) -> R:
-        raise NotImplementedError("Subclass should implement this method.")
+        return self._ecode(
+            object,
+            depth_limit=depth_limit,
+            instructions=instructions,
+            **kwargs,
+        )
 
     @_encode.overload(lambda object: typingx.isinstance(object, Sequence[T]))
     @abstractmethod
@@ -286,11 +350,19 @@ class SupportsEncodeMixin(BaseEngine):
         self,
         object: Sequence,
         /,
-        depth_limit: int | None,
-        instructions: R | None,
+        depth_limit: int | None = None,
+        instructions: R | None = None,
+        visibility: Literal["public", "protected", "private"] = "public",
+        inherited_members: bool = True,
+        force_inline: bool = False,
         **kwargs,
     ) -> R:
-        raise NotImplementedError("Subclass should implement this method.")
+        return self._ecode(
+            object,
+            depth_limit=depth_limit,
+            instructions=instructions,
+            **kwargs,
+        )
 
     @_encode.overload(lambda object: typingx.isinstance(object, Set[T]))
     @abstractmethod
@@ -298,11 +370,19 @@ class SupportsEncodeMixin(BaseEngine):
         self,
         object: set,
         /,
-        depth_limit: int | None,
-        instructions: R | None,
+        depth_limit: int | None = None,
+        instructions: R | None = None,
+        visibility: Literal["public", "protected", "private"] = "public",
+        inherited_members: bool = True,
+        force_inline: bool = False,
         **kwargs,
     ) -> R:
-        raise NotImplementedError("Subclass should implement this method.")
+        return self._ecode(
+            object,
+            depth_limit=depth_limit,
+            instructions=instructions,
+            **kwargs,
+        )
 
     @_encode.overload(lambda object: typingx.isinstance(object, Mapping[Any, T]))
     @abstractmethod
@@ -310,11 +390,19 @@ class SupportsEncodeMixin(BaseEngine):
         self,
         object: Mapping,
         /,
-        depth_limit: int | None,
-        instructions: R | None,
+        depth_limit: int | None = None,
+        instructions: R | None = None,
+        visibility: Literal["public", "protected", "private"] = "public",
+        inherited_members: bool = True,
+        force_inline: bool = False,
         **kwargs,
     ) -> R:
-        raise NotImplementedError("Subclass should implement this method.")
+        return self._ecode(
+            object,
+            depth_limit=depth_limit,
+            instructions=instructions,
+            **kwargs,
+        )
 
     @_encode.overload(lambda object: object is None)
     @abstractmethod
@@ -322,11 +410,19 @@ class SupportsEncodeMixin(BaseEngine):
         self,
         object: None,
         /,
-        depth_limit: int | None,
-        instructions: R | None,
+        depth_limit: int | None = None,
+        instructions: R | None = None,
+        visibility: Literal["public", "protected", "private"] = "public",
+        inherited_members: bool = True,
+        force_inline: bool = False,
         **kwargs,
     ) -> R:
-        raise NotImplementedError("Subclass should implement this method.")
+        return self._ecode(
+            object,
+            depth_limit=depth_limit,
+            instructions=instructions,
+            **kwargs,
+        )
 
     @_encode.overload(lambda object: isinstance(object, bool))
     @abstractmethod
@@ -334,11 +430,19 @@ class SupportsEncodeMixin(BaseEngine):
         self,
         object: bool,
         /,
-        depth_limit: int | None,
-        instructions: R | None,
+        depth_limit: int | None = None,
+        instructions: R | None = None,
+        visibility: Literal["public", "protected", "private"] = "public",
+        inherited_members: bool = True,
+        force_inline: bool = False,
         **kwargs,
     ) -> R:
-        raise NotImplementedError("Subclass should implement this method.")
+        return self._ecode(
+            object,
+            depth_limit=depth_limit,
+            instructions=instructions,
+            **kwargs,
+        )
 
     @_encode.overload(lambda object: isinstance(object, int))
     @abstractmethod
@@ -346,11 +450,19 @@ class SupportsEncodeMixin(BaseEngine):
         self,
         object: int,
         /,
-        depth_limit: int | None,
-        instructions: R | None,
+        depth_limit: int | None = None,
+        instructions: R | None = None,
+        visibility: Literal["public", "protected", "private"] = "public",
+        inherited_members: bool = True,
+        force_inline: bool = False,
         **kwargs,
     ) -> R:
-        raise NotImplementedError("Subclass should implement this method.")
+        return self._ecode(
+            object,
+            depth_limit=depth_limit,
+            instructions=instructions,
+            **kwargs,
+        )
 
     @_encode.overload(lambda object: isinstance(object, float))
     @abstractmethod
@@ -358,11 +470,19 @@ class SupportsEncodeMixin(BaseEngine):
         self,
         object: float,
         /,
-        depth_limit: int | None,
-        instructions: R | None,
+        depth_limit: int | None = None,
+        instructions: R | None = None,
+        visibility: Literal["public", "protected", "private"] = "public",
+        inherited_members: bool = True,
+        force_inline: bool = False,
         **kwargs,
     ) -> R:
-        raise NotImplementedError("Subclass should implement this method.")
+        return self._ecode(
+            object,
+            depth_limit=depth_limit,
+            instructions=instructions,
+            **kwargs,
+        )
 
     @_encode.overload(lambda object: isinstance(object, complex))
     @abstractmethod
@@ -370,11 +490,19 @@ class SupportsEncodeMixin(BaseEngine):
         self,
         object: complex,
         /,
-        depth_limit: int | None,
-        instructions: R | None,
+        depth_limit: int | None = None,
+        instructions: R | None = None,
+        visibility: Literal["public", "protected", "private"] = "public",
+        inherited_members: bool = True,
+        force_inline: bool = False,
         **kwargs,
     ) -> R:
-        raise NotImplementedError("Subclass should implement this method.")
+        return self._ecode(
+            object,
+            depth_limit=depth_limit,
+            instructions=instructions,
+            **kwargs,
+        )
 
     @_encode.overload(lambda object: isinstance(object, str))
     @abstractmethod
@@ -382,11 +510,19 @@ class SupportsEncodeMixin(BaseEngine):
         self,
         object: str,
         /,
-        depth_limit: int | None,
-        instructions: R | None,
+        depth_limit: int | None = None,
+        instructions: R | None = None,
+        visibility: Literal["public", "protected", "private"] = "public",
+        inherited_members: bool = True,
+        force_inline: bool = False,
         **kwargs,
     ) -> R:
-        raise NotImplementedError("Subclass should implement this method.")
+        return self._ecode(
+            object,
+            depth_limit=depth_limit,
+            instructions=instructions,
+            **kwargs,
+        )
 
     @_encode.overload(lambda object: isinstance(object, bytes))
     @abstractmethod
@@ -394,9 +530,17 @@ class SupportsEncodeMixin(BaseEngine):
         self,
         object: bytes,
         /,
-        depth_limit: int | None,
-        instructions: R | None,
+        depth_limit: int | None = None,
+        instructions: R | None = None,
+        visibility: Literal["public", "protected", "private"] = "public",
+        inherited_members: bool = True,
+        force_inline: bool = False,
         bytes_per_group=4,
         **kwargs,
     ) -> R:
-        raise NotImplementedError("Subclass should implement this method.")
+        return self._ecode(
+            object,
+            depth_limit=depth_limit,
+            instructions=instructions,
+            **kwargs,
+        )

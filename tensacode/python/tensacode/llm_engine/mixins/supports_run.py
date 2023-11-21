@@ -57,7 +57,7 @@ from tensacode.utils.decorators import (
     overloaded,
 )
 from tensacode.utils.oo import HasDefault, Namespace
-from tensacode.utils.string import render_invocation, render_stacktrace
+from tensacode.utils.string0 import render_invocation, render_stacktrace
 from tensacode.utils.types import (
     enc,
     T,
@@ -82,7 +82,9 @@ class SupportsRunMixin(
     @abstractmethod
     def _run(
         self,
-        instructions: R | None,
+        instructions: R | None = None,
+        format: Literal["block", "inline"] = "inline",
+        visibility: Literal["public", "protected", "private"] = "public",
         /,
         budget: Optional[float],
         **kwargs,

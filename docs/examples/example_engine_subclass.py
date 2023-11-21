@@ -31,7 +31,7 @@ import typingx
 import tensacode as tc
 from tensacode.utils.decorators import Decorator, Default, dynamic_defaults
 from tensacode.utils.oo import HasDefault, Namespace
-from tensacode.utils.string import render_invocation, render_stacktrace
+from tensacode.utils.string0 import render_invocation, render_stacktrace
 from tensacode.utils.types import (
     enc,
     atomic_types,

@@ -1,4 +1,5 @@
 import inspect
+from typing import Generator, Literal
 
 
 def call_with_applicable_args(func, args_list, kwargs_dict):
@@ -48,3 +49,36 @@ def call_with_applicable_args(func, args_list, kwargs_dict):
             bound_args.update(kwargs_dict)
 
     return func(**bound_args)
+
+
+def get_keys(
+    object,
+    visibility: Literal["public", "protected", "private"] = "public",
+    inherited_members=True,
+) -> Generator[str, None, None]:
+    keys = dir(object)
+
+    if isinstance(object, type) and inherited_members is False:
+        for base in object.__bases__:
+            keys = [k for k in keys if k not in dir(base)]
+
+    for k in keys:
+        match visibility:
+            case "public":
+                if k.startswith("_"):
+                    continue
+            case "protected":
+                if k.startswith("__"):
+                    continue
+            case "private":
+                pass
+            case _:
+                raise ValueError(f"Invalid visibility: {visibility}")
+        yield k
+
+
+def try_(lmbda, *args, **kwargs):
+    try:
+        return lmbda(*args, **kwargs)
+    except:
+        return None
