@@ -8,8 +8,8 @@
 	path = tensacode/java
 	url = https://github.com/TensaCo/tensacode-java.git
 [submodule "tensacode-csharp"]
-	path = tensacode-csharp
+	path = tensacode/csharp
 	url = https://github.com/TensaCo/tensacode-csharp.git
 [submodule "tensacode-cpp"]
-	path = tensacode-cpp
+	path = tensacode/cpp
 	url = https://github.com/TensaCo/tensacode-cpp.git
