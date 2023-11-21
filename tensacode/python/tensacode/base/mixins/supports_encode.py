@@ -10,7 +10,7 @@ from functools import singledispatchmethod
 import inspect
 from pathlib import Path
 import pickle
-from types import ModuleType
+from types import FunctionType, ModuleType
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -148,14 +148,7 @@ class SupportsEncodeMixin(BaseEngine):
         force_inline: bool = False,
         **kwargs,
     ) -> R:
-        if depth_limit is not None and depth_limit <= 0:
-            return
-        return self._encode_object(
-            object,
-            depth_limit=depth_limit,
-            instructions=instructions,
-            **kwargs,
-        )
+        raise NotImplementedError()
 
     @_encode.overload(is_object_instance)
     @abstractmethod
@@ -170,25 +163,34 @@ class SupportsEncodeMixin(BaseEngine):
         force_inline: bool = False,
         **kwargs,
     ) -> R:
-        raise NotImplementedError("Subclass should implement this method.")
+        return self._encode(
+            object,
+            depth_limit=depth_limit,
+            instructions=instructions,
+            visibility=visibility,
+            inherited_members=inherited_members,
+            force_inline=force_inline,
+            **kwargs,
+        )
 
     @_encode.overload(lambda object: callable(object))
     @abstractmethod
     def _encode_function(
         self,
-        object: Callable,
+        object: FunctionType,
         /,
         depth_limit: int | None = None,
         instructions: R | None = None,
         visibility: Literal["public", "protected", "private"] = "public",
-        inherited_members: bool = True,
         force_inline: bool = False,
         **kwargs,
     ) -> R:
-        return self._ecode(
+        return self._encode(
             object,
             depth_limit=depth_limit,
             instructions=instructions,
+            visibility=visibility,
+            force_inline=force_inline,
             **kwargs,
         )
 
@@ -205,10 +207,13 @@ class SupportsEncodeMixin(BaseEngine):
         force_inline: bool = False,
         **kwargs,
     ) -> R:
-        return self._ecode(
+        return self._encode(
             object,
             depth_limit=depth_limit,
             instructions=instructions,
+            visibility=visibility,
+            inherited_members=inherited_members,
+            force_inline=force_inline,
             **kwargs,
         )
 
@@ -221,20 +226,21 @@ class SupportsEncodeMixin(BaseEngine):
         depth_limit: int | None = None,
         instructions: R | None = None,
         visibility: Literal["public", "protected", "private"] = "public",
-        inherited_members: bool = True,
         force_inline: bool = False,
         **kwargs,
     ) -> R:
-        return self._ecode(
+        return self._encode(
             object,
             depth_limit=depth_limit,
             instructions=instructions,
+            visibility=visibility,
+            force_inline=force_inline,
             **kwargs,
         )
 
     @_encode.overload(is_type)
     @abstractmethod
-    def _encode_type_definition(
+    def _encode_type(
         self,
         object: type,
         /,
@@ -245,23 +251,15 @@ class SupportsEncodeMixin(BaseEngine):
         force_inline: bool = False,
         **kwargs,
     ) -> R:
-        return self._ecode(
+        return self._encode(
             object,
             depth_limit=depth_limit,
             instructions=instructions,
+            visibility=visibility,
+            inherited_members=inherited_members,
+            force_inline=force_inline,
             **kwargs,
         )
-
-    @_encode.overload(is_pydantic_model_type)
-    @abstractmethod
-    def _encode_type_value(
-        self,
-        object: type,
-        /,
-        depth_limit: int | None = None,
-        **kwargs,
-    ) -> R:
-        raise NotImplementedError("Subclass should implement this method.")
 
     @_encode.overload(is_pydantic_model_type)
     @abstractmethod
@@ -276,10 +274,13 @@ class SupportsEncodeMixin(BaseEngine):
         force_inline: bool = False,
         **kwargs,
     ) -> R:
-        return self._ecode(
+        return self._encode(
             object,
             depth_limit=depth_limit,
             instructions=instructions,
+            visibility=visibility,
+            inherited_members=inherited_members,
+            force_inline=force_inline,
             **kwargs,
         )
 
@@ -296,10 +297,13 @@ class SupportsEncodeMixin(BaseEngine):
         force_inline: bool = False,
         **kwargs,
     ) -> R:
-        return self._ecode(
+        return self._encode(
             object,
             depth_limit=depth_limit,
             instructions=instructions,
+            visibility=visibility,
+            inherited_members=inherited_members,
+            force_inline=force_inline,
             **kwargs,
         )
 
@@ -312,95 +316,15 @@ class SupportsEncodeMixin(BaseEngine):
         depth_limit: int | None = None,
         instructions: R | None = None,
         visibility: Literal["public", "protected", "private"] = "public",
-        inherited_members: bool = True,
         force_inline: bool = False,
         **kwargs,
     ) -> R:
-        return self._ecode(
+        return self._encode(
             object,
             depth_limit=depth_limit,
             instructions=instructions,
-            **kwargs,
-        )
-
-    @_encode.overload(lambda object: isinstance(object, Iterable))
-    @abstractmethod
-    def _encode_iterable(
-        self,
-        object: Iterable,
-        /,
-        depth_limit: int | None = None,
-        instructions: R | None = None,
-        visibility: Literal["public", "protected", "private"] = "public",
-        inherited_members: bool = True,
-        force_inline: bool = False,
-        ordered: bool = True,
-        **kwargs,
-    ) -> R:
-        return self._ecode(
-            object,
-            depth_limit=depth_limit,
-            instructions=instructions,
-            **kwargs,
-        )
-
-    @_encode.overload(lambda object: typingx.isinstance(object, Sequence[T]))
-    @abstractmethod
-    def _encode_seq(
-        self,
-        object: Sequence,
-        /,
-        depth_limit: int | None = None,
-        instructions: R | None = None,
-        visibility: Literal["public", "protected", "private"] = "public",
-        inherited_members: bool = True,
-        force_inline: bool = False,
-        **kwargs,
-    ) -> R:
-        return self._ecode(
-            object,
-            depth_limit=depth_limit,
-            instructions=instructions,
-            **kwargs,
-        )
-
-    @_encode.overload(lambda object: typingx.isinstance(object, Set[T]))
-    @abstractmethod
-    def _encode_set(
-        self,
-        object: set,
-        /,
-        depth_limit: int | None = None,
-        instructions: R | None = None,
-        visibility: Literal["public", "protected", "private"] = "public",
-        inherited_members: bool = True,
-        force_inline: bool = False,
-        **kwargs,
-    ) -> R:
-        return self._ecode(
-            object,
-            depth_limit=depth_limit,
-            instructions=instructions,
-            **kwargs,
-        )
-
-    @_encode.overload(lambda object: typingx.isinstance(object, Mapping[Any, T]))
-    @abstractmethod
-    def _encode_map(
-        self,
-        object: Mapping,
-        /,
-        depth_limit: int | None = None,
-        instructions: R | None = None,
-        visibility: Literal["public", "protected", "private"] = "public",
-        inherited_members: bool = True,
-        force_inline: bool = False,
-        **kwargs,
-    ) -> R:
-        return self._ecode(
-            object,
-            depth_limit=depth_limit,
-            instructions=instructions,
+            visibility=visibility,
+            force_inline=force_inline,
             **kwargs,
         )
 
@@ -411,16 +335,11 @@ class SupportsEncodeMixin(BaseEngine):
         object: None,
         /,
         depth_limit: int | None = None,
-        instructions: R | None = None,
-        visibility: Literal["public", "protected", "private"] = "public",
-        inherited_members: bool = True,
-        force_inline: bool = False,
         **kwargs,
     ) -> R:
-        return self._ecode(
+        return self._encode(
             object,
-            depth_limit=depth_limit,
-            instructions=instructions,
+            depth_limit=depth_limit,  # don't decrement since this is only a horizontal call
             **kwargs,
         )
 
@@ -431,16 +350,11 @@ class SupportsEncodeMixin(BaseEngine):
         object: bool,
         /,
         depth_limit: int | None = None,
-        instructions: R | None = None,
-        visibility: Literal["public", "protected", "private"] = "public",
-        inherited_members: bool = True,
-        force_inline: bool = False,
         **kwargs,
     ) -> R:
-        return self._ecode(
+        return self._encode(
             object,
-            depth_limit=depth_limit,
-            instructions=instructions,
+            depth_limit=depth_limit,  # don't decrement since this is only a horizontal call
             **kwargs,
         )
 
@@ -451,16 +365,11 @@ class SupportsEncodeMixin(BaseEngine):
         object: int,
         /,
         depth_limit: int | None = None,
-        instructions: R | None = None,
-        visibility: Literal["public", "protected", "private"] = "public",
-        inherited_members: bool = True,
-        force_inline: bool = False,
         **kwargs,
     ) -> R:
-        return self._ecode(
+        return self._encode(
             object,
-            depth_limit=depth_limit,
-            instructions=instructions,
+            depth_limit=depth_limit,  # don't decrement since this is only a horizontal call
             **kwargs,
         )
 
@@ -471,16 +380,11 @@ class SupportsEncodeMixin(BaseEngine):
         object: float,
         /,
         depth_limit: int | None = None,
-        instructions: R | None = None,
-        visibility: Literal["public", "protected", "private"] = "public",
-        inherited_members: bool = True,
-        force_inline: bool = False,
         **kwargs,
     ) -> R:
-        return self._ecode(
+        return self._encode(
             object,
-            depth_limit=depth_limit,
-            instructions=instructions,
+            depth_limit=depth_limit,  # don't decrement since this is only a horizontal call
             **kwargs,
         )
 
@@ -491,16 +395,11 @@ class SupportsEncodeMixin(BaseEngine):
         object: complex,
         /,
         depth_limit: int | None = None,
-        instructions: R | None = None,
-        visibility: Literal["public", "protected", "private"] = "public",
-        inherited_members: bool = True,
-        force_inline: bool = False,
         **kwargs,
     ) -> R:
-        return self._ecode(
+        return self._encode(
             object,
-            depth_limit=depth_limit,
-            instructions=instructions,
+            depth_limit=depth_limit,  # don't decrement since this is only a horizontal call
             **kwargs,
         )
 
@@ -511,16 +410,11 @@ class SupportsEncodeMixin(BaseEngine):
         object: str,
         /,
         depth_limit: int | None = None,
-        instructions: R | None = None,
-        visibility: Literal["public", "protected", "private"] = "public",
-        inherited_members: bool = True,
-        force_inline: bool = False,
         **kwargs,
     ) -> R:
-        return self._ecode(
+        return self._encode(
             object,
-            depth_limit=depth_limit,
-            instructions=instructions,
+            depth_limit=depth_limit,  # don't decrement since this is only a horizontal call
             **kwargs,
         )
 
@@ -531,16 +425,79 @@ class SupportsEncodeMixin(BaseEngine):
         object: bytes,
         /,
         depth_limit: int | None = None,
-        instructions: R | None = None,
-        visibility: Literal["public", "protected", "private"] = "public",
-        inherited_members: bool = True,
-        force_inline: bool = False,
         bytes_per_group=4,
         **kwargs,
     ) -> R:
-        return self._ecode(
+        return self._encode(
             object,
-            depth_limit=depth_limit,
-            instructions=instructions,
+            depth_limit=depth_limit,  # don't decrement since this is only a horizontal call
+            **kwargs,
+        )
+
+    @_encode.overload(lambda object: isinstance(object, Iterable))
+    @abstractmethod
+    def _encode_iterable(
+        self,
+        object: Iterable,
+        /,
+        depth_limit: int | None = None,
+        force_inline: bool = False,
+        **kwargs,
+    ) -> R:
+        return self._encode(
+            object,
+            depth_limit=depth_limit,  # don't decrement since this is only a horizontal call
+            force_inline=force_inline,
+            **kwargs,
+        )
+
+    @_encode.overload(lambda object: typingx.isinstance(object, Sequence[T]))
+    @abstractmethod
+    def _encode_seq(
+        self,
+        object: Sequence,
+        /,
+        depth_limit: int | None = None,
+        force_inline: bool = False,
+        **kwargs,
+    ) -> R:
+        return self._encode(
+            object,
+            depth_limit=depth_limit,  # don't decrement since this is only a horizontal call
+            force_inline=force_inline,
+            **kwargs,
+        )
+
+    @_encode.overload(lambda object: typingx.isinstance(object, Set[T]))
+    @abstractmethod
+    def _encode_set(
+        self,
+        object: set,
+        /,
+        depth_limit: int | None = None,
+        force_inline: bool = False,
+        **kwargs,
+    ) -> R:
+        return self._encode(
+            object,
+            depth_limit=depth_limit,  # don't decrement since this is only a horizontal call
+            force_inline=force_inline,
+            **kwargs,
+        )
+
+    @_encode.overload(lambda object: typingx.isinstance(object, Mapping[Any, T]))
+    @abstractmethod
+    def _encode_map(
+        self,
+        object: Mapping,
+        /,
+        depth_limit: int | None = None,
+        force_inline: bool = False,
+        **kwargs,
+    ) -> R:
+        return self._encode(
+            object,
+            depth_limit=depth_limit,  # don't decrement since this is only a horizontal call
+            force_inline=force_inline,
             **kwargs,
         )
