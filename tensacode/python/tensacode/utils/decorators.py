@@ -70,12 +70,12 @@ class overloaded(Decorator):
     A decorator that allows multiple versions of a function to be defined,
     each with different behavior based on specified conditions.
 
-    The 'overloaded' decorator should be used to decorate a base function.
-    Additional versions of the function can be defined using the '.overload'
+    The `overloaded` decorator should be used to decorate a base function.
+    Additional versions of the function can be defined using the `.overload`
     method of the decorated function. Each overloaded version has an associated
     condition - a lambda or function that takes the same arguments as the base
     function and returns a boolean. When the decorated function is called,
-    'overloaded' checks each condition in the order the overloads were defined.
+    `overloaded` checks each condition in the order the overloads were defined.
     It calls and returns the result of the first overload whose condition
     evaluates to True. If no conditions are met, the base function is called.
 
@@ -123,4 +123,3 @@ class overloaded(Decorator):
             return overload
 
         return decorator
-

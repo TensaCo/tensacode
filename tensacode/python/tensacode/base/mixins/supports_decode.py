@@ -10,6 +10,7 @@ from functools import singledispatchmethod
 import inspect
 from pathlib import Path
 import pickle
+import sys
 from types import FunctionType, ModuleType
 from typing import (
     TYPE_CHECKING,
@@ -26,6 +27,7 @@ from typing import (
     Sequence,
     Set,
     TypeVar,
+    Union,
 )
 from box import Box
 from uuid import uuid4
@@ -67,12 +69,15 @@ from tensacode.utils.types import (
     atomic_types,
     container_types,
     composite_types,
+    is_callable_type,
+    is_object,
     tree_types,
     tree,
     DataclassInstance,
     AttrsInstance,
+    is_type,
 )
-from tensacode.utils.internal_types import nested_dict
+from tensacode.utils.internal_types import make_union, nested_dict
 from tensacode.base.base_engine import BaseEngine
 
 
@@ -142,45 +147,52 @@ class SupportsDecodeMixin(Generic[T, R], BaseEngine[T, R], ABC):
         object_enc: R,
         type: type[T],
         /,
+        examples: list[T] = None,
         depth_limit: int | None = None,
         instructions: R | None = None,
-        visibility: Literal["public", "protected", "private"] = "public",
-        inherited_members: bool = True,
-        force_inline: bool = False,
         **kwargs,
     ) -> T:
         raise NotImplementedError()
 
+    @_decode.overload(lambda type: is_type(type))
     @abstractmethod
     def _decode_to_object(
         self,
         object_enc: R,
         type: type[T],
         /,
+        examples: list[T] = None,
         depth_limit: int | None = None,
         instructions: R | None = None,
-        visibility: Literal["public", "protected", "private"] = "public",
-        inherited_members: bool = True,
-        force_inline: bool = False,
         **kwargs,
     ) -> T:
-        raise NotImplementedError()
+        return self._decode(
+            object_enc,
+            type,
+            depth_limit=depth_limit,
+            instructions=instructions,
+            **kwargs,
+        )
 
-    @_decode.overload(lambda type: typingx.issubclassx(type, FunctionType))
+    @_decode.overload(lambda type: is_callable_type(type))
     @abstractmethod
     def _decode_to_function(
         self,
         object_enc: R,
         type: type[FunctionType],
         /,
+        examples: list[T] = None,
         depth_limit: int | None = None,
         instructions: R | None = None,
-        visibility: Literal["public", "protected", "private"] = "public",
-        inherited_members: bool = True,
-        force_inline: bool = False,
         **kwargs,
     ) -> T:
-        raise NotImplementedError()
+        return self._decode(
+            object_enc,
+            type,
+            depth_limit=depth_limit,
+            instructions=instructions,
+            **kwargs,
+        )
 
     @_decode.overload(lambda type: issubclass(type, pydantic.BaseModel))
     @abstractmethod
@@ -189,14 +201,18 @@ class SupportsDecodeMixin(Generic[T, R], BaseEngine[T, R], ABC):
         object_enc: R,
         type: type[pydantic.BaseModel],
         /,
+        examples: list[T] = None,
         depth_limit: int | None = None,
         instructions: R | None = None,
-        visibility: Literal["public", "protected", "private"] = "public",
-        inherited_members: bool = True,
-        force_inline: bool = False,
         **kwargs,
     ) -> T:
-        raise NotImplementedError()
+        return self._decode(
+            object_enc,
+            type,
+            depth_limit=depth_limit,
+            instructions=instructions,
+            **kwargs,
+        )
 
     @_decode.overload(lambda type: issubclass(type, NamedTuple))
     @abstractmethod
@@ -205,14 +221,18 @@ class SupportsDecodeMixin(Generic[T, R], BaseEngine[T, R], ABC):
         object_enc: R,
         type: type[NamedTuple],
         /,
+        examples: list[T] = None,
         depth_limit: int | None = None,
         instructions: R | None = None,
-        visibility: Literal["public", "protected", "private"] = "public",
-        inherited_members: bool = True,
-        force_inline: bool = False,
         **kwargs,
     ) -> T:
-        raise NotImplementedError()
+        return self._decode(
+            object_enc,
+            type,
+            depth_limit=depth_limit,
+            instructions=instructions,
+            **kwargs,
+        )
 
     @_decode.overload(lambda type: is_dataclass_type(type))
     @abstractmethod
@@ -221,14 +241,21 @@ class SupportsDecodeMixin(Generic[T, R], BaseEngine[T, R], ABC):
         object_enc: R,
         type: type[DataclassInstance],
         /,
+        examples: list[T] = None,
         depth_limit: int | None = None,
         instructions: R | None = None,
-        visibility: Literal["public", "protected", "private"] = "public",
-        inherited_members: bool = True,
-        force_inline: bool = False,
         **kwargs,
     ) -> T:
-        raise NotImplementedError()
+        return self._decode(
+            object_enc,
+            type,
+            depth_limit=depth_limit,
+            instructions=instructions,
+            **kwargs,
+        )
+
+    # TODO: i need to figure out the decode_to_*_instance v. decode_to_*_type distinction
+    # because I want users to be able to do both with only changing on parameter
 
     @_decode.overload(lambda type: issubclass(type, type))
     @abstractmethod
@@ -237,14 +264,18 @@ class SupportsDecodeMixin(Generic[T, R], BaseEngine[T, R], ABC):
         object_enc: R,
         type: type,
         /,
+        examples: list[T] = None,
         depth_limit: int | None = None,
         instructions: R | None = None,
-        visibility: Literal["public", "protected", "private"] = "public",
-        inherited_members: bool = True,
-        force_inline: bool = False,
         **kwargs,
     ) -> T:
-        raise NotImplementedError()
+        return self._decode(
+            object_enc,
+            type,
+            depth_limit=depth_limit,
+            instructions=instructions,
+            **kwargs,
+        )
 
     @_decode.overload(lambda type: issubclass(type, type[pydantic.BaseModel]))
     @abstractmethod
@@ -253,14 +284,18 @@ class SupportsDecodeMixin(Generic[T, R], BaseEngine[T, R], ABC):
         object_enc: R,
         type: type[type[pydantic.BaseModel]],
         /,
+        examples: list[T] = None,
         depth_limit: int | None = None,
         instructions: R | None = None,
-        visibility: Literal["public", "protected", "private"] = "public",
-        inherited_members: bool = True,
-        force_inline: bool = False,
         **kwargs,
     ) -> T:
-        raise NotImplementedError()
+        return self._decode(
+            object_enc,
+            type,
+            depth_limit=depth_limit,
+            instructions=instructions,
+            **kwargs,
+        )
 
     @_decode.overload(lambda type: issubclass(type, type[NamedTuple]))
     @abstractmethod
@@ -269,14 +304,18 @@ class SupportsDecodeMixin(Generic[T, R], BaseEngine[T, R], ABC):
         object_enc: R,
         type: type[type[NamedTuple]],
         /,
+        examples: list[T] = None,
         depth_limit: int | None = None,
         instructions: R | None = None,
-        visibility: Literal["public", "protected", "private"] = "public",
-        inherited_members: bool = True,
-        force_inline: bool = False,
         **kwargs,
     ) -> T:
-        raise NotImplementedError()
+        return self._decode(
+            object_enc,
+            type,
+            depth_limit=depth_limit,
+            instructions=instructions,
+            **kwargs,
+        )
 
     @_decode.overload(lambda type: issubclass(type, type))
     @abstractmethod
@@ -285,14 +324,18 @@ class SupportsDecodeMixin(Generic[T, R], BaseEngine[T, R], ABC):
         object_enc: R,
         type: type[type],
         /,
+        examples: list[T] = None,
         depth_limit: int | None = None,
         instructions: R | None = None,
-        visibility: Literal["public", "protected", "private"] = "public",
-        inherited_members: bool = True,
-        force_inline: bool = False,
         **kwargs,
     ) -> T:
-        raise NotImplementedError()
+        return self._decode(
+            object_enc,
+            type,
+            depth_limit=depth_limit,
+            instructions=instructions,
+            **kwargs,
+        )
 
     @_decode.overload(lambda type: typingx.issubclassx(type, ModuleType))
     @abstractmethod
@@ -301,14 +344,31 @@ class SupportsDecodeMixin(Generic[T, R], BaseEngine[T, R], ABC):
         object_enc: R,
         type: type[ModuleType],
         /,
+        examples: list[T] = None,
         depth_limit: int | None = None,
         instructions: R | None = None,
-        visibility: Literal["public", "protected", "private"] = "public",
-        inherited_members: bool = True,
-        force_inline: bool = False,
+        register_module=True,
         **kwargs,
     ) -> T:
-        raise NotImplementedError()
+        module_dict = self._decode_to_dict(
+            object_enc,
+            dict[str, Any],
+            depth_limit=depth_limit,
+            instructions=f"Generate the module __dict__ items. {instructions}",
+            **kwargs,
+        )
+        module_name = self.decode_to_str(
+            object_enc,
+            str,
+            depth_limit=depth_limit,
+            instructions=f"Generate the module name. {instructions}",
+            **kwargs,
+        )
+        module = ModuleType(module_name)
+        module.__dict__.update(module_dict)
+        if register_module:
+            sys.modules[module_name] = module
+        return module
 
     @_decode.overload(lambda type: issubclass(type, Iterable[T]))
     @abstractmethod
@@ -317,46 +377,196 @@ class SupportsDecodeMixin(Generic[T, R], BaseEngine[T, R], ABC):
         object_enc: R,
         type: type[Iterable[T]],
         /,
+        examples: list[T] = None,
         depth_limit: int | None = None,
         instructions: R | None = None,
-        visibility: Literal["public", "protected", "private"] = "public",
-        inherited_members: bool = True,
-        force_inline: bool = False,
+        num_samples: int | None = None,
+        decide_samples: Literal["per_iteration", "at_start"] = "at_start",
         **kwargs,
     ) -> T:
-        raise NotImplementedError()
+        elem_type = typingx.get_args(type).get(0) or object
+        latent = dict(
+            input=object_enc,
+            output=[],
+            type=type,
+            elem_type=elem_type,
+            examples=examples,
+            depth_limit=depth_limit,
+            instructions=instructions,
+        )
+        match decide_samples:
+            case "per_iteration":
+                while self.decode_to_bool(
+                    latent,
+                    instructions="DECIDE whether to continue generating sequence items or not",
+                ):
+                    next = self._decode(
+                        object_enc,
+                        elem_type,
+                        depth_limit=depth_limit,
+                        instructions=instructions,
+                        **kwargs,
+                    )
+                    latent["output"].append(next)
+                    yield next
+            case "at_start":
+                if num_samples is None:
+                    num_samples = self.decode_to_int(
+                        latent, ge=0, instructions="DECIDE num sequence elements"
+                    )
+                for _ in range(num_samples):
+                    next = self._decode(
+                        object_enc,
+                        elem_type,
+                        depth_limit=depth_limit,
+                        instructions=instructions,
+                        **kwargs,
+                    )
+                    latent["output"].append(next)
+                    yield next
+            case _:
+                raise ValueError(f"Invalid value for decide_samples: {decide_samples}")
 
     @_decode.overload(lambda type: typingx.issubclassx(type, Sequence[T]))
-    @abstractmethod
     def _decode_to_seq(
         self,
         object_enc: R,
-        type: type[Sequence[T]],
+        type: type[Sequence[T]] = list[T],
         /,
+        examples: list[T] = None,
         depth_limit: int | None = None,
         instructions: R | None = None,
-        visibility: Literal["public", "protected", "private"] = "public",
-        inherited_members: bool = True,
-        force_inline: bool = False,
+        num_samples: int | None = None,
+        decide_samples: Literal["per_iteration", "at_start"] = "at_start",
+        **kwargs,
+    ) -> Sequence[T]:
+        it = self._decode_to_iterable(
+            object_enc,
+            type,
+            examples=examples,
+            depth_limit=depth_limit,
+            instructions=instructions,
+            num_samples=num_samples,
+            decide_samples=decide_samples,
+            **kwargs,
+        )
+        return type(it)
+
+    @_decode.overload(lambda type: typingx.issubclassx(type, tuple[T]))
+    def _decode_to_tuple(
+        self,
+        object_enc: R,
+        type: type[tuple] = tuple,
+        /,
+        examples: list[T] = None,
+        depth_limit: int | None = None,
+        instructions: R | None = None,
+        num_samples: int | None = None,
+        decide_samples: Literal["per_iteration", "at_start"] = "at_start",
         **kwargs,
     ) -> T:
-        raise NotImplementedError()
+        elem_types = typingx.get_args(type)
 
-    @_decode.overload(lambda type: typingx.issubclassx(type, Set[T]))
-    @abstractmethod
+        # if tuple has no args, size is unknown
+        if elem_types == ():
+            it = self._decode_to_iterable(
+                object_enc,
+                type[Any, ...],
+                examples=examples,
+                depth_limit=depth_limit - 1,
+                instructions=instructions,
+                num_samples=num_samples,
+                decide_samples=decide_samples,
+                **kwargs,
+            )
+            return type(it)
+
+        # if tuple has definite args, size is known
+        elif len(elem_types) > 0 and all(
+            elem_type is not ... for elem_type in elem_types
+        ):
+            elems = [
+                self._decode(
+                    object_enc,
+                    elem_type,
+                    depth_limit=depth_limit - 1,
+                    instructions=instructions,
+                    **kwargs,
+                )
+                for elem_type in elem_types
+            ]
+            return type(elems)
+
+        # if tuple has ... args, size is unknown
+        elif len(elem_types) > 0 and any(elem_type is ... for elem_type in elem_types):
+            elem_types_before_ellipsis = elem_types[: elem_types.index(...)]
+            elem_types_after_ellipsis = elem_types[elem_types.index(...) + 1 :]
+
+            elems_before_ellipsis = [
+                self._decode(
+                    object_enc,
+                    elem_type,
+                    depth_limit=depth_limit - 1,
+                    instructions=instructions,
+                    **kwargs,
+                )
+                for elem_type in elem_types_before_ellipsis
+            ]
+            elems_after_ellipsis = [
+                self._decode(
+                    object_enc,
+                    elem_type,
+                    depth_limit=depth_limit - 1,
+                    instructions=instructions,
+                    **kwargs,
+                )
+                for elem_type in elem_types_after_ellipsis
+            ]
+            elems_around_ellipsis_it = self._decode_to_iterable(
+                object_enc,
+                Iterable[make_union[elem_types_before_ellipsis]],
+                examples=examples,
+                depth_limit=depth_limit - 1,
+                instructions=instructions,
+                num_samples=num_samples,
+                decide_samples=decide_samples,
+                **kwargs,
+            )
+            return type(
+                elems_before_ellipsis
+                + tuple(elems_around_ellipsis_it)
+                + elems_after_ellipsis
+            )
+
+        else:
+            raise ValueError(
+                f"Invalid generic specification for tuple: {type}. This should never happen."
+            )
+
+    @_decode.overload(lambda type: typingx.issubclassx(type, set[T]))
     def _decode_to_set(
         self,
         object_enc: R,
-        type: type[Set[T]],
+        type: type[set[T] | frozenset[T]] = set[T],
         /,
+        examples: list[T] = None,
         depth_limit: int | None = None,
         instructions: R | None = None,
-        visibility: Literal["public", "protected", "private"] = "public",
-        inherited_members: bool = True,
-        force_inline: bool = False,
+        num_samples: int | None = None,
+        decide_samples: Literal["per_iteration", "at_start"] = "at_start",
         **kwargs,
     ) -> T:
-        raise NotImplementedError()
+        seq = self._decode_to_seq(
+            object_enc,
+            type,
+            examples=examples,
+            depth_limit=depth_limit,
+            instructions=instructions,
+            num_samples=num_samples,
+            decide_samples=decide_samples,
+            **kwargs,
+        )
+        return type(seq)
 
     @_decode.overload(lambda type: typingx.issubclassx(type, Mapping[Any, T]))
     @abstractmethod
@@ -365,14 +575,26 @@ class SupportsDecodeMixin(Generic[T, R], BaseEngine[T, R], ABC):
         object_enc: R,
         type: type[Mapping[Any, T]],
         /,
+        examples: list[T] = None,
         depth_limit: int | None = None,
         instructions: R | None = None,
-        visibility: Literal["public", "protected", "private"] = "public",
-        inherited_members: bool = True,
-        force_inline: bool = False,
+        num_samples: int | None = None,
+        decide_samples: Literal["per_iteration", "at_start"] = "per_iteration",
+        keys: Iterable[Any] = None,
         **kwargs,
     ) -> T:
-        raise NotImplementedError()
+        key_type, value_type = typingx.get_args(type)
+        it = self._decode_to_iterable(
+            object_enc,
+            list[tuple[key_type, value_type]],
+            examples=examples,
+            depth_limit=depth_limit,
+            instructions=instructions,
+            num_samples=num_samples,
+            decide_samples=decide_samples,
+            **kwargs,
+        )
+        return type(dict(it))
 
     @_decode.overload(lambda type: issubclass(type, None))
     @abstractmethod
@@ -381,14 +603,18 @@ class SupportsDecodeMixin(Generic[T, R], BaseEngine[T, R], ABC):
         object_enc: R,
         type: type[None],
         /,
+        examples: list[T] = None,
         depth_limit: int | None = None,
         instructions: R | None = None,
-        visibility: Literal["public", "protected", "private"] = "public",
-        inherited_members: bool = True,
-        force_inline: bool = False,
         **kwargs,
     ) -> T:
-        raise NotImplementedError()
+        return self._decode(
+            object_enc,
+            type,
+            depth_limit=depth_limit,
+            instructions=instructions,
+            **kwargs,
+        )
 
     @_decode.overload(lambda type: issubclass(type, bool))
     @abstractmethod
@@ -397,14 +623,18 @@ class SupportsDecodeMixin(Generic[T, R], BaseEngine[T, R], ABC):
         object_enc: R,
         type: type[bool],
         /,
+        examples: list[T] = None,
         depth_limit: int | None = None,
         instructions: R | None = None,
-        visibility: Literal["public", "protected", "private"] = "public",
-        inherited_members: bool = True,
-        force_inline: bool = False,
         **kwargs,
     ) -> T:
-        raise NotImplementedError()
+        return self._decode(
+            object_enc,
+            type,
+            depth_limit=depth_limit,
+            instructions=instructions,
+            **kwargs,
+        )
 
     @_decode.overload(lambda type: issubclass(type, int))
     def _decode_to_int(
@@ -412,14 +642,18 @@ class SupportsDecodeMixin(Generic[T, R], BaseEngine[T, R], ABC):
         object_enc: R,
         type: type[int],
         /,
+        examples: list[T] = None,
         depth_limit: int | None = None,
         instructions: R | None = None,
-        visibility: Literal["public", "protected", "private"] = "public",
-        inherited_members: bool = True,
-        force_inline: bool = False,
         **kwargs,
     ) -> T:
-        raise NotImplementedError()
+        return self._decode(
+            object_enc,
+            type,
+            depth_limit=depth_limit,
+            instructions=instructions,
+            **kwargs,
+        )
 
     @_decode.overload(lambda type: issubclass(type, float))
     @abstractmethod
@@ -428,14 +662,18 @@ class SupportsDecodeMixin(Generic[T, R], BaseEngine[T, R], ABC):
         object_enc: R,
         type: type[float],
         /,
+        examples: list[T] = None,
         depth_limit: int | None = None,
         instructions: R | None = None,
-        visibility: Literal["public", "protected", "private"] = "public",
-        inherited_members: bool = True,
-        force_inline: bool = False,
         **kwargs,
     ) -> T:
-        raise NotImplementedError()
+        return self._decode(
+            object_enc,
+            type,
+            depth_limit=depth_limit,
+            instructions=instructions,
+            **kwargs,
+        )
 
     @_decode.overload(lambda type: issubclass(type, complex))
     @abstractmethod
@@ -444,14 +682,18 @@ class SupportsDecodeMixin(Generic[T, R], BaseEngine[T, R], ABC):
         object_enc: R,
         type: type[complex],
         /,
+        examples: list[T] = None,
         depth_limit: int | None = None,
         instructions: R | None = None,
-        visibility: Literal["public", "protected", "private"] = "public",
-        inherited_members: bool = True,
-        force_inline: bool = False,
         **kwargs,
     ) -> T:
-        raise NotImplementedError()
+        return self._decode(
+            object_enc,
+            type,
+            depth_limit=depth_limit,
+            instructions=instructions,
+            **kwargs,
+        )
 
     @_decode.overload(lambda type: issubclass(type, str))
     @abstractmethod
@@ -460,14 +702,18 @@ class SupportsDecodeMixin(Generic[T, R], BaseEngine[T, R], ABC):
         object_enc: R,
         type: type[str],
         /,
+        examples: list[T] = None,
         depth_limit: int | None = None,
         instructions: R | None = None,
-        visibility: Literal["public", "protected", "private"] = "public",
-        inherited_members: bool = True,
-        force_inline: bool = False,
         **kwargs,
     ) -> T:
-        raise NotImplementedError()
+        return self._decode(
+            object_enc,
+            type,
+            depth_limit=depth_limit,
+            instructions=instructions,
+            **kwargs,
+        )
 
     @_decode.overload(lambda type: issubclass(type, bytes))
     @abstractmethod
@@ -476,11 +722,15 @@ class SupportsDecodeMixin(Generic[T, R], BaseEngine[T, R], ABC):
         object_enc: R,
         type: type[bytes],
         /,
+        examples: list[T] = None,
         depth_limit: int | None = None,
         instructions: R | None = None,
-        visibility: Literal["public", "protected", "private"] = "public",
-        inherited_members: bool = True,
-        force_inline: bool = False,
         **kwargs,
     ) -> T:
-        raise NotImplementedError()
+        return self._decode(
+            object_enc,
+            type,
+            depth_limit=depth_limit,
+            instructions=instructions,
+            **kwargs,
+        )

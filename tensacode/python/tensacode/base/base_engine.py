@@ -81,7 +81,7 @@ class BaseEngine(Generic[T, R], ABC):
     R: ClassVar[type[R]] = R
 
     class _HasThisEngine(ABC):
-        _engine: ClassVar[FullEngine]
+        _engine: ClassVar[BaseEngine]
 
     class _EngineDecorator(Decorator, _HasThisEngine, ABC):
         pass
@@ -89,10 +89,10 @@ class BaseEngine(Generic[T, R], ABC):
     @attr.s(auto_attribs=True)
     class DefaultParam(Default, _HasThisEngine):
         initial_value: Any | None = attr.ib(default=None)
-        initializer: Callable[[FullEngine], Any] | None = attr.ib(default=None)
+        initializer: Callable[[BaseEngine], Any] | None = attr.ib(default=None)
 
         def __init__(self, initializer_or_initial_value: Any = None, /, **kw):
-            if typingx.isinstance(self.default, Callable[[FullEngine], Any]):
+            if typingx.isinstance(self.default, Callable[[BaseEngine], Any]):
                 self.initializer = initializer_or_initial_value
             else:
                 self.initial_value = initializer_or_initial_value
@@ -398,3 +398,7 @@ class BaseEngine(Generic[T, R], ABC):
 
     def _is_encoded(self, object: T | R) -> bool:
         return typingx.isinstancex(object, (self.R, self.enc[T]))
+
+    # TODO: move this to a separate mixin. Also move the llm_engine.base.BaseLLMEngine.combine to a mixin.
+    def combine(self, *objects: enc[T]) -> enc[T]:
+        return self.encode(objects)

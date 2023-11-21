@@ -13,7 +13,7 @@ from math import remainder
 from pathlib import Path
 import pickle
 from textwrap import dedent, indent
-from types import FunctionType, ModuleType
+from types import FunctionType, LambdaType, ModuleType
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -30,6 +30,7 @@ from typing import (
     Set,
     TypeVar,
 )
+from pydantic.fields import FieldInfo
 from box import Box
 from uuid import uuid4
 import attr
@@ -71,6 +72,8 @@ from tensacode.utils.types import (
     atomic_types,
     container_types,
     composite_types,
+    is_lambda,
+    is_object,
     tree_types,
     tree,
     DataclassInstance,
@@ -99,7 +102,7 @@ class SupportsEncodeMixin(
         force_inline: bool = False,
         **kwargs,
     ) -> R:
-        return super()._encode(
+        return super()._encode_object(
             object,
             depth_limit=depth_limit,
             instructions=instructions,
@@ -109,7 +112,7 @@ class SupportsEncodeMixin(
             **kwargs,
         )
 
-    @_encode.overload(is_object_instance)
+    @_encode.overload(lambda object: is_object(object))
     def _encode_object(
         self,
         object: object,
@@ -124,7 +127,7 @@ class SupportsEncodeMixin(
         if depth_limit is not None and depth_limit <= 0:
             return
 
-        if object.__repr__.__func__ is not py_object.__repr__:
+        if repr(object) != py_object.__repr__(object):
             return repr(object)
 
         keys = set(get_keys(object, visibility=visibility))
@@ -196,12 +199,13 @@ class SupportsEncodeMixin(
     @abstractmethod
     def _encode_function(
         self,
-        object: FunctionType,
+        object: Callable,
         /,
         depth_limit: int | None = None,
         instructions: R | None = None,
         visibility: Literal["public", "protected", "private"] = "public",
         force_inline: bool = False,
+        fn_start_keyword: str = "def",
         **kwargs,
     ) -> R:
         '''
@@ -283,7 +287,7 @@ class SupportsEncodeMixin(
 
         params_str = ", ".join(params)
 
-        header = f"def {func_name}({params_str})"
+        header = f"{fn_start_keyword} {func_name}({params_str})"
 
         # Get the return type
         if (
@@ -328,7 +332,7 @@ class SupportsEncodeMixin(
         # Combine everything into the final string
         return self._render_block(header, body).strip()
 
-    @_encode.overload(is_pydantic_model_instance)
+    @_encode.overload(lambda object: is_pydantic_model_instance(object))
     def _encode_pydantic_model_instance(
         self,
         object: pydantic.BaseModel,
@@ -352,7 +356,6 @@ class SupportsEncodeMixin(
             and not inspect.ismodule(getattr(object, k))
             and not inspect.isclass(getattr(object, k))
         }
-
         field_tuples = [
             (
                 # althought we could technically just write `k`,
@@ -375,15 +378,7 @@ class SupportsEncodeMixin(
                     force_inline=True,
                     **kwargs,
                 ),
-                self._encode(
-                    getattr(object, k),
-                    depth_limit=depth_limit,
-                    instructions=instructions,
-                    visibility="public",
-                    inherited_members=inherited_members,
-                    force_inline=True,
-                    **kwargs,
-                ),
+                self._render_field(getattr(object, k)),
             )
             for k in field_keys
         ]
@@ -443,37 +438,7 @@ class SupportsEncodeMixin(
             force_inline=force_inline,
         )
 
-    def _render_composite(
-        self,
-        header,
-        tuples: list[tuple[str, str, str]],
-        docstring: str = None,
-        force_inline: bool = False,
-    ):
-        items_str = []
-        for name, annotation, value in tuples:
-            if not name:
-                # this happens for methods
-                items_str.append(value)
-            match annotation, value:
-                case None, None:
-                    items_str.append(name)
-                case None, value:
-                    items_str.append(f"{name}={value}")
-                case annotation, None:
-                    items_str.append(f"{name}: {annotation}")
-                case annotation, value:
-                    items_str.append(f"{name}: {annotation}={value}")
-
-        if force_inline:
-            return f"{header}({', '.join(items_str)})"
-        else:
-            body = "\n".join(items_str)
-            if docstring:
-                body = f'"""{docstring}"""\n' + body
-            return self._render_block(header, body)
-
-    @_encode.overload(is_namedtuple_instance)
+    @_encode.overload(lambda object: is_namedtuple_instance(object))
     def _encode_namedtuple_instance(
         self,
         object: NamedTuple,
@@ -496,7 +461,7 @@ class SupportsEncodeMixin(
             **kwargs,
         )
 
-    @_encode.overload(is_type)
+    @_encode.overload(lambda object: is_type(object))
     def _encode_type(
         self,
         object: type,
@@ -615,7 +580,7 @@ class SupportsEncodeMixin(
             force_inline=False,
         )
 
-    @_encode.overload(is_pydantic_model_type)
+    @_encode.overload(lambda object: is_pydantic_model_type(object))
     def _encode_pydantic_model_type(
         self,
         object: type[pydantic.BaseModel],
@@ -640,7 +605,7 @@ class SupportsEncodeMixin(
             **kwargs,
         )
 
-    @_encode.overload(is_namedtuple_type)
+    @_encode.overload(lambda object: is_namedtuple_type(object))
     def _encode_namedtuple_type(
         self,
         object: type[NamedTuple],
@@ -991,7 +956,156 @@ class SupportsEncodeMixin(
                 items=encoded_items
             )
 
+    @_encode.overload(lambda object: isinstance(object, Ellipsis))
+    def _encode_ellipsis(
+        self,
+        object: object,
+        /,
+        **kwargs,
+    ) -> R:
+        return "..."
+
+    @_encode.overload(lambda object: isinstance(object, slice))
+    def _encode_slice(
+        self,
+        object: object,
+        /,
+        depth_limit: int | None = None,
+        instructions: R | None = None,
+        visibility: Literal["public", "protected", "private"] = "public",
+        inherited_members: bool = True,
+        **kwargs,
+    ) -> R:
+        start_enc = self.encode(
+            object.start,
+            depth_limit=depth_limit - 1,
+            instructions=instructions,
+            visibility=visibility,
+            inherited_members=inherited_members,
+            force_inline=True,
+            **kwargs,
+        )
+        stop_enc = self.encode(
+            object.stop,
+            depth_limit=depth_limit - 1,
+            instructions=instructions,
+            visibility=visibility,
+            inherited_members=inherited_members,
+            force_inline=True,
+            **kwargs,
+        )
+        step_enc = self.encode(
+            object.step,
+            depth_limit=depth_limit - 1,
+            instructions=instructions,
+            visibility=visibility,
+            inherited_members=inherited_members,
+            force_inline=True,
+            **kwargs,
+        )
+        match start_enc, stop_enc, step_enc:
+            case None, None, None:
+                return ":"
+            case None, None, _:
+                return f"::{step_enc}"
+            case None, _, None:
+                return f":{stop_enc}"
+            case None, _, _:
+                return f":{stop_enc}:{step_enc}"
+            case _, None, None:
+                return f"{start_enc}:"
+            case _, None, _:
+                return f"{start_enc}::{step_enc}"
+            case _, _, None:
+                return f"{start_enc}:{stop_enc}"
+            case _, _, _:
+                return f"{start_enc}:{stop_enc}:{step_enc}"
+
+    @_encode.overload(lambda object: is_lambda(object))
+    def _encode_lambda(
+        self,
+        object: LambdaType,
+        /,
+        depth_limit: int | None = None,
+        instructions: R | None = None,
+        **kwargs,
+    ) -> R:
+        return self._encode_function(
+            object,
+            depth_limit=depth_limit,
+            instructions=instructions,
+            fn_start_keyword="lambda",
+            force_inline=True,
+            **kwargs,
+        )
+
     INDENTATION = 4 * " "
 
-    def _render_block(self, header, body):
+    def _render_block(self, header, body) -> str:
         return f"{header}:\n{indent(body, self.INDENTATION)}"
+
+    def _render_invocation(
+        self, fn: str or Callable, /, args=None, kwargs=None, result=None
+    ) -> str:
+        fn_str = fn.__name__ if callable(fn) else fn
+
+        args = args or []
+        kwargs = kwargs or {}
+
+        args_str = [self.encode(arg, force_inline=True) for arg in args]
+        kwargs_str = [
+            f"{k}={self.encode(v, force_inline=True)}" for k, v in kwargs.items()
+        ]
+
+        result_str = (
+            f" -> {self.encode(result, force_inline=True)}"
+            if result is not None
+            else ""
+        )
+
+        if args_str and kwargs_str:
+            return f"{fn_str}({args_str}, {kwargs_str}){result_str}"
+        elif args_str:
+            return f"{fn_str}({args_str}){result_str}"
+        elif kwargs_str:
+            return f"{fn_str}({kwargs_str}){result_str}"
+        else:
+            return f"{fn_str}(){result_str}"
+
+    def _render_field(field: FieldInfo) -> str:
+        items = {
+            k: getattr(field, k, None)
+            for k in dir(field)
+            if not k.startswith("_") and getattr(field, k) != getattr(Field, k)
+        }
+        return f"Field({', '.join(f'{k}={v}' for k, v in items.items())})"
+
+    def _render_composite(
+        self,
+        header,
+        tuples: list[tuple[str, str, str]],
+        docstring: str = None,
+        force_inline: bool = False,
+    ) -> str:
+        items_str = []
+        for name, annotation, value in tuples:
+            if not name:
+                # this happens for methods
+                items_str.append(value)
+            match annotation, value:
+                case None, None:
+                    items_str.append(name)
+                case None, value:
+                    items_str.append(f"{name}={value}")
+                case annotation, None:
+                    items_str.append(f"{name}: {annotation}")
+                case annotation, value:
+                    items_str.append(f"{name}: {annotation}={value}")
+
+        if force_inline:
+            return f"{header}({', '.join(items_str)})"
+        else:
+            body = "\n".join(items_str)
+            if docstring:
+                body = f'"""{docstring}"""\n' + body
+            return self._render_block(header, body)

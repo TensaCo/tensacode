@@ -33,6 +33,7 @@ from jinja2 import Template
 import loguru
 from glom import glom
 from pydantic import Field
+from tensacode.base.mixins.supports_choice import SupportsChoiceMixin
 
 import typingx
 import pydantic, sqlalchemy, dataclasses, attr, typing
@@ -74,12 +75,20 @@ from tensacode.utils.types import (
 from tensacode.utils.internal_types import nested_dict
 from tensacode.base.base_engine import BaseEngine
 
+S = TypeVar("S")
 
-class SupportsDecideMixin(Generic[T, R], BaseEngine[T, R], ABC):
+
+class SupportsDecideMixin(
+    Generic[T, R],
+    SupportsChoiceMixin[T, R],
+    BaseEngine[T, R],
+    ABC,
+):
     # copied from MixinBase for aesthetic consistency
     trace = BaseEngine.trace
     DefaultParam = BaseEngine.DefaultParam
     encoded_args = BaseEngine.encoded_args
+    Branch = SupportsChoiceMixin.Branch
 
     @dynamic_defaults()
     @encoded_args()
@@ -88,15 +97,15 @@ class SupportsDecideMixin(Generic[T, R], BaseEngine[T, R], ABC):
         self,
         data: enc[T],
         condition: enc[T],
-        if_true: Callable = lambda *a, **kw: True,
-        if_false: Callable = lambda *a, **kw: False,
+        if_true: Callable[..., S] = None,
+        if_false: Callable[..., S] = None,
         *,
         threshold: float = DefaultParam("hparams.choice.threshold"),
         randomness: float = DefaultParam("hparams.choice.randomness"),
         depth_limit: int = DefaultParam(qualname="hparams.choice.depth_limit"),
         instructions: enc[str] = DefaultParam(qualname="hparams.choice.instructions"),
         **kwargs,
-    ):
+    ) -> bool | (S | None):
         """
         Makes a decision based on the provided condition. If the condition is met, the `if_true` function is called. Otherwise, the `if_false` function is called.
 
@@ -147,24 +156,115 @@ class SupportsDecideMixin(Generic[T, R], BaseEngine[T, R], ABC):
         self,
         data: R,
         condition: R,
-        if_true: Callable,
-        if_false: Callable,
-        *,
-        threshold: float,
-        randomness: float,
-        depth_limit: int,
-        instructions: enc[str],
+        if_true: Callable[..., S] | None,
+        if_false: Callable[..., S] | None,
         **kwargs,
-    ):
-        return self.choice(
-            [
-                (condition, if_true),
-                (lambda *a, **kw: not condition(*a, **kw), if_false),
-            ],
-            mode="last-winner",
-            threshold=threshold,
-            randomness=randomness,
-            depth_limit=depth_limit,
-            instructions=instructions,
-            **kwargs,
-        )
+    ) -> bool | (S | None):
+        match if_true, if_false:
+            case None, None:
+                latent = self.encode(
+                    {
+                        "data": data,
+                        "condition": condition,
+                    }
+                )
+                decision = self.decode_to_bool(latent)
+                return decision
+            case None, _:
+
+                @functools.wraps(if_false)
+                def deferred_fn(*args, **kwargs):
+                    if_false_signature = inspect.signature(if_false)
+                    if_false_params = if_false_signature.parameters
+                    bound_values = if_false_signature.bind(*args, **kwargs)
+                    param_values = {
+                        name: bound_values.arguments.get(name, param.default)
+                        for name, param in if_false_params.items()
+                    }
+
+                    latent = self.encode(
+                        {
+                            "data": data,
+                            "condition": condition,
+                            "if_true": None,
+                            "if_false": if_false,
+                            "params": param_values,
+                        }
+                    )
+                    decision = self.decode_to_bool(latent)
+                    match decision:
+                        case True:
+                            return None
+                        case False:
+                            return if_false(*args, **kwargs)
+
+                return deferred_fn
+
+            case _, None:
+
+                @functools.wraps(if_true)
+                def deferred_fn(*args, **kwargs):
+                    if_true_signature = inspect.signature(if_false)
+                    if_true_params = if_true_signature.parameters
+                    bound_values = if_true_signature.bind(*args, **kwargs)
+                    param_values = {
+                        name: bound_values.arguments.get(name, param.default)
+                        for name, param in if_true_params.items()
+                    }
+
+                    latent = self.encode(
+                        {
+                            "data": data,
+                            "condition": condition,
+                            "if_true": if_true,
+                            "if_false": None,
+                            "params": param_values,
+                        }
+                    )
+                    decision = self.decode_to_bool(latent)
+                    match decision:
+                        case True:
+                            return if_true(*args, **kwargs)
+                        case False:
+                            return None
+
+                return deferred_fn
+            case _, _:
+
+                def deferred_fn(*args, **kwargs):
+                    if_false_signature = inspect.signature(if_false)
+                    if_false_params = if_false_signature.parameters
+                    if_false_bound_values = if_false_signature.bind(*args, **kwargs)
+                    if_false_param_values = {
+                        name: if_false_bound_values.arguments.get(name, param.default)
+                        for name, param in if_false_params.items()
+                    }
+                    if_true_signature = inspect.signature(if_false)
+                    if_true_params = if_true_signature.parameters
+                    if_true_bound_values = if_true_signature.bind(*args, **kwargs)
+                    if_true_param_values = {
+                        name: if_true_bound_values.arguments.get(name, param.default)
+                        for name, param in if_true_params.items()
+                    }
+                    param_values = {
+                        **if_false_param_values,
+                        **if_true_param_values,
+                    }
+
+                    latent = self.encode(
+                        {
+                            "data": data,
+                            "condition": condition,
+                            "if_true": if_true,
+                            "if_false": if_false,
+                            "params": param_values,
+                        }
+                    )
+                    decision = self.decode_to_bool(latent)
+                    match decision:
+                        case True:
+                            return if_true(*args, **kwargs)
+                        case False:
+                            return if_false(*args, **kwargs)
+
+                return deferred_fn

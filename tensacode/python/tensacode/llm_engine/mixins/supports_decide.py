@@ -40,8 +40,9 @@ import typingx
 import pydantic, sqlalchemy, dataclasses, attr, typing
 
 from langchain.output_parsers.boolean import BooleanOutputParser
+from langchain.output_parsers.fix import OutputFixingParser
 from langchain.prompts.prompt import PromptTemplate
-
+from langchain.output_parsers import RetryWithErrorOutputParser
 import tensacode as tc
 from tensacode.utils.decorators import (
     Decorator,
@@ -81,6 +82,9 @@ from tensacode.llm_engine.base_llm_engine import BaseLLMEngine
 import tensacode.base.mixins as mixins
 
 
+S = TypeVar("S")
+
+
 class SupportsDecideMixin(
     Generic[T, R],
     # just about every mixin needs to inherit from SupportsEncodeMixin
@@ -91,6 +95,8 @@ class SupportsDecideMixin(
 ):
     kernel = BaseLLMEngine[T, R].kernel
     parser = BooleanOutputParser()
+    retry_parser = RetryWithErrorOutputParser.from_llm(parser=parser, llm=kernel)
+
     template_no_fns = dedent(
         """\
             DECIDE based on the following condition: {condition}
@@ -110,7 +116,7 @@ class SupportsDecideMixin(
             "false_val": parser.false_val,
         },
     )
-    pipeline_no_fns = prompt_no_fns | kernel | parser
+    pipeline_no_fns = prompt_no_fns | kernel | retry_parser
 
     template_if_true_fn_only = dedent(
         """\
@@ -133,7 +139,7 @@ class SupportsDecideMixin(
             "false_val": parser.false_val,
         },
     )
-    pipeline_if_true_fn_only = prompt_if_true_fn_only | kernel | parser
+    pipeline_if_true_fn_only = prompt_if_true_fn_only | kernel | retry_parser
 
     template_if_false_fn_only = dedent(
         """\
@@ -156,7 +162,7 @@ class SupportsDecideMixin(
             "false_val": parser.false_val,
         },
     )
-    pipeline_if_false_fn_only = prompt_if_false_fn_only | kernel | parser
+    pipeline_if_false_fn_only = prompt_if_false_fn_only | kernel | retry_parser
 
     template_both_fns = dedent(
         """\
@@ -184,47 +190,47 @@ class SupportsDecideMixin(
             "false_val": parser.false_val,
         },
     )
-    pipeline_2_fns = prompt_2_fns | kernel | parser
+    pipeline_2_fns = prompt_2_fns | kernel | retry_parser
 
     def _decide(
         self,
         data: R,
         condition: R,
-        if_true: Callable | None,
-        if_false: Callable | None,
-        *,
-        threshold: float,
-        randomness: float,
-        depth_limit: int,
-        instructions: enc[str],
+        if_true: Callable[..., S] | None,
+        if_false: Callable[..., S] | None,
         **kwargs,
-    ):
-        # TODO: i need to implement the render_invocation method on the SupportsEncodeMixin and use that one instead of some utils fn like i am right now below:
-
+    ) -> bool | (S | None):
         match if_true, if_false:
             case None, None:
-                return self.pipeline_no_fns.invoke(
+                decision = self.pipeline_no_fns.invoke(
                     {
                         "data": data,
                         "condition": condition,
                     }
                 )
+                return decision
+
             case None, _:
 
                 @functools.wraps(if_false)
                 def deferred_fn(*args, **kwargs):
-                    false_invocation = render_invocation(
+                    false_invocation = self._render_invocation(
                         if_false,
                         args=args,
                         kwargs=kwargs,
                     )
-                    return self.pipeline_if_false_fn_only.invoke(
+                    decision = self.pipeline_if_false_fn_only.invoke(
                         {
                             "data": data,
                             "condition": condition,
                             "false_fn_invocation": false_invocation,
                         }
                     )
+                    match decision:
+                        case True:
+                            return None
+                        case False:
+                            return if_false(*args, **kwargs)
 
                 return deferred_fn
 
@@ -232,34 +238,39 @@ class SupportsDecideMixin(
 
                 @functools.wraps(if_true)
                 def deferred_fn(*args, **kwargs):
-                    true_invocation = render_invocation(
+                    true_invocation = self._render_invocation(
                         if_true,
                         args=args,
                         kwargs=kwargs,
                     )
-                    return self.pipeline_if_true_fn_only.invoke(
+                    decision = self.pipeline_if_true_fn_only.invoke(
                         {
                             "data": data,
                             "condition": condition,
                             "true_fn_invocation": true_invocation,
                         }
                     )
+                    match decision:
+                        case True:
+                            return if_true(*args, **kwargs)
+                        case False:
+                            return None
 
                 return deferred_fn
             case _, _:
 
                 def deferred_fn(*args, **kwargs):
-                    true_invocation = render_invocation(
+                    true_invocation = self._render_invocation(
                         if_true,
                         args=args,
                         kwargs=kwargs,
                     )
-                    false_invocation = render_invocation(
+                    false_invocation = self._render_invocation(
                         if_false,
                         args=args,
                         kwargs=kwargs,
                     )
-                    return self.pipeline_2_fns.invoke(
+                    decision = self.pipeline_2_fns.invoke(
                         {
                             "data": data,
                             "condition": condition,
@@ -267,5 +278,10 @@ class SupportsDecideMixin(
                             "false_fn_invocation": false_invocation,
                         }
                     )
+                    match decision:
+                        case True:
+                            return if_true(*args, **kwargs)
+                        case False:
+                            return if_false(*args, **kwargs)
 
                 return deferred_fn

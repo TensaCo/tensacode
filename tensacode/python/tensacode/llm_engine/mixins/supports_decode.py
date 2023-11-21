@@ -10,6 +10,7 @@ from functools import singledispatchmethod
 import inspect
 from pathlib import Path
 import pickle
+from types import FunctionType
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -22,6 +23,7 @@ from typing import (
     Mapping,
     NamedTuple,
     Optional,
+    Protocol,
     Sequence,
     Set,
     TypeVar,
@@ -79,32 +81,41 @@ import tensacode.base.mixins as mixins
 class SupportsDecodeMixin(
     Generic[T, R], BaseLLMEngine[T, R], mixins.SupportsDecodeMixin[T, R], ABC
 ):
-    @abstractmethod
+    @overloaded
     def _decode(
         self,
         object_enc: R,
         type: type[T],
         /,
+        examples: list[T] = None,
         depth_limit: int | None = None,
         instructions: R | None = None,
-        visibility: Literal["public", "protected", "private"] = "public",
-        inherited_members: bool = True,
-        force_inline: bool = False,
         **kwargs,
     ) -> T:
         raise NotImplementedError()
 
-    @abstractmethod
+    @_decode.overload(is_object_instance)
     def _decode_to_object(
         self,
         object_enc: R,
         type: type[T],
         /,
+        examples: list[T] = None,
         depth_limit: int | None = None,
         instructions: R | None = None,
-        visibility: Literal["public", "protected", "private"] = "public",
-        inherited_members: bool = True,
-        force_inline: bool = False,
+        **kwargs,
+    ) -> T:
+        raise NotImplementedError()
+
+    @_decode.overload(lambda object: callable(object))
+    def _decode_to_function(
+        self,
+        object_enc: R,
+        type: type[Callable],
+        /,
+        examples: list[T] = None,
+        depth_limit: int | None = None,
+        instructions: R | None = None,
         **kwargs,
     ) -> T:
         raise NotImplementedError()
@@ -115,26 +126,22 @@ class SupportsDecodeMixin(
         object_enc: R,
         type: type[pydantic.BaseModel],
         /,
+        examples: list[T] = None,
         depth_limit: int | None = None,
         instructions: R | None = None,
-        visibility: Literal["public", "protected", "private"] = "public",
-        inherited_members: bool = True,
-        force_inline: bool = False,
         **kwargs,
     ) -> T:
         raise NotImplementedError()
 
-    @_decode.overload(lambda type: issubclass(type, NamedTuple))
+    @_decode.overload(lambda type: is_namedtuple_type(type))
     def _decode_to_namedtuple_instance(
         self,
         object_enc: R,
         type: type[NamedTuple],
         /,
+        examples: list[T] = None,
         depth_limit: int | None = None,
         instructions: R | None = None,
-        visibility: Literal["public", "protected", "private"] = "public",
-        inherited_members: bool = True,
-        force_inline: bool = False,
         **kwargs,
     ) -> T:
         raise NotImplementedError()
@@ -145,86 +152,75 @@ class SupportsDecodeMixin(
         object_enc: R,
         type: type[DataclassInstance],
         /,
+        examples: list[T] = None,
         depth_limit: int | None = None,
         instructions: R | None = None,
-        visibility: Literal["public", "protected", "private"] = "public",
-        inherited_members: bool = True,
-        force_inline: bool = False,
         **kwargs,
     ) -> T:
         raise NotImplementedError()
 
-    @_decode.overload(lambda type: issubclass(type, type))
-    def _decode_to_type(
-        self,
-        object_enc: R,
-        type: type,
-        /,
-        depth_limit: int | None = None,
-        instructions: R | None = None,
-        visibility: Literal["public", "protected", "private"] = "public",
-        inherited_members: bool = True,
-        force_inline: bool = False,
-        **kwargs,
-    ) -> T:
-        raise NotImplementedError()
+    #  TODO: pull these into a separate mixin `supports_create_type`
+    # @_decode.overload(lambda type: is_type(type))
+    # def _decode_to_type(
+    #     self,
+    #     object_enc: R,
+    #     type: type,
+    #     /,
+    #     examples: list[T] = None,
+    #     depth_limit: int | None = None,
+    #     instructions: R | None = None,
+    #     **kwargs,
+    # ) -> T:
+    #     raise NotImplementedError()
 
-    @_decode.overload(lambda type: issubclass(type, type[pydantic.BaseModel]))
-    def _decode_to_pydantic_model_type(
-        self,
-        object_enc: R,
-        type: type[type[pydantic.BaseModel]],
-        /,
-        depth_limit: int | None = None,
-        instructions: R | None = None,
-        visibility: Literal["public", "protected", "private"] = "public",
-        inherited_members: bool = True,
-        force_inline: bool = False,
-        **kwargs,
-    ) -> T:
-        raise NotImplementedError()
+    # @_decode.overload(lambda type: is_pydantic_model_type(type))
+    # def _decode_to_pydantic_model_type(
+    #     self,
+    #     object_enc: R,
+    #     type: type[type[pydantic.BaseModel]],
+    #     /,
+    #     examples: list[T] = None,
+    #     depth_limit: int | None = None,
+    #     instructions: R | None = None,
+    #     **kwargs,
+    # ) -> T:
+    #     raise NotImplementedError()
 
-    @_decode.overload(lambda type: issubclass(type, type[NamedTuple]))
-    def _decode_to_namedtuple_type(
-        self,
-        object_enc: R,
-        type: type[type[NamedTuple]],
-        /,
-        depth_limit: int | None = None,
-        instructions: R | None = None,
-        visibility: Literal["public", "protected", "private"] = "public",
-        inherited_members: bool = True,
-        force_inline: bool = False,
-        **kwargs,
-    ) -> T:
-        raise NotImplementedError()
+    # @_decode.overload(lambda type: is_namedtuple_type(type))
+    # def _decode_to_namedtuple_type(
+    #     self,
+    #     object_enc: R,
+    #     type: type[NamedTuple],
+    #     /,
+    #     examples: list[T] = None,
+    #     depth_limit: int | None = None,
+    #     instructions: R | None = None,
+    #     **kwargs,
+    # ) -> T:
+    #     raise NotImplementedError()
 
-    @_decode.overload(lambda type: issubclass(type, type))
-    def _decode_to_dataclass_type(
-        self,
-        object_enc: R,
-        type: type[type],
-        /,
-        depth_limit: int | None = None,
-        instructions: R | None = None,
-        visibility: Literal["public", "protected", "private"] = "public",
-        inherited_members: bool = True,
-        force_inline: bool = False,
-        **kwargs,
-    ) -> T:
-        raise NotImplementedError()
+    # @_decode.overload(lambda type: is_dataclass_type(type))
+    # def _decode_to_dataclass_type(
+    #     self,
+    #     object_enc: R,
+    #     type: type[DataclassInstance],
+    #     /,
+    #     examples: list[T] = None,
+    #     depth_limit: int | None = None,
+    #     instructions: R | None = None,
+    #     **kwargs,
+    # ) -> T:
+    #     raise NotImplementedError()
 
-    @_decode.overload(lambda type: issubclass(type, None))
+    @_decode.overload(lambda object_enc: object_enc is None)
     def _decode_to_none(
         self,
         object_enc: R,
         type: type[None],
         /,
+        examples: list[T] = None,
         depth_limit: int | None = None,
         instructions: R | None = None,
-        visibility: Literal["public", "protected", "private"] = "public",
-        inherited_members: bool = True,
-        force_inline: bool = False,
         **kwargs,
     ) -> T:
         raise NotImplementedError()
@@ -235,11 +231,9 @@ class SupportsDecodeMixin(
         object_enc: R,
         type: type[bool],
         /,
+        examples: list[T] = None,
         depth_limit: int | None = None,
         instructions: R | None = None,
-        visibility: Literal["public", "protected", "private"] = "public",
-        inherited_members: bool = True,
-        force_inline: bool = False,
         **kwargs,
     ) -> T:
         raise NotImplementedError()
@@ -250,11 +244,9 @@ class SupportsDecodeMixin(
         object_enc: R,
         type: type[int],
         /,
+        examples: list[T] = None,
         depth_limit: int | None = None,
         instructions: R | None = None,
-        visibility: Literal["public", "protected", "private"] = "public",
-        inherited_members: bool = True,
-        force_inline: bool = False,
         **kwargs,
     ) -> T:
         raise NotImplementedError()
@@ -265,11 +257,9 @@ class SupportsDecodeMixin(
         object_enc: R,
         type: type[float],
         /,
+        examples: list[T] = None,
         depth_limit: int | None = None,
         instructions: R | None = None,
-        visibility: Literal["public", "protected", "private"] = "public",
-        inherited_members: bool = True,
-        force_inline: bool = False,
         **kwargs,
     ) -> T:
         raise NotImplementedError()
@@ -280,11 +270,9 @@ class SupportsDecodeMixin(
         object_enc: R,
         type: type[complex],
         /,
+        examples: list[T] = None,
         depth_limit: int | None = None,
         instructions: R | None = None,
-        visibility: Literal["public", "protected", "private"] = "public",
-        inherited_members: bool = True,
-        force_inline: bool = False,
         **kwargs,
     ) -> T:
         raise NotImplementedError()
@@ -295,11 +283,9 @@ class SupportsDecodeMixin(
         object_enc: R,
         type: type[str],
         /,
+        examples: list[T] = None,
         depth_limit: int | None = None,
         instructions: R | None = None,
-        visibility: Literal["public", "protected", "private"] = "public",
-        inherited_members: bool = True,
-        force_inline: bool = False,
         **kwargs,
     ) -> T:
         raise NotImplementedError()

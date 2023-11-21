@@ -81,12 +81,19 @@ class SupportsChoiceMixin(Generic[T, R], BaseEngine[T, R], ABC):
     DefaultParam = BaseEngine.DefaultParam
     encoded_args = BaseEngine.encoded_args
 
+    class Branch(NamedTuple):
+        condition: enc[T]
+        function: Callable[..., T]
+        args: tuple[Any, ...]
+        kwargs: dict[str, Any]
+
     @dynamic_defaults()
     @encoded_args()
     @trace()
     def choice(
         self,
-        conditions_and_functions: tuple[Callable[..., bool], Callable[..., T]],
+        data: enc[T],
+        branches: tuple[SupportsChoiceMixin.Branch, ...],
         /,
         mode: Literal["first-winner", "last-winner"] = "first-winner",
         default_case_idx: int | None = None,
@@ -100,7 +107,8 @@ class SupportsChoiceMixin(Generic[T, R], BaseEngine[T, R], ABC):
         Executes a choice operation based on the provided conditions and functions.
 
         Args:
-            conditions_and_functions (tuple): A tuple of callables representing conditions and corresponding functions.
+            data (T): The data to be used in the choice operation.
+            branches (tuple[SupportsChoiceMixin.Branch, ...]): The branches of the choice operation. Each branch is a tuple of a condition, a function, and the arguments and keyword arguments to be passed to the function.
             mode (str): The mode of operation. Can be either "first-winner" or "last-winner".
             default_case_idx (int, optional): The index of the default case to use if no condition surpasses the threshold. Defaults to None.
             threshold (float): The threshold value for condition evaluation.
@@ -118,7 +126,8 @@ class SupportsChoiceMixin(Generic[T, R], BaseEngine[T, R], ABC):
                 # pick first one to surpass threshold
                 # default to default_case or raise ValueError if no default_case
                 return self._choice_first_winner(
-                    conditions_and_functions,
+                    data,
+                    branches,
                     default_case_idx=default_case_idx,
                     threshold=threshold,
                     randomness=randomness,
@@ -131,7 +140,8 @@ class SupportsChoiceMixin(Generic[T, R], BaseEngine[T, R], ABC):
                 # pick global max
                 # default to default_case or raise ValueError if no default_case
                 return self._choice_last_winner(
-                    conditions_and_functions,
+                    data,
+                    branches,
                     default_case_idx=default_case_idx,
                     threshold=threshold,
                     randomness=randomness,
@@ -145,7 +155,8 @@ class SupportsChoiceMixin(Generic[T, R], BaseEngine[T, R], ABC):
     @abstractmethod
     def _choice_first_winner(
         self,
-        conditions_and_functions: tuple[Callable[..., bool], Callable[..., T]],
+        data: R,
+        branches: tuple[SupportsChoiceMixin.Branch, ...],
         /,
         default_case_idx: int | None,
         threshold: float,
@@ -162,7 +173,8 @@ class SupportsChoiceMixin(Generic[T, R], BaseEngine[T, R], ABC):
     @abstractmethod
     def _choice_last_winner(
         self,
-        conditions_and_functions: tuple[Callable[..., bool], Callable[..., T]],
+        data: R,
+        branches: tuple[SupportsChoiceMixin.Branch, ...],
         /,
         default_case_idx: int | None,
         threshold: float,

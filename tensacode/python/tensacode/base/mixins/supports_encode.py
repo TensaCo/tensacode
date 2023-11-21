@@ -177,7 +177,7 @@ class SupportsEncodeMixin(BaseEngine):
     @abstractmethod
     def _encode_function(
         self,
-        object: FunctionType,
+        object: Callable,
         /,
         depth_limit: int | None = None,
         instructions: R | None = None,

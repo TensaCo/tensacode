@@ -5,6 +5,7 @@ from typing import (
     TYPE_CHECKING,
     Any,
     NamedTuple,
+    Protocol,
     Union,
     Optional,
     TypeVar,
@@ -134,34 +135,49 @@ py_object = object
 def is_object(object):
     # NOTE: do NOT change signature w/o updating codebase.
     # must match Engine.<operator>.__params__[1].name
-    return isinstance(object, py_object)
+    return isinstance(object, py_object) or typingx.isinstancex(object, Any)
 
 
-def is_pydantic_model_type(object, /):
+def is_pydantic_model_type(pydantic_model_t, /):
     # NOTE: do NOT change signature w/o updating codebase.
     # must match Engine.<operator>.__params__[1].name
-    return issubclass(object, pydantic.BaseModel)
+    return issubclass(pydantic_model_t, pydantic.BaseModel)
 
 
-def is_namedtuple_type(object, /):
+def is_namedtuple_type(namedtuple_t, /):
     # NOTE: do NOT change signature w/o updating codebase.
     # must match Engine.<operator>.__params__[1].name
-    return typingx.issubclassx(object, NamedTuple) or (
-        issubclass(object, tuple) and hasattr(object, "_fields")
+    return typingx.issubclassx(namedtuple_t, NamedTuple) or (
+        issubclass(namedtuple_t, tuple) and hasattr(namedtuple_t, "_fields")
     )
 
 
-def is_dataclass_type(object, /):
+def is_dataclass_type(dataclass_t, /):
     # NOTE: do NOT change signature w/o updating codebase.
     # must match Engine.<operator>.__params__[1].name
 
     # is_dataclass returns true for dataclass instances, so we need to exclude those
-    return typingx.issubclassx(object, DataclassInstance) or (
-        dataclasses.is_dataclass(object) and isinstance(object, type)
+    return typingx.issubclassx(dataclass_t, DataclassInstance) or (
+        dataclasses.is_dataclass(dataclass_t) and isinstance(dataclass_t, type)
     )
 
 
-def is_type(object, /):
+def is_type(t, /):
     # NOTE: do NOT change signature w/o updating codebase.
     # must match Engine.<operator>.__params__[1].name
-    return isinstance(object, type)
+    return isinstance(t, (type, typing.TypeVar, Any))
+
+
+def is_lambda(lambda_, /):
+    # NOTE: do NOT change signature w/o updating codebase.
+    # must match Engine.<operator>.__params__[1].name
+    return (
+        isinstance(lambda_, type(lambda: None)) and lambda_.__qualname__ == "<lambda>"
+    )
+
+
+def is_callable_type(callable_t, /):
+    # we want to explicitly exclude type constructors in this case
+    # because they are treated differently than regular functions
+    # if you want to recognize a constructor, just pass the __new__ method
+    return issubclass(callable_t, (Callable, Protocol))
