@@ -1,3 +1,15 @@
 [submodule "tensacode/python"]
 	path = tensacode/python
 	url = https://github.com/TensaCo/tensacode-py.git
+[submodule "tensacode-ts"]
+	path = tensacode/ts
+	url = https://github.com/TensaCo/tensacode-ts.git
+[submodule "tensacode-java"]
+	path = tensacode/java
+	url = https://github.com/TensaCo/tensacode-java.git
+[submodule "tensacode-csharp"]
+	path = tensacode-csharp
+	url = https://github.com/TensaCo/tensacode-csharp.git
+[submodule "tensacode-cpp"]
+	path = tensacode-cpp
+	url = https://github.com/TensaCo/tensacode-cpp.git
