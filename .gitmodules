@@ -13,3 +13,9 @@
 [submodule "tensacode/cpp"]
 	path = tensacode/cpp
 	url = https://github.com/TensaCo/tensacode-cpp.git
+[submodule "tensacode/dart"]
+	path = tensacode/dart
+	url = https://github.com/TensaCo/TensaCode-dart.git
+[submodule "tensacode/kotlin"]
+	path = tensacode/kotlin
+	url = https://github.com/TensaCo/TensaCode-kotlin.git
