@@ -1,0 +1,3 @@
+[submodule "tensacode/python"]
+	path = tensacode/python
+	url = https://github.com/TensaCo/tensacode-py.git
