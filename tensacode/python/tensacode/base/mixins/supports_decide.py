@@ -86,7 +86,8 @@ class SupportsDecideMixin(Generic[T, R], BaseEngine[T, R], ABC):
     @trace()
     def decide(
         self,
-        condition: T,
+        data: enc[T],
+        condition: enc[T],
         if_true: Callable = lambda *a, **kw: True,
         if_false: Callable = lambda *a, **kw: False,
         *,
@@ -104,7 +105,8 @@ class SupportsDecideMixin(Generic[T, R], BaseEngine[T, R], ABC):
         - `bool_result = engine.decide(condition, ...)`: in this case, you don't define the true and false branches, and `engine.decide` returns a boolean value based on the condition.
 
         Args:
-            condition (T): The condition to evaluate.
+            data (enc[T]): The data to make the decision on.
+            condition (enc[T]): The condition to evaluate.
             if_true (Callable): The function to call if the condition is met.
             if_false (Callable): The function to call if the condition is not met.
             threshold (float): The threshold for making the decision.
@@ -129,6 +131,31 @@ class SupportsDecideMixin(Generic[T, R], BaseEngine[T, R], ABC):
             >>> engine.decide(person, if_true=lambda: print("John is a jerk"), if_false=lambda: print("John is a nice guy"))
             ... John is a jerk
         """
+        return self._decide(
+            data,
+            condition,
+            if_true,
+            if_false,
+            threshold=threshold,
+            randomness=randomness,
+            depth_limit=depth_limit,
+            instructions=instructions,
+            **kwargs,
+        )
+
+    def _decide(
+        self,
+        data: R,
+        condition: R,
+        if_true: Callable,
+        if_false: Callable,
+        *,
+        threshold: float,
+        randomness: float,
+        depth_limit: int,
+        instructions: enc[str],
+        **kwargs,
+    ):
         return self.choice(
             [
                 (condition, if_true),

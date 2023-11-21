@@ -5,11 +5,13 @@ from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from copy import deepcopy
 from dataclasses import _DataclassT, dataclass
+from enum import Enum
 import functools
 from functools import singledispatchmethod
 import inspect
 from pathlib import Path
 import pickle
+from textwrap import dedent
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -33,9 +35,12 @@ from jinja2 import Template
 import loguru
 from glom import glom
 from pydantic import Field
+from tensacode.base.mixins.supports_encode import SupportsEncodeMixin
 import typingx
 import pydantic, sqlalchemy, dataclasses, attr, typing
 
+from langchain.output_parsers.boolean import BooleanOutputParser
+from langchain.prompts.prompt import PromptTemplate
 
 import tensacode as tc
 from tensacode.utils.decorators import (
@@ -77,70 +82,190 @@ import tensacode.base.mixins as mixins
 
 
 class SupportsDecideMixin(
-    Generic[T, R], BaseLLMEngine[T, R], mixins.SupportsDecideMixin[T, R], ABC
+    Generic[T, R],
+    # just about every mixin needs to inherit from SupportsEncodeMixin
+    SupportsEncodeMixin[T, R],
+    BaseLLMEngine[T, R],
+    mixins.SupportsDecideMixin[T, R],
+    ABC,
 ):
-    # copied from MixinBase for aesthetic consistency
-    trace = BaseEngine.trace
-    DefaultParam = BaseEngine.DefaultParam
-    encoded_args = BaseEngine.encoded_args
+    kernel = BaseLLMEngine[T, R].kernel
+    parser = BooleanOutputParser()
+    template_no_fns = dedent(
+        """\
+            DECIDE based on the following condition: {condition}
+            
+            Input: {data}
+            
+            Output either {true_val} or {false_val}.
+            
+            Output: 
+        """
+    )
+    prompt_no_fns = PromptTemplate(
+        template=template_no_fns,
+        input_variables=["data", "condition"],
+        partial_variables={
+            "true_val": parser.true_val,
+            "false_val": parser.false_val,
+        },
+    )
+    pipeline_no_fns = prompt_no_fns | kernel | parser
 
-    @dynamic_defaults()
-    @encoded_args()
-    @trace()
-    def decide(
+    template_if_true_fn_only = dedent(
+        """\
+            DECIDE based on the following condition: {condition}
+            
+            Input: {data}
+            
+            Output either {true_val} or {false_val}.
+            
+            If {true_val}, then {true_fn_invocation} will be invoked.
+            
+            Output: 
+        """
+    )
+    prompt_if_true_fn_only = PromptTemplate(
+        template=template_if_true_fn_only,
+        input_variables=["data", "condition", "true_fn_invocation"],
+        partial_variables={
+            "true_val": parser.true_val,
+            "false_val": parser.false_val,
+        },
+    )
+    pipeline_if_true_fn_only = prompt_if_true_fn_only | kernel | parser
+
+    template_if_false_fn_only = dedent(
+        """\
+            DECIDE based on the following condition: {condition}
+            
+            Input: {data}
+            
+            Output either {true_val} or {false_val}.
+            
+            If {false_val}, then {false_fn_invocation} will be invoked.
+            
+            Output: 
+        """
+    )
+    prompt_if_false_fn_only = PromptTemplate(
+        template=template_if_false_fn_only,
+        input_variables=["data", "condition", "false_fn_invocation"],
+        partial_variables={
+            "true_val": parser.true_val,
+            "false_val": parser.false_val,
+        },
+    )
+    pipeline_if_false_fn_only = prompt_if_false_fn_only | kernel | parser
+
+    template_both_fns = dedent(
+        """\
+            DECIDE based on the following condition: {condition}
+            
+            Input: {data}
+            
+            Output either {true_val} or {false_val}.
+            
+            If {true_val}, then {true_fn_invocation} will be invoked. If {false_val}, then {false_fn_invocation} will be invoked.
+            
+            Output: 
+        """
+    )
+    prompt_2_fns = PromptTemplate(
+        template=template_both_fns,
+        input_variables=[
+            "data",
+            "condition",
+            "true_fn_invocation",
+            "false_fn_invocation",
+        ],
+        partial_variables={
+            "true_val": parser.true_val,
+            "false_val": parser.false_val,
+        },
+    )
+    pipeline_2_fns = prompt_2_fns | kernel | parser
+
+    def _decide(
         self,
-        condition: T,
-        if_true: Callable = lambda *a, **kw: True,
-        if_false: Callable = lambda *a, **kw: False,
+        data: R,
+        condition: R,
+        if_true: Callable | None,
+        if_false: Callable | None,
         *,
-        threshold: float = DefaultParam("hparams.choice.threshold"),
-        randomness: float = DefaultParam("hparams.choice.randomness"),
-        depth_limit: int = DefaultParam(qualname="hparams.choice.depth_limit"),
-        instructions: enc[str] = DefaultParam(qualname="hparams.choice.instructions"),
+        threshold: float,
+        randomness: float,
+        depth_limit: int,
+        instructions: enc[str],
         **kwargs,
     ):
-        """
-        Makes a decision based on the provided condition. If the condition is met, the `if_true` function is called. Otherwise, the `if_false` function is called.
+        # TODO: i need to implement the render_invocation method on the SupportsEncodeMixin and use that one instead of some utils fn like i am right now below:
 
-        Can be called in two ways:
-        - `fn_result = engine.decide(condition, if_true=..., if_false=..., ...)`: in this case, you define the true and false branches as separate functions and pass them in as arguments. `engine.decide` then calls the appropriate function based on the condition.
-        - `bool_result = engine.decide(condition, ...)`: in this case, you don't define the true and false branches, and `engine.decide` returns a boolean value based on the condition.
+        match if_true, if_false:
+            case None, None:
+                return self.pipeline_no_fns.invoke(
+                    {
+                        "data": data,
+                        "condition": condition,
+                    }
+                )
+            case None, _:
 
-        Args:
-            condition (T): The condition to evaluate.
-            if_true (Callable): The function to call if the condition is met.
-            if_false (Callable): The function to call if the condition is not met.
-            threshold (float): The threshold for making the decision.
-            randomness (float): The randomness factor in the decision making.
-            depth_limit (int): The maximum depth to which the decision process should recurse.
-            instructions (enc[str]): Additional instructions to the decision algorithm.
-            **kwargs: Additional keyword arguments that might be needed for specific decision algorithms.
+                @functools.wraps(if_false)
+                def deferred_fn(*args, **kwargs):
+                    false_invocation = render_invocation(
+                        if_false,
+                        args=args,
+                        kwargs=kwargs,
+                    )
+                    return self.pipeline_if_false_fn_only.invoke(
+                        {
+                            "data": data,
+                            "condition": condition,
+                            "false_fn_invocation": false_invocation,
+                        }
+                    )
 
-        Returns:
-            The result of the `if_true` function if the condition is met, or the result of the `if_false` function if the condition is not met.
+                return deferred_fn
 
-        Example:
-            >>> engine = Engine()
-            >>> class Person:
-            ...    name: str
-            ...    bio: str
-            ...    thoughts: list[str]
-            ...    friends: list[Person]
-            >>> john, teyoni, huimin = ... # create people
-            >>> person = engine.retrieve(john, instructions="find john's least favorite friend")
-            ... # based on John's friends, decide if he is a jerk or not
-            >>> engine.decide(person, if_true=lambda: print("John is a jerk"), if_false=lambda: print("John is a nice guy"))
-            ... John is a jerk
-        """
-        return self.choice(
-            [
-                (condition, if_true),
-                (lambda *a, **kw: not condition(*a, **kw), if_false),
-            ],
-            mode="last-winner",
-            threshold=threshold,
-            randomness=randomness,
-            depth_limit=depth_limit,
-            instructions=instructions,
-            **kwargs,
-        )
+            case _, None:
+
+                @functools.wraps(if_true)
+                def deferred_fn(*args, **kwargs):
+                    true_invocation = render_invocation(
+                        if_true,
+                        args=args,
+                        kwargs=kwargs,
+                    )
+                    return self.pipeline_if_true_fn_only.invoke(
+                        {
+                            "data": data,
+                            "condition": condition,
+                            "true_fn_invocation": true_invocation,
+                        }
+                    )
+
+                return deferred_fn
+            case _, _:
+
+                def deferred_fn(*args, **kwargs):
+                    true_invocation = render_invocation(
+                        if_true,
+                        args=args,
+                        kwargs=kwargs,
+                    )
+                    false_invocation = render_invocation(
+                        if_false,
+                        args=args,
+                        kwargs=kwargs,
+                    )
+                    return self.pipeline_2_fns.invoke(
+                        {
+                            "data": data,
+                            "condition": condition,
+                            "true_fn_invocation": true_invocation,
+                            "false_fn_invocation": false_invocation,
+                        }
+                    )
+
+                return deferred_fn
