@@ -19,3 +19,6 @@
 [submodule "tensacode/kotlin"]
 	path = tensacode/kotlin
 	url = https://github.com/TensaCo/TensaCode-kotlin.git
+[submodule "tensacode/swift"]
+	path = tensacode/swift
+	url = https://github.com/TensaCo/TensaCode-swift.git
