@@ -15,10 +15,10 @@
 	url = https://github.com/TensaCo/tensacode-cpp.git
 [submodule "tensacode/dart"]
 	path = tensacode/dart
-	url = https://github.com/TensaCo/TensaCode-dart.git
+	url = https://github.com/TensaCo/tensacode-dart.git
 [submodule "tensacode/kotlin"]
 	path = tensacode/kotlin
-	url = https://github.com/TensaCo/TensaCode-kotlin.git
+	url = https://github.com/TensaCo/tensacode-kotlin.git
 [submodule "tensacode/swift"]
 	path = tensacode/swift
-	url = https://github.com/TensaCo/TensaCode-swift.git
+	url = https://github.com/TensaCo/tensacode-swift.git
