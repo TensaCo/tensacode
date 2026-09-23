@@ -5,14 +5,16 @@ TypeScript. It is a site for this one product, not a company site: brand everyth
 TensorCode, and mention TensaCo only as the plain-text "by TensaCo" in footers.
 
 It's static: no framework, and no build step for the marketing pages. Cloudflare Workers
-serves it as static assets (`../wrangler.jsonc`, Worker `tensorcode-site`).
+serves it as static assets (`../wrangler.jsonc`, Worker `tensorcode-site`). A few lines
+in `../scripts/site/worker.js` run first and redirect `www.tensorcode.dev` and plain
+`http` to `https://tensorcode.dev`.
 
 | Path | What it is | Audience |
 |---|---|---|
 | `index.html` | Landing page: hero, three value sections, who it's for, trust strip, CTA | Business readers |
 | `how-it-works/` | Four plain steps, what stays in your control, limits, FAQ | Business readers |
 | `why/` | Principles, a side-by-side comparison, open-source stance | Business readers |
-| `docs/` | **Generated.** Technical landing plus Python and TypeScript guides | Engineers |
+| `docs/` | **Generated.** Technical landing, shared overview and install pages, Python and TypeScript guides | Engineers |
 | `404.html` | Served for any missing path (`not_found_handling: "404-page"`) | Everyone |
 | `assets/base.css` | Tokens (light and dark), reset, top bar, buttons, footer: shared by every page | |
 | `assets/site.css` | Marketing components: hero, diagrams, image placeholders, strips | |
@@ -45,11 +47,26 @@ The script has no dependencies. It reads each implementation's README and `docs/
 from the submodules (`tensacode/python`, `tensacode/typescript`) in the reading order
 listed at the top of the script. Missing files are skipped, and unlisted `docs/*.md`
 files go under "More". A language with no README gets a placeholder introduction.
-Relative `.md` links become site URLs. Any other repository link (examples, JSON
-records, source) points to the file on GitHub. Code is highlighted at build time.
+Relative `.md` links become site URLs, and links written as `https://tensorcode.dev/...`
+become site paths. Any other repository link (examples, JSON records, source) points to
+the file on GitHub. Code is highlighted at build time.
+
+The pages about both languages, `/docs/overview/` (architecture) and `/docs/install/`
+(pip and npm), are Markdown in `scripts/site/pages/`. Their links use site paths such
+as `/docs/python/quickstart/`. Consecutive code blocks whose info string has `tab=...`
+(```` ```python tab=Python ```` then ```` ```ts tab=TypeScript ````) render as one
+tabbed sample. The reader's language is remembered (`tc-lang`), and visiting a
+language's guides sets it.
 
 To add a guide, add its `file`/`slug` to that language's `sections` in
-`scripts/site/build-docs.mjs`.
+`scripts/site/build-docs.mjs`. To add a shared page, add it to `shared`.
+
+After a build, check the whole site:
+
+```sh
+node scripts/site/check-links.mjs              # internal links, anchors, code blocks; exits 1 on a problem
+node scripts/site/check-links.mjs --external   # also requests every external link once
+```
 
 ## Preview
 
@@ -64,9 +81,13 @@ npx wrangler dev          # http://localhost:8787, with the same 404 and trailin
 node scripts/site/build-docs.mjs && npx wrangler deploy
 ```
 
-Attach the `tensorcode.dev` custom domain to the `tensorcode-site` Worker in the
-Cloudflare dashboard, or add a `routes` entry to `wrangler.jsonc`. `.assetsignore` keeps
-this README and `media/PROMPTS.md` out of the upload.
+`wrangler.jsonc` attaches the custom domains `tensorcode.dev` and `www.tensorcode.dev`
+(zone `tensorcode.dev` in the Cloudflare account, which Cloudflare's nameservers serve)
+and keeps the `workers.dev` address. Cloudflare creates and manages the DNS records for
+custom domains, but it refuses a hostname that already has an A, AAAA or CNAME record
+(error 100117). Delete those records for `tensorcode.dev` and `www` first (never MX or
+TXT), then deploy again. `.assetsignore` keeps this README and `media/PROMPTS.md` out
+of the upload.
 
 ## Images
 

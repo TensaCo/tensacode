@@ -1,13 +1,34 @@
-// Cloudflare Workers static assets for https://tensorcode.dev (the TensorCode product site).
+// Cloudflare Worker for https://tensorcode.dev (the TensorCode product site).
 // Build the docs first:  node scripts/site/build-docs.mjs
+// Check the links:       node scripts/site/check-links.mjs
 // Preview:               npx wrangler dev
 // Deploy:                node scripts/site/build-docs.mjs && npx wrangler deploy
+//
+// site/ is served as static assets. The small script in scripts/site/worker.js runs
+// first and redirects www.tensorcode.dev and plain http to https://tensorcode.dev.
 {
   "name": "tensorcode-site",
   "compatibility_date": "2026-09-01",
+  "main": "scripts/site/worker.js",
   "assets": {
     "directory": "./site",
+    "binding": "ASSETS",
     "not_found_handling": "404-page",
-    "html_handling": "auto-trailing-slash"
-  }
+    "html_handling": "auto-trailing-slash",
+    "run_worker_first": true
+  },
+  // `wrangler dev` would otherwise present requests as http://tensorcode.dev (the first
+  // route), and the script would redirect them to production.
+  "dev": { "host": "localhost" },
+  // Also keep the <name>.<subdomain>.workers.dev address, for checks.
+  "workers_dev": true,
+  // Custom domains in the tensorcode.dev zone (Cloudflare account 20d4becc...).
+  // Cloudflare creates and manages their DNS records. A hostname that already has an
+  // A, AAAA or CNAME record cannot be attached (API error 100117): delete those records
+  // for "tensorcode.dev" and "www" in the dashboard (DNS > Records; leave MX and TXT),
+  // then run `npx wrangler deploy` again.
+  "routes": [
+    { "pattern": "tensorcode.dev", "custom_domain": true },
+    { "pattern": "www.tensorcode.dev", "custom_domain": true }
+  ]
 }

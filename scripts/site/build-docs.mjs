@@ -7,12 +7,18 @@
 //
 // No dependencies. Each language lists its guides in reading order (`languages` below);
 // a listed file that does not exist is skipped, and any `docs/*.md` a list forgot is
-// appended under "More" so a new guide is never invisible. Output:
+// appended under "More" so a new guide is never invisible. Pages that cover both
+// languages (`shared` below) live in scripts/site/pages/. Output:
 //
 //   site/docs/index.html                     technical landing (both languages)
+//   site/docs/<slug>/index.html              shared pages: architecture overview, install
 //   site/docs/<lang>/index.html              the implementation's README
 //   site/docs/<lang>/<slug>/index.html       every other guide
 //   site/docs/sitemap.xml
+//
+// In any Markdown file, consecutive fenced blocks whose info string carries
+// `tab=<Label>` (for example ```python tab=Python then ```ts tab=TypeScript) render as
+// one tabbed code sample. The chosen language is remembered for the visitor ("tc-lang").
 //
 // Relative links between guides become site URLs; links to anything else in a
 // repository (examples, JSON records, source) go to that file on GitHub. Code blocks are
@@ -42,10 +48,9 @@ const languages = [
     repo: 'https://github.com/TensaCo/tensacode-py',
     branch: 'main',
     fence: 'python',
+    blurb: 'The reference implementation, on PyTorch. Python 3.11 or newer; install from GitHub with pip.',
     install: [
-      'git clone https://github.com/TensaCo/tensacode-py',
-      'cd tensacode-py',
-      "python -m pip install -e '.[tools]'",
+      'python -m pip install "tensorcode[tools] @ git+https://github.com/TensaCo/tensacode-py"',
     ],
     sections: [
       { title: 'Start here', pages: [
@@ -77,36 +82,32 @@ const languages = [
     repo: 'https://github.com/TensaCo/tensacode-ts',
     branch: 'main',
     fence: 'ts',
+    blurb: 'The port for Node.js 20.16 or newer, with its own autograd core and no runtime dependencies; install from GitHub with npm.',
     install: [
-      'git clone https://github.com/TensaCo/tensacode-ts',
-      'cd tensacode-ts',
-      'npm install && npm run build',
+      'npm install github:TensaCo/tensacode-ts',
     ],
     sections: [
       { title: 'Start here', pages: [
         { file: 'README.md', slug: '', title: 'Introduction' },
         { file: 'docs/quickstart.md', slug: 'quickstart' },
-        { file: 'docs/README.md', slug: 'overview', title: 'Architecture and contracts' },
-        { file: 'docs/pretrained.md', slug: 'pretrained' },
+        { file: 'docs/parity.md', slug: 'parity', title: 'Parity with Python' },
       ]},
       { title: 'Guides', pages: [
-        { file: 'docs/tools.md', slug: 'tools' },
-        { file: 'docs/cognition.md', slug: 'cognition' },
         { file: 'docs/operations.md', slug: 'operations' },
-        { file: 'docs/latent-models.md', slug: 'latent-models' },
+        { file: 'docs/tools.md', slug: 'tools' },
         { file: 'docs/training.md', slug: 'training' },
         { file: 'examples/README.md', slug: 'examples', title: 'Examples' },
-      ]},
-      { title: 'Reference', pages: [
-        { file: 'docs/api.md', slug: 'api' },
-        { file: 'docs/parity.md', slug: 'parity' },
-        { file: 'docs/validation.md', slug: 'validation' },
-        { file: 'docs/troubleshooting.md', slug: 'troubleshooting' },
-        { file: 'docs/migration.md', slug: 'migration' },
       ]},
     ],
   },
 ];
+
+// Pages about both languages, from scripts/site/pages/, in reading order.
+const shared = [
+  { file: 'overview.md', slug: 'overview', title: 'Architecture overview' },
+  { file: 'install.md', slug: 'install', title: 'Install' },
+];
+const sharedDir = join(root, 'scripts/site/pages');
 
 // ---------------------------------------------------------------------------------
 // Small helpers
@@ -287,7 +288,7 @@ function makeInline(ctx) {
     // Code spans first: nothing inside them is Markdown.
     s = s.replace(/(`+)([^`]|[^`][\s\S]*?[^`])\1(?!`)/g, (_, _t, code) => keep(`<code>${escape(code.trim() === '' ? code : code.replace(/^ (.*) $/, '$1'))}</code>`));
     // Autolinks.
-    s = s.replace(/<(https?:\/\/[^>\s]+)>/g, (_, url) => keep(`<a href="${escape(url)}">${escape(url)}</a>`));
+    s = s.replace(/<(https?:\/\/[^>\s]+)>/g, (_, url) => keep(`<a href="${escape(sitePath(url) ?? url)}">${escape(url)}</a>`));
     // Inline HTML tags that are safe to pass through.
     s = s.replace(/<\/?(?:br|sub|sup|kbd|b|i|em|strong|code|span|details|summary)\b[^>]*>/gi, (tag) => keep(tag));
     s = escape(s);
@@ -329,11 +330,34 @@ function markdown(src, ctx) {
     return `<h${level} id="${id}">${text}<a class="anchor" href="#${id}" aria-label="Link to this section">#</a></h${level}>`;
   }
 
-  function codeBlock(lang, code) {
+  function codeBlock(lang, code, info = '') {
     const l = (lang || '').split(/[\s,{]/)[0];
     const label = l ? `<span class="lang" aria-hidden="true">${escape(l)}</span>` : '';
     const cls = l ? ` class="language-${escape(l)}"` : '';
-    return `<div class="code">${label}<pre><code${cls}>${highlight(code.replace(/\n+$/, ''), l)}</code></pre></div>`;
+    const html = `<div class="code">${label}<pre><code${cls}>${highlight(code.replace(/\n+$/, ''), l)}</code></pre></div>`;
+    const tab = /(?:^|\s)tab=(?:"([^"]+)"|(\S+))/.exec(info);
+    return tab ? { tab: tab[1] ?? tab[2], html } : html;
+  }
+
+  // Consecutive tabbed code blocks become one tab group. Without JavaScript every
+  // panel shows, stacked; the page script reveals the tab list and hides the others.
+  function tabGroup(items) {
+    const n = ++ctx.tabs.count;
+    const key = (label) => label.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    const tabs = items.map((it, k) => `<button type="button" role="tab" id="tab-${n}-${k}" aria-controls="panel-${n}-${k}" aria-selected="${k === 0}" tabindex="${k === 0 ? 0 : -1}" data-tab="${escape(key(it.tab))}">${escape(it.tab)}</button>`).join('');
+    const panels = items.map((it, k) => `<div role="tabpanel" id="panel-${n}-${k}" aria-labelledby="tab-${n}-${k}" data-tab="${escape(key(it.tab))}">${it.html}</div>`).join('');
+    return `<div class="code-tabs" data-code-tabs><div class="tab-list" role="tablist" aria-label="Code language" hidden>${tabs}</div>${panels}</div>`;
+  }
+  function groupTabs(parts) {
+    const outParts = [];
+    for (let k = 0; k < parts.length; k++) {
+      if (typeof parts[k] === 'string') { outParts.push(parts[k]); continue; }
+      const run = [];
+      while (k < parts.length && typeof parts[k] === 'object') run.push(parts[k++]);
+      k--;
+      outParts.push(run.length > 1 ? tabGroup(run) : run[0].html);
+    }
+    return outParts;
   }
 
   // Renders blocks from lines[i] while lines are indented at least `indent`.
@@ -347,8 +371,8 @@ function markdown(src, ctx) {
       let m;
 
       // Fenced code
-      if ((m = /^(\s{0,3})(`{3,}|~{3,})\s*([^`\s]*)[^`]*$/.exec(t))) {
-        const fence = m[2]; const lang = m[3]; const inner = indent + m[1].length;
+      if ((m = /^(\s{0,3})(`{3,}|~{3,})\s*([^`\s]*)([^`]*)$/.exec(t))) {
+        const fence = m[2]; const lang = m[3]; const info = m[4]; const inner = indent + m[1].length;
         const code = [];
         i++;
         while (i < lines.length && !new RegExp(`^\\s*${fence[0] === '`' ? '`' : '~'}{${fence.length},}\\s*$`).test(lines[i])) {
@@ -357,7 +381,7 @@ function markdown(src, ctx) {
           i++;
         }
         i++;
-        parts.push(codeBlock(lang, code.join('\n')));
+        parts.push(codeBlock(lang, code.join('\n'), info));
         continue;
       }
       // Indented code (only at top level, after a blank line)
@@ -473,7 +497,7 @@ function markdown(src, ctx) {
       }
       parts.push(`<p>${inline(para.join('\n'))}</p>`);
     }
-    return parts.join('\n');
+    return groupTabs(parts).join('\n');
   }
 
   // An item's body: everything indented at least `inner`, plus lazy paragraph lines.
@@ -585,17 +609,39 @@ for (const lang of languages) {
   lang.flat = lang.sections.flatMap((s) => s.pages);
 }
 
+for (const page of shared) {
+  page.lang = null;
+  page.url = `/docs/${page.slug}/`;
+  page.source = readFileSync(join(sharedDir, page.file), 'utf8');
+  const h1 = /^\s{0,3}#\s+(.+?)\s*#*\s*$/m.exec(page.source)?.[1];
+  page.heading = h1 ? plain(h1) : page.title;
+  page.title ??= page.heading;
+  allPages.push(page);
+}
+
 // ---------------------------------------------------------------------------------
 // Links
 // ---------------------------------------------------------------------------------
 
+// A link written as https://tensorcode.dev/... becomes a site path, so it also works on
+// previews and the workers.dev address.
+const sitePath = (href) => (href === origin || href.startsWith(`${origin}/`) ? href.slice(origin.length) || '/' : null);
+
 function contextFor(page) {
   const lang = page.lang;
+  const tabs = { count: 0 };
+  if (!lang) {
+    // Shared pages link with site paths (/docs/python/quickstart/) or full URLs.
+    return { tabs, link: (href) => sitePath(href) ?? href, asset: (src) => src };
+  }
   const byFile = new Map(lang.flat.filter((p) => p.file).map((p) => [p.file, p]));
   const fileDir = page.file ? posix.dirname(page.file) : '.';
   const resolveRel = (path) => posix.normalize(posix.join(fileDir, path)).replace(/^\.\//, '');
   return {
+    tabs,
     link(href) {
+      const local = sitePath(href);
+      if (local) return local;
       if (/^(?:[a-z][a-z0-9+.-]*:|\/\/)/i.test(href)) return href;
       if (href.startsWith('#')) return href;
       if (href.startsWith('/')) return `${lang.repo}/blob/${lang.branch}${href}`;
@@ -608,7 +654,8 @@ function contextFor(page) {
       }
       const hit = byFile.get(target) ?? byFile.get(posix.join(target, 'README.md'));
       if (hit) return hit.url + tail;
-      const isDir = target.endsWith('/') || !/\.[A-Za-z0-9]+$/.test(target) || target === '.';
+      const onDisk = join(root, lang.dir, target);
+      const isDir = target.endsWith('/') || target === '.' || (existsSync(onDisk) ? statSync(onDisk).isDirectory() : !/\.[A-Za-z0-9]+$/.test(target));
       return `${lang.repo}/${isDir ? 'tree' : 'blob'}/${lang.branch}/${target.replace(/\/$/, '').replace(/^\.$/, '')}${tail}`;
     },
     asset(src) {
@@ -676,7 +723,7 @@ function topBar({ lang, page, menu }) {
     <a class="docs-tag" href="/docs/" style="text-decoration:none">Docs</a>
     <nav class="lang-switch" aria-label="Language">${switcher}</nav>
     <nav class="corner" aria-label="Resources">
-      <a class="docs-home" href="/docs/"${!lang ? ' aria-current="page"' : ''}>Overview</a>
+      <a class="docs-home" href="/docs/overview/"${page && page.slug === 'overview' && !page.lang ? ' aria-current="page"' : ''}>Overview</a>
       <a class="gh" href="${lang ? lang.repo : 'https://github.com/TensaCo/tensacode'}" aria-label="${lang ? `TensorCode for ${escape(lang.name)} on GitHub` : 'TensorCode on GitHub'}">${icons.github}<span>GitHub</span></a>
       <button class="icon-btn" type="button" data-theme-toggle hidden aria-label="Switch theme">${icons.moon}${icons.sun}</button>
       ${menu ? `<button class="icon-btn menu-btn" id="menu" type="button" aria-expanded="false" aria-controls="side" aria-label="Show the documentation menu">${icons.bars}${icons.cross}</button>` : ''}
@@ -705,6 +752,28 @@ const pageScript = `<script>
     });
     block.appendChild(b);
   });
+  var LANG='tc-lang',pref=null;
+  try{pref=localStorage.getItem(LANG);}catch(e){}
+  var here=document.body.getAttribute('data-lang');
+  if(here){pref=here;try{localStorage.setItem(LANG,here);}catch(e){}}
+  var groups=[].slice.call(document.querySelectorAll('[data-code-tabs]'));
+  var choose=function(g,key,focus){
+    var tabs=[].slice.call(g.querySelectorAll('[role="tab"]'));
+    if(!tabs.some(function(t){return t.getAttribute('data-tab')===key;}))key=tabs[0].getAttribute('data-tab');
+    tabs.forEach(function(t){var on=t.getAttribute('data-tab')===key;t.setAttribute('aria-selected',String(on));t.tabIndex=on?0:-1;if(on&&focus)t.focus();});
+    g.querySelectorAll('[role="tabpanel"]').forEach(function(p){p.hidden=p.getAttribute('data-tab')!==key;});
+  };
+  var chooseAll=function(key,from){groups.forEach(function(g){choose(g,key,g===from);});try{localStorage.setItem(LANG,key);}catch(e){}};
+  groups.forEach(function(g){
+    g.querySelector('[role="tablist"]').hidden=false;g.classList.add('ready');
+    choose(g,pref,false);
+    g.addEventListener('click',function(e){var t=e.target.closest('[role="tab"]');if(t){var y=t.getBoundingClientRect().top;chooseAll(t.getAttribute('data-tab'),null);window.scrollBy(0,t.getBoundingClientRect().top-y);}});
+    g.addEventListener('keydown',function(e){
+      var tabs=[].slice.call(g.querySelectorAll('[role="tab"]')),i=tabs.indexOf(document.activeElement);if(i<0)return;
+      var j=e.key==='ArrowRight'?(i+1)%tabs.length:e.key==='ArrowLeft'?(i-1+tabs.length)%tabs.length:e.key==='Home'?0:e.key==='End'?tabs.length-1:-1;
+      if(j<0)return;e.preventDefault();chooseAll(tabs[j].getAttribute('data-tab'),g);
+    });
+  });
   var links=[].slice.call(document.querySelectorAll('.toc a'));
   if(links.length&&'IntersectionObserver' in window){
     var map=new Map(links.map(function(a){return [decodeURIComponent(a.hash.slice(1)),a];}));
@@ -718,7 +787,22 @@ function sidebar(lang, page) {
   const v = lang.meta.version ? `<small>${escape(lang.meta.name ?? '')} ${escape(lang.meta.version)}</small>` : '';
   const groups = lang.sections.map((s) => `<div class="group"><p class="group-title">${escape(s.title)}</p>${s.pages.map((p) =>
     `<a href="${p.url}"${p === page ? ' aria-current="page"' : ''}>${escape(p.title)}</a>`).join('')}</div>`).join('');
-  return `<nav class="side" id="side" aria-label="${escape(lang.name)} documentation"><p class="lang-title">${escape(lang.name)} ${v}</p>${groups}<div class="group back"><a href="/docs/">&larr; Docs overview</a><a href="/">&larr; tensorcode.dev</a></div></nav>`;
+  return `<nav class="side" id="side" aria-label="${escape(lang.name)} documentation"><p class="lang-title">${escape(lang.name)} ${v}</p>${groups}${sharedLinks(null)}</nav>`;
+}
+
+// Links every sidebar ends with: the shared pages, then the way out.
+function sharedLinks(current) {
+  const pages = shared.map((p) => `<a href="${p.url}"${p === current ? ' aria-current="page"' : ''}>${escape(p.title)}</a>`).join('');
+  return `<div class="group back"><p class="group-title">All languages</p>${pages}<a href="/docs/">&larr; Docs home</a><a href="/">&larr; tensorcode.dev</a></div>`;
+}
+
+function sharedSidebar(page) {
+  const langs = languages.map((l) => {
+    const pages = l.flat.filter((p) => ['', 'quickstart', 'parity'].includes(p.slug));
+    return `<div class="group"><p class="group-title">${escape(l.name)}</p>${pages.map((p) => `<a href="${p.url}">${escape(p.slug === '' ? `${l.name} introduction` : p.title)}</a>`).join('')}<a href="/docs/${l.id}/">All ${escape(l.name)} guides &rarr;</a></div>`;
+  }).join('');
+  const start = `<div class="group"><p class="group-title">Start here</p>${shared.map((p) => `<a href="${p.url}"${p === page ? ' aria-current="page"' : ''}>${escape(p.title)}</a>`).join('')}</div>`;
+  return `<nav class="side" id="side" aria-label="Documentation"><p class="lang-title">Python and TypeScript</p>${start}${langs}<div class="group back"><a href="/docs/">&larr; Docs home</a><a href="/">&larr; tensorcode.dev</a></div></nav>`;
 }
 
 function renderPage(page) {
@@ -727,25 +811,33 @@ function renderPage(page) {
   page.ids = new Set(headings.map((h) => h.id));
   page.html = html;
   const toc = headings.filter((h) => h.level === 2);
-  const at = lang.flat.indexOf(page);
-  const prev = at > 0 ? lang.flat[at - 1] : null;
-  const next = at < lang.flat.length - 1 ? lang.flat[at + 1] : null;
+  const order = lang ? lang.flat : shared;
+  const at = order.indexOf(page);
+  const prev = at > 0 ? order[at - 1] : null;
+  const next = at < order.length - 1 ? order[at + 1] : null;
   const firstPara = /<p>([\s\S]*?)<\/p>/.exec(html)?.[1];
-  const description = firstPara ? plain(firstPara).replace(/\s+/g, ' ').slice(0, 180) : `${page.title}: TensorCode for ${lang.name}.`;
-  const editUrl = page.file ? `${lang.repo}/blob/${lang.branch}/${page.file}` : lang.repo;
-  return `${head({ title: `${page.title} | TensorCode ${lang.name} docs`, description, url: page.url })}
-<body class="docs">
+  const scope = lang ? `TensorCode for ${lang.name}` : 'TensorCode for Python and TypeScript';
+  const description = firstPara ? plain(firstPara).replace(/\s+/g, ' ').slice(0, 180) : `${page.title}: ${scope}.`;
+  const repoRoot = 'https://github.com/TensaCo/tensacode';
+  const editUrl = lang
+    ? (page.file ? `${lang.repo}/blob/${lang.branch}/${page.file}` : lang.repo)
+    : `${repoRoot}/blob/develop/scripts/site/pages/${page.file}`;
+  const crumb = lang
+    ? `<a href="/docs/">Docs</a><span aria-hidden="true">/</span><a href="/docs/${lang.id}/">${escape(lang.name)}</a><span aria-hidden="true">/</span><span>${escape(page.section.title)}</span>`
+    : `<a href="/docs/">Docs</a><span aria-hidden="true">/</span><span>${escape(page.title)}</span>`;
+  return `${head({ title: `${page.title} | TensorCode ${lang ? `${lang.name} ` : ''}docs`, description, url: page.url })}
+<body class="docs"${lang ? ` data-lang="${lang.id}"` : ''}>
 <a class="skip" href="#content">Skip to content</a>
 ${topBar({ lang, page, menu: true })}
 <div class="shell${toc.length ? '' : ' no-toc'}">
-  ${sidebar(lang, page)}
+  ${lang ? sidebar(lang, page) : sharedSidebar(page)}
   <main class="doc-main" id="content">
-    <p class="crumb"><a href="/docs/">Docs</a><span aria-hidden="true">/</span><a href="/docs/${lang.id}/">${escape(lang.name)}</a><span aria-hidden="true">/</span><span>${escape(page.section.title)}</span></p>
+    <p class="crumb">${crumb}</p>
     <article class="prose">
 ${html}
     </article>
     ${(prev || next) ? `<nav class="pager" aria-label="Previous and next">${prev ? `<a class="prev" href="${prev.url}"><small>&larr; Previous</small>${escape(prev.title)}</a>` : ''}${next ? `<a class="next" href="${next.url}"><small>Next &rarr;</small>${escape(next.title)}</a>` : ''}</nav>` : ''}
-    <footer class="doc-foot"><span>&copy; 2026 TensorCode &middot; MIT licensed</span><a href="${editUrl}">${page.file ? 'Edit this page on GitHub' : 'Source on GitHub'}</a></footer>
+    <footer class="doc-foot"><span>&copy; 2026 TensorCode &middot; MIT licensed &middot; by TensaCo</span><a href="${editUrl}">${page.file ? 'Edit this page on GitHub' : 'Source on GitHub'}</a></footer>
   </main>
   ${toc.length ? `<nav class="toc" aria-label="On this page"><p class="group-title">On this page</p>${toc.map((h) => `<a href="#${h.id}">${plain(h.text)}</a>`).join('')}</nav>` : ''}
 </div>
@@ -817,6 +909,7 @@ function renderLanding() {
     const install = lang.install.join('\n');
     return `<article class="lang-card">
   <header><h3><a href="/docs/${lang.id}/">${escape(lang.name)}</a></h3><span class="ver">${escape(ver)}</span></header>
+  <p class="dl-sub" style="margin:0">${escape(lang.blurb)}</p>
   <div class="code"><span class="lang" aria-hidden="true">bash</span><pre><code class="language-bash">${highlight(install, 'bash')}</code></pre></div>
   ${sample ? `<div class="code"><span class="lang" aria-hidden="true">${escape(sample.lang)}</span><pre><code>${highlight(sample.code, sample.lang)}</code></pre></div>` : ''}
   ${pages.length ? `<ul>${pages.map((p) => `<li><a href="${p.url}"><span>${escape(p.title)}</span><span>${escape(p.section.title)}</span></a></li>`).join('')}</ul>` : `<p class="dl-sub" style="margin:0">Guides for ${escape(lang.name)} are being written. Start with the introduction and the source on <a href="${lang.repo}">GitHub</a>.</p>`}
@@ -836,13 +929,14 @@ ${topBar({ lang: null, page: null, menu: false })}
       <h1>Trainable tools with sourced evidence and owned weights.</h1>
       <p>TensorCode composes callable <b>operations</b> (<code>ops.vec</code>, <code>ops.text</code>, <code>ops.graph</code>) into <b>tools</b> that own their encoders, workspace and decoders. Tools create <b>sessions</b> that keep source evidence, generated hypotheses, model assessments and observed outcomes separate, and emit receipts you can audit.</p>
       <p>Reviewed targets and action outcomes become data-only <b>experience</b>; a <code>Trainer</code> fits the tool from it; <code>save_pretrained</code> / <code>from_pretrained</code> restore exact configuration and weights, offline or from the Hugging Face Hub. Importing the core package loads no ML framework and makes no network calls.</p>
+      <p class="dl-actions"><a class="btn btn-primary" href="/docs/install/">Install</a><a class="btn" href="/docs/overview/">Architecture overview</a></p>
     </div>
   </section>
 
   <section class="dl-section" aria-labelledby="lang-h">
     <div class="container">
       <h2 id="lang-h" class="dl-h2">Pick an implementation</h2>
-      <p class="dl-sub">The Python package is the reference implementation. The TypeScript package is being built to the same public contracts (operations, tools, sessions, experience and artifacts); its guides appear here as they land.</p>
+      <p class="dl-sub">Both implement the same public contracts: operations, tools, sessions, tracing, experience and artifacts. The Python package is the reference. The TypeScript port matches it and reads and writes the same files, so a model trained in one language loads in the other. <a href="/docs/typescript/parity/">What differs</a>.</p>
       <div class="lang-cards">
 ${cards}
       </div>
@@ -879,7 +973,7 @@ ${cards}
     </div>
   </section>
 </main>
-<footer class="site-foot"><div class="container"><p class="fine" style="margin-top:0;border-top:0;padding-top:0"><span>&copy; 2026 TensorCode &middot; MIT licensed &middot; by TensaCo</span><span><a href="/">tensorcode.dev</a> &middot; <a href="https://github.com/TensaCo/tensacode">GitHub</a></span></p></div></footer>
+<footer class="site-foot"><div class="container"><p class="fine" style="margin-top:0;border-top:0;padding-top:0"><span>&copy; 2026 TensorCode &middot; MIT licensed &middot; by TensaCo</span><span><a href="/">tensorcode.dev</a> &middot; <a href="https://github.com/TensaCo/tensacode-py">Python on GitHub</a> &middot; <a href="https://github.com/TensaCo/tensacode-ts">TypeScript on GitHub</a></span></p></div></footer>
 <script src="/assets/theme.js" defer></script>
 ${pageScript}
 </body>

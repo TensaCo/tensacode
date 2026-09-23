@@ -258,3 +258,20 @@ body.docs { font-size: 16px; }
 @media (max-width: 400px) {
   .site-top.is-docs .brand span { display: none; }
 }
+
+/* ---- Tabbed code samples (```python tab=Python + ```ts tab=TypeScript) -------------- */
+.code-tabs { margin: 0 0 20px; }
+.code-tabs .tab-list {
+  display: inline-flex; gap: 2px; padding: 3px; margin: 0 0 8px; border-radius: 999px;
+  background: var(--bg-2); border: 1px solid var(--line);
+}
+.code-tabs [role="tab"] {
+  font: inherit; font-size: .8rem; font-weight: 600; line-height: 1.2; color: var(--dim); background: none; border: 0;
+  padding: 5px 12px; border-radius: 999px; cursor: pointer; transition: color .15s ease, background-color .15s ease;
+}
+.code-tabs [role="tab"]:hover { color: var(--ink); }
+.code-tabs [role="tab"][aria-selected="true"] { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-1); }
+.code-tabs [role="tab"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.code-tabs [role="tabpanel"] > .code { margin: 0; }
+.code-tabs:not(.ready) [role="tabpanel"] + [role="tabpanel"] { margin-top: 12px; }
+.dl-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px !important; }
