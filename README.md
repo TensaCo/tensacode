@@ -3,7 +3,8 @@
 **Website:** [tensorcode.dev](https://tensorcode.dev) ·
 **Docs:** [tensorcode.dev/docs](https://tensorcode.dev/docs/) ·
 **Python:** [tensacode-py](https://github.com/TensaCo/tensacode-py) ·
-**TypeScript:** [tensacode-ts](https://github.com/TensaCo/tensacode-ts)
+**TypeScript:** [tensacode-ts](https://github.com/TensaCo/tensacode-ts) ·
+**Packages:** [PyPI](https://pypi.org/project/tensorcode/) · [npm](https://www.npmjs.com/package/tensorcode)
 
 TensorCode builds trainable programs from callable operations and small tools
 that own their models. You compose encoders, scorers and decoders
@@ -43,6 +44,9 @@ Python 3.11 or newer:
 ```bash
 python -m pip install 'tensorcode[tools]'
 ```
+
+The core package (`pip install tensorcode`) has no dependencies; the `tools` extra
+adds PyTorch and Transformers for the owned models used below.
 
 Node.js 20.16 or newer:
 
@@ -96,12 +100,12 @@ operations, tools, tracing, training and artifacts.
 
 | Path | Contents |
 |---|---|
-| `tensacode/<language>/` | Language implementations (git submodules) |
-| `site/` | The tensorcode.dev product site: static marketing pages and assets ([site/README.md](site/README.md)) |
+| `tensacode/<language>/` | Language implementations, one git submodule each |
+| `site/` | The tensorcode.dev site: static pages, styles and images ([site/README.md](site/README.md)) |
 | `scripts/site/build-docs.mjs` | Generates `site/docs/` from the implementations' READMEs and guides, plus the shared pages in `scripts/site/pages/` |
 | `scripts/site/check-links.mjs` | Checks every internal link, anchor and code block of the built site |
-| `wrangler.jsonc`, `scripts/site/worker.js` | Cloudflare Worker that serves `site/` at tensorcode.dev |
-| `assets/`, `docs/`, `examples/`, `planning/` | Early design material from before the current implementations |
+| `wrangler.jsonc`, `scripts/site/worker.js` | The Cloudflare Worker that serves `site/` at tensorcode.dev |
+| `.github/workflows/` | `site.yml` builds and checks the site; `deploy.yml` publishes it |
 
 Clone with the submodules:
 
@@ -109,15 +113,34 @@ Clone with the submodules:
 git clone --recurse-submodules https://github.com/TensaCo/tensacode
 ```
 
-## Build and deploy the site
+## Site development
+
+The scripts need only Node.js 20 or newer; there is nothing to install.
 
 ```bash
 node scripts/site/build-docs.mjs      # writes site/docs/ (git-ignored)
 node scripts/site/check-links.mjs     # internal links, anchors and code blocks
 npx wrangler dev                      # preview at http://localhost:8787
-npx wrangler deploy                   # publish to tensorcode.dev
 ```
+
+Every push and pull request runs the build and the link check (`site.yml`). Every
+push to `develop` also deploys to tensorcode.dev (`deploy.yml`). The deploy needs
+two repository secrets, which the owner adds under **Settings > Secrets and
+variables > Actions**:
+
+| Secret | Value |
+|---|---|
+| `CLOUDFLARE_API_TOKEN` | A Cloudflare API token with Workers edit permission for the account and the `tensorcode.dev` zone (the "Edit Cloudflare Workers" template) |
+| `CLOUDFLARE_ACCOUNT_ID` | The ID of the Cloudflare account that owns `tensorcode.dev` |
+
+To deploy by hand: `node scripts/site/build-docs.mjs && npx wrangler deploy`.
+
+## Contributing
+
+Library changes belong in [tensacode-py](https://github.com/TensaCo/tensacode-py)
+and [tensacode-ts](https://github.com/TensaCo/tensacode-ts); site changes belong
+here. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
-MIT. Each implementation carries its own license file.
+[MIT](LICENSE). Each implementation carries its own license file.
