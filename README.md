@@ -38,18 +38,16 @@ also holds the product site for [tensorcode.dev](https://tensorcode.dev).
 
 ## Install
 
-Python 3.11 or newer. The `tensorcode` name on PyPI has only an older 0.1 alpha,
-so install 0.4 from GitHub:
+Python 3.11 or newer:
 
 ```bash
-python -m pip install "tensorcode[tools] @ git+https://github.com/TensaCo/tensacode-py"
+python -m pip install 'tensorcode[tools]'
 ```
 
-Node.js 20.16 or newer. The package is not on the npm registry yet, so install it
-from GitHub:
+Node.js 20.16 or newer:
 
 ```bash
-npm install github:TensaCo/tensacode-ts
+npm install tensorcode
 ```
 
 The [install guide](https://tensorcode.dev/docs/install/) lists the Python extras

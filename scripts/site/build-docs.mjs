@@ -48,9 +48,9 @@ const languages = [
     repo: 'https://github.com/TensaCo/tensacode-py',
     branch: 'main',
     fence: 'python',
-    blurb: 'The reference implementation, on PyTorch. Python 3.11 or newer; install from GitHub with pip.',
+    blurb: 'The reference implementation, on PyTorch. Python 3.11 or newer; install from PyPI with pip.',
     install: [
-      'python -m pip install "tensorcode[tools] @ git+https://github.com/TensaCo/tensacode-py"',
+      "python -m pip install 'tensorcode[tools]'",
     ],
     sections: [
       { title: 'Start here', pages: [
@@ -82,9 +82,9 @@ const languages = [
     repo: 'https://github.com/TensaCo/tensacode-ts',
     branch: 'main',
     fence: 'ts',
-    blurb: 'The port for Node.js 20.16 or newer, with its own autograd core and no runtime dependencies; install from GitHub with npm.',
+    blurb: 'The port for Node.js 20.16 or newer, with its own autograd core and no runtime dependencies; install from npm.',
     install: [
-      'npm install github:TensaCo/tensacode-ts',
+      'npm install tensorcode',
     ],
     sections: [
       { title: 'Start here', pages: [

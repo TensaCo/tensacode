@@ -14,11 +14,10 @@ serve in the other.
 
 ## Python (pip)
 
-Install 0.4 from GitHub. The name `tensorcode` on PyPI currently has only an
-older 0.1 alpha, so `pip install tensorcode` does not give you this version yet.
+Python 3.11 or newer:
 
 ```bash
-python -m pip install "tensorcode[tools] @ git+https://github.com/TensaCo/tensacode-py"
+python -m pip install 'tensorcode[tools]'
 ```
 
 The core package has no dependencies, and importing it loads neither PyTorch
@@ -50,11 +49,10 @@ python -m pytest -q
 
 ## TypeScript (npm)
 
-Install from GitHub with npm. The package is not on the npm registry yet. Its
-`prepare` script builds `dist/` during the install.
+Node.js 20.16 or newer:
 
 ```bash
-npm install github:TensaCo/tensacode-ts
+npm install tensorcode
 ```
 
 The package is ESM only (`import`, not `require`) and ships its own type
