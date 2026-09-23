@@ -1,0 +1,31 @@
+name: Site
+
+# Builds tensorcode.dev/docs from the implementations' Markdown and checks every
+# internal link, anchor and code block of the site.
+
+on:
+  push:
+    branches: [develop]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Build the docs
+        run: node scripts/site/build-docs.mjs
+
+      - name: Check links
+        run: node scripts/site/check-links.mjs

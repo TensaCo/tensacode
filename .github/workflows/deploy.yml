@@ -1,0 +1,50 @@
+name: Deploy
+
+# Publishes the site to https://tensorcode.dev (Cloudflare Worker "tensorcode-site",
+# see wrangler.jsonc) on every push to develop.
+#
+# Requires two repository secrets (Settings > Secrets and variables > Actions):
+#   CLOUDFLARE_API_TOKEN   an API token with the "Edit Cloudflare Workers" template
+#                          permissions for the account and the tensorcode.dev zone
+#   CLOUDFLARE_ACCOUNT_ID  the Cloudflare account that owns the tensorcode.dev zone
+
+on:
+  push:
+    branches: [develop]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-site
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://tensorcode.dev
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Build the docs
+        run: node scripts/site/build-docs.mjs
+
+      - name: Check links
+        run: node scripts/site/check-links.mjs
+
+      - name: Deploy to Cloudflare Workers
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: "4.137.0"
+          command: deploy
