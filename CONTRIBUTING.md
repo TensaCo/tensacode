@@ -23,8 +23,9 @@ start one, open an issue here first.
 ## Working on the site
 
 ```bash
-git clone --recurse-submodules https://github.com/TensaCo/tensacode
+git clone https://github.com/TensaCo/tensacode
 cd tensacode
+git submodule update --init tensacode/python tensacode/typescript
 node scripts/site/build-docs.mjs      # writes site/docs/ (git-ignored)
 node scripts/site/check-links.mjs     # must pass
 npx wrangler dev                      # preview at http://localhost:8787

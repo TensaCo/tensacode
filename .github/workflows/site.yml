@@ -17,8 +17,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: recursive
+
+      # The docs are built from the Python and TypeScript submodules. The other
+      # language repositories are private placeholders, so check out only these two.
+      - name: Check out the implemented submodules
+        run: git submodule update --init --recursive --depth 1 tensacode/python tensacode/typescript
 
       - uses: actions/setup-node@v4
         with:

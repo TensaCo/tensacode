@@ -107,10 +107,12 @@ operations, tools, tracing, training and artifacts.
 | `wrangler.jsonc`, `scripts/site/worker.js` | The Cloudflare Worker that serves `site/` at tensorcode.dev |
 | `.github/workflows/` | `site.yml` builds and checks the site; `deploy.yml` publishes it |
 
-Clone with the submodules:
+Clone with the implemented submodules (the other language repositories are private placeholders for now):
 
 ```bash
-git clone --recurse-submodules https://github.com/TensaCo/tensacode
+git clone https://github.com/TensaCo/tensacode
+cd tensacode
+git submodule update --init tensacode/python tensacode/typescript
 ```
 
 ## Site development

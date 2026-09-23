@@ -7,7 +7,8 @@ Guidance for coding agents working in this repository.
 - `tensacode/<language>/`: git submodules, one repository per language.
   `python` (tensacode-py, the reference implementation) and `typescript`
   (tensacode-ts, a port that shares its file formats) are implemented; `cpp`,
-  `csharp`, `dart`, `java`, `kotlin` and `swift` are placeholders.
+  `csharp`, `dart`, `java`, `kotlin` and `swift` are private placeholder
+  repositories, so CI checks out only `python` and `typescript`.
 - `site/`: the tensorcode.dev product site, static HTML/CSS/JS with no framework.
   `site/README.md` has the page map, writing rules and checklist.
 - `site/docs/`: generated and git-ignored. Never edit it by hand.
