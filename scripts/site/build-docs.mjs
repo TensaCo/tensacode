@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Builds https://tensaco.ai/docs/ from the language implementations' Markdown.
+// Builds https://tensorcode.dev/docs/ from the language implementations' Markdown.
 //
 //   node scripts/site/build-docs.mjs            # writes site/docs/
 //   node scripts/site/build-docs.mjs --check    # converts everything, writes nothing,
@@ -27,7 +27,7 @@ import { fileURLToPath } from 'node:url';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const siteDir = join(root, 'site');
 const out = join(siteDir, 'docs');
-const origin = 'https://tensaco.ai';
+const origin = 'https://tensorcode.dev';
 const check = process.argv.includes('--check');
 
 // ---------------------------------------------------------------------------------
@@ -567,7 +567,7 @@ for (const lang of languages) {
       page.url = `/docs/${lang.id}/${page.slug ? page.slug + '/' : ''}`;
       if (page.generated) {
         page.source = [
-          `# TensaCode for ${lang.name}`,
+          `# TensorCode for ${lang.name}`,
           '',
           `The ${lang.name} documentation is being written. Until it lands here, the source and`,
           `its README are on [GitHub](${lang.repo}).`,
@@ -630,9 +630,9 @@ const icons = {
   sun: '<svg class="sun" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="3.1"/><path d="M8 1.1v1.7M8 13.2v1.7M1.1 8h1.7M13.2 8h1.7M3.15 3.15l1.2 1.2M11.65 11.65l1.2 1.2M12.85 3.15l-1.2 1.2M4.35 11.65l-1.2 1.2"/></svg>',
   bars: '<svg class="bars" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12"/></svg>',
   cross: '<svg class="cross" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9"/></svg>',
-  mark: '<svg class="mark" viewBox="0 0 32 32" aria-hidden="true"><circle class="ring" cx="16" cy="16" r="9"/><path class="slash" d="M6.5 25.5L25.5 6.5"/></svg>',
+  mark: '<svg class="mark" viewBox="0 0 32 32" aria-hidden="true"><path class="loop" d="M25.4 12.6A10 10 0 1 1 17.7 6.2"/><path class="loop" d="M15.3 2.4l3.3 3.9-3.9 3.1"/><path class="tick" d="M11.6 16.4l3.1 3.1 5.9-6.4"/></svg>',
 };
-const favicon = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2312151a'/%3E%3Ccircle cx='16' cy='16' r='8' fill='none' stroke='%233fd1b8' stroke-width='3'/%3E%3Cpath d='M8 24L24 8' stroke='%23f7f6f2' stroke-width='2.6' stroke-linecap='round'/%3E%3C/svg%3E";
+const favicon = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2312151a'/%3E%3Cg fill='none' stroke-linecap='round' stroke-linejoin='round' stroke-width='3'%3E%3Cpath stroke='%233fd1b8' d='M25.4 12.6A10 10 0 1 1 17.7 6.2M15.3 2.4l3.3 3.9-3.9 3.1'/%3E%3Cpath stroke='%23f7f6f2' d='M11.6 16.4l3.1 3.1 5.9-6.4'/%3E%3C/g%3E%3C/svg%3E";
 const themeSnippet = "<script>(function(){try{var t=localStorage.getItem('tc-theme');if(t!=='light'&&t!=='dark')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t}catch(e){}})();</script>";
 
 function head({ title, description, url }) {
@@ -645,7 +645,7 @@ function head({ title, description, url }) {
 <meta name="description" content="${escape(description)}">
 <link rel="canonical" href="${origin}${url}">
 <meta property="og:type" content="article">
-<meta property="og:site_name" content="TensaCo">
+<meta property="og:site_name" content="TensorCode">
 <meta property="og:url" content="${origin}${url}">
 <meta property="og:title" content="${escape(title)}">
 <meta property="og:description" content="${escape(description)}">
@@ -672,12 +672,12 @@ function topBar({ lang, page, menu }) {
   }).join('');
   return `<header class="site-top is-docs">
   <div class="bar">
-    <a class="brand" href="/" aria-label="TensaCo home">${icons.mark}<span>TensaCo</span></a>
+    <a class="brand" href="/" aria-label="TensorCode home">${icons.mark}<span>TensorCode</span></a>
     <a class="docs-tag" href="/docs/" style="text-decoration:none">Docs</a>
     <nav class="lang-switch" aria-label="Language">${switcher}</nav>
     <nav class="corner" aria-label="Resources">
       <a class="docs-home" href="/docs/"${!lang ? ' aria-current="page"' : ''}>Overview</a>
-      <a class="gh" href="${lang ? lang.repo : 'https://github.com/TensaCo/tensacode'}" aria-label="${lang ? `TensaCode for ${escape(lang.name)} on GitHub` : 'TensaCode on GitHub'}">${icons.github}<span>GitHub</span></a>
+      <a class="gh" href="${lang ? lang.repo : 'https://github.com/TensaCo/tensacode'}" aria-label="${lang ? `TensorCode for ${escape(lang.name)} on GitHub` : 'TensorCode on GitHub'}">${icons.github}<span>GitHub</span></a>
       <button class="icon-btn" type="button" data-theme-toggle hidden aria-label="Switch theme">${icons.moon}${icons.sun}</button>
       ${menu ? `<button class="icon-btn menu-btn" id="menu" type="button" aria-expanded="false" aria-controls="side" aria-label="Show the documentation menu">${icons.bars}${icons.cross}</button>` : ''}
     </nav>
@@ -718,7 +718,7 @@ function sidebar(lang, page) {
   const v = lang.meta.version ? `<small>${escape(lang.meta.name ?? '')} ${escape(lang.meta.version)}</small>` : '';
   const groups = lang.sections.map((s) => `<div class="group"><p class="group-title">${escape(s.title)}</p>${s.pages.map((p) =>
     `<a href="${p.url}"${p === page ? ' aria-current="page"' : ''}>${escape(p.title)}</a>`).join('')}</div>`).join('');
-  return `<nav class="side" id="side" aria-label="${escape(lang.name)} documentation"><p class="lang-title">${escape(lang.name)} ${v}</p>${groups}<div class="group back"><a href="/docs/">&larr; Docs overview</a><a href="/">&larr; tensaco.ai</a></div></nav>`;
+  return `<nav class="side" id="side" aria-label="${escape(lang.name)} documentation"><p class="lang-title">${escape(lang.name)} ${v}</p>${groups}<div class="group back"><a href="/docs/">&larr; Docs overview</a><a href="/">&larr; tensorcode.dev</a></div></nav>`;
 }
 
 function renderPage(page) {
@@ -731,9 +731,9 @@ function renderPage(page) {
   const prev = at > 0 ? lang.flat[at - 1] : null;
   const next = at < lang.flat.length - 1 ? lang.flat[at + 1] : null;
   const firstPara = /<p>([\s\S]*?)<\/p>/.exec(html)?.[1];
-  const description = firstPara ? plain(firstPara).replace(/\s+/g, ' ').slice(0, 180) : `${page.title}: TensaCode for ${lang.name}.`;
+  const description = firstPara ? plain(firstPara).replace(/\s+/g, ' ').slice(0, 180) : `${page.title}: TensorCode for ${lang.name}.`;
   const editUrl = page.file ? `${lang.repo}/blob/${lang.branch}/${page.file}` : lang.repo;
-  return `${head({ title: `${page.title} | TensaCode ${lang.name} docs`, description, url: page.url })}
+  return `${head({ title: `${page.title} | TensorCode ${lang.name} docs`, description, url: page.url })}
 <body class="docs">
 <a class="skip" href="#content">Skip to content</a>
 ${topBar({ lang, page, menu: true })}
@@ -745,7 +745,7 @@ ${topBar({ lang, page, menu: true })}
 ${html}
     </article>
     ${(prev || next) ? `<nav class="pager" aria-label="Previous and next">${prev ? `<a class="prev" href="${prev.url}"><small>&larr; Previous</small>${escape(prev.title)}</a>` : ''}${next ? `<a class="next" href="${next.url}"><small>Next &rarr;</small>${escape(next.title)}</a>` : ''}</nav>` : ''}
-    <footer class="doc-foot"><span>&copy; 2026 TensaCo &middot; MIT licensed</span><a href="${editUrl}">${page.file ? 'Edit this page on GitHub' : 'Source on GitHub'}</a></footer>
+    <footer class="doc-foot"><span>&copy; 2026 TensorCode &middot; MIT licensed</span><a href="${editUrl}">${page.file ? 'Edit this page on GitHub' : 'Source on GitHub'}</a></footer>
   </main>
   ${toc.length ? `<nav class="toc" aria-label="On this page"><p class="group-title">On this page</p>${toc.map((h) => `<a href="#${h.id}">${plain(h.text)}</a>`).join('')}</nav>` : ''}
 </div>
@@ -770,7 +770,7 @@ function firstCodeBlock(lang, fences) {
 }
 
 const archSvg = `<svg viewBox="0 -28 900 388" role="img" aria-labelledby="arch-t arch-d">
-<title id="arch-t">TensaCode architecture</title>
+<title id="arch-t">TensorCode architecture</title>
 <desc id="arch-d">Operations (vec, text, graph) are composed into tools (Chatbot, Investigator, Planner, Decision, Scene). A tool owns its model parameters and creates sessions that hold sourced evidence, revisions and memory. Sessions emit receipts and experience records; the trainer fits the tool's parameters from experience; artifacts are saved with save_pretrained and restored with from_pretrained, locally or from the Hugging Face Hub.</desc>
 <defs>
   <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="head" d="M0 0L10 5L0 10z"/></marker>
@@ -825,16 +825,16 @@ function renderLanding() {
   }).join('\n');
   const py = languages.find((l) => l.id === 'python');
   const validation = py.flat.find((p) => p.slug === 'validation');
-  return `${head({ title: 'TensaCode documentation | TensaCo', description: 'Developer documentation for TensaCode: callable operations, tools that own their trainable models, sourced evidence and revision, experience capture, training and portable artifacts, in Python and TypeScript.', url: '/docs/' })}
+  return `${head({ title: 'TensorCode documentation', description: 'Developer documentation for TensorCode: callable operations, tools that own their trainable models, sourced evidence and revision, experience capture, training and portable artifacts, in Python and TypeScript.', url: '/docs/' })}
 <body class="docs">
 <a class="skip" href="#content">Skip to content</a>
 ${topBar({ lang: null, page: null, menu: false })}
 <main id="content">
   <section class="dl-hero">
     <div class="container">
-      <p class="kicker">tensacode / developer documentation</p>
+      <p class="kicker">tensorcode / developer documentation</p>
       <h1>Trainable tools with sourced evidence and owned weights.</h1>
-      <p>TensaCode composes callable <b>operations</b> (<code>ops.vec</code>, <code>ops.text</code>, <code>ops.graph</code>) into <b>tools</b> that own their encoders, workspace and decoders. Tools create <b>sessions</b> that keep source evidence, generated hypotheses, model assessments and observed outcomes separate, and emit receipts you can audit.</p>
+      <p>TensorCode composes callable <b>operations</b> (<code>ops.vec</code>, <code>ops.text</code>, <code>ops.graph</code>) into <b>tools</b> that own their encoders, workspace and decoders. Tools create <b>sessions</b> that keep source evidence, generated hypotheses, model assessments and observed outcomes separate, and emit receipts you can audit.</p>
       <p>Reviewed targets and action outcomes become data-only <b>experience</b>; a <code>Trainer</code> fits the tool from it; <code>save_pretrained</code> / <code>from_pretrained</code> restore exact configuration and weights, offline or from the Hugging Face Hub. Importing the core package loads no ML framework and makes no network calls.</p>
     </div>
   </section>
@@ -842,7 +842,7 @@ ${topBar({ lang: null, page: null, menu: false })}
   <section class="dl-section" aria-labelledby="lang-h">
     <div class="container">
       <h2 id="lang-h" class="dl-h2">Pick an implementation</h2>
-      <p class="dl-sub">The Python package is the reference implementation. The TypeScript package follows the same public contracts: operations, tools, sessions, experience and artifacts.</p>
+      <p class="dl-sub">The Python package is the reference implementation. The TypeScript package is being built to the same public contracts (operations, tools, sessions, experience and artifacts); its guides appear here as they land.</p>
       <div class="lang-cards">
 ${cards}
       </div>
@@ -879,7 +879,7 @@ ${cards}
     </div>
   </section>
 </main>
-<footer class="site-foot"><div class="container"><p class="fine" style="margin-top:0;border-top:0;padding-top:0"><span>&copy; 2026 TensaCo &middot; TensaCode is MIT licensed</span><span><a href="/">tensaco.ai</a> &middot; <a href="https://github.com/TensaCo/tensacode">GitHub</a></span></p></div></footer>
+<footer class="site-foot"><div class="container"><p class="fine" style="margin-top:0;border-top:0;padding-top:0"><span>&copy; 2026 TensorCode &middot; MIT licensed &middot; by TensaCo</span><span><a href="/">tensorcode.dev</a> &middot; <a href="https://github.com/TensaCo/tensacode">GitHub</a></span></p></div></footer>
 <script src="/assets/theme.js" defer></script>
 ${pageScript}
 </body>

@@ -313,6 +313,31 @@ h1, h2, h3 { margin: 0; letter-spacing: -.02em; font-weight: 600; }
 .contact-card h2 { font-size: 1.5rem; margin-bottom: 6px; }
 .contact-card p { margin: 0; color: var(--dim); }
 
+/* Why page: side-by-side comparison. Rows stack into cards on phones. */
+.compare { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-l); box-shadow: var(--shadow-1); overflow: hidden; }
+.compare table { width: 100%; border-collapse: collapse; }
+.compare th, .compare td { text-align: left; vertical-align: top; padding: 18px 24px; border-top: 1px solid var(--line); }
+.compare thead th { border-top: 0; font-size: .8rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--faint); background: var(--surface-2); }
+.compare thead th.us { color: var(--accent); }
+.compare tbody th { font-weight: 600; width: 30%; }
+.compare td { color: var(--faint); }
+.compare td.us { color: var(--ink); font-weight: 500; background: color-mix(in srgb, var(--accent-soft) 45%, transparent); position: relative; }
+.compare td.us::after {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: var(--accent); opacity: .7;
+}
+@media (max-width: 640px) {
+  .compare thead { display: none; }
+  .compare tr { display: grid; grid-template-columns: minmax(0, 1fr); border-top: 1px solid var(--line); }
+  .compare tbody tr:first-child { border-top: 0; }
+  .compare th, .compare td { border-top: 0; padding: 6px 18px; width: auto; }
+  .compare tbody th { padding-top: 18px; font-size: 1.02rem; width: auto; }
+  .compare td:last-child { padding-bottom: 18px; }
+  .compare td::before { content: attr(data-label); display: block; font-size: .72rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--faint); margin-bottom: 2px; }
+  .compare td.us { margin: 4px 12px 0; border-radius: var(--radius-s); padding: 10px 14px 12px; }
+  .compare td.us::before { color: var(--accent); }
+  .compare td.us::after { display: none; }
+}
+
 .facts { margin: 0; display: grid; gap: 14px; }
 .facts div { display: grid; grid-template-columns: 116px 1fr; gap: 20px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px 24px; }
 .facts dt { font-family: var(--display); font-size: 3rem; line-height: 1; color: var(--accent); }

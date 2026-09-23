@@ -1,9 +1,9 @@
-// Cloudflare Workers static assets for https://tensaco.ai
+// Cloudflare Workers static assets for https://tensorcode.dev (the TensorCode product site).
 // Build the docs first:  node scripts/site/build-docs.mjs
 // Preview:               npx wrangler dev
-// Deploy:                npx wrangler deploy
+// Deploy:                node scripts/site/build-docs.mjs && npx wrangler deploy
 {
-  "name": "tensaco-site",
+  "name": "tensorcode-site",
   "compatibility_date": "2026-09-01",
   "assets": {
     "directory": "./site",

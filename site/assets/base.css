@@ -1,8 +1,8 @@
-/* TensaCo base: tokens, reset, the top bar, buttons and footer.
+/* TensorCode base: tokens, reset, the top bar, buttons and footer.
    Shared by the marketing pages (with site.css) and the docs (with docs.css).
 
-   Palette: warm paper and deep ink, one teal accent taken from the slashed "ø" in the
-   TensaCode logo, and one coral used only for "a person corrected this". Light is the
+   Palette: warm paper and deep ink, one teal accent taken from the loop in the
+   TensorCode mark, and one coral used only for "a person corrected this". Light is the
    default; dark applies when the device asks for it or the visitor picks it. A one-line
    script in each <head> writes data-theme before first paint. The dark palette is written
    twice because CSS cannot say "device asked OR visitor picked" in one rule. */
@@ -153,8 +153,9 @@ code, pre, kbd { font-family: var(--mono); }
   flex: none;
 }
 .brand .mark { width: 28px; height: 28px; flex: none; }
-.brand .mark .ring { fill: none; stroke: var(--accent); stroke-width: 3; }
-.brand .mark .slash { stroke: var(--ink); stroke-width: 3; stroke-linecap: round; }
+.brand .mark path { fill: none; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.brand .mark .loop { stroke: var(--accent); }
+.brand .mark .tick { stroke: var(--ink); }
 .brand .brand-sub { color: var(--faint); font-weight: 500; }
 .nav-main { display: flex; gap: 4px; margin-left: 18px; }
 .nav-main a, .corner a {
@@ -206,6 +207,11 @@ code, pre, kbd { font-family: var(--mono); }
 .btn-primary { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 .btn-primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); color: var(--accent-ink); }
 :root[data-theme="dark"] .btn-primary:hover { background: var(--accent); border-color: var(--accent); }
+.btn-link {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 48px; padding: 12px 8px;
+  font-weight: 600; color: var(--dim); text-decoration: none; border-radius: 999px;
+}
+.btn-link:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 4px; }
 .btn .arrow { transition: transform .18s var(--ease); }
 .btn:hover .arrow { transform: translateX(3px); }
 .btn:hover .arrow-down { transform: translateY(2px); }
