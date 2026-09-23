@@ -1,0 +1,13 @@
+// Cloudflare Workers static assets for https://tensaco.ai
+// Build the docs first:  node scripts/site/build-docs.mjs
+// Preview:               npx wrangler dev
+// Deploy:                npx wrangler deploy
+{
+  "name": "tensaco-site",
+  "compatibility_date": "2026-09-01",
+  "assets": {
+    "directory": "./site",
+    "not_found_handling": "404-page",
+    "html_handling": "auto-trailing-slash"
+  }
+}

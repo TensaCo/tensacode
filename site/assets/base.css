@@ -1,0 +1,226 @@
+/* TensaCo base: tokens, reset, the top bar, buttons and footer.
+   Shared by the marketing pages (with site.css) and the docs (with docs.css).
+
+   Palette: warm paper and deep ink, one teal accent taken from the slashed "ø" in the
+   TensaCode logo, and one coral used only for "a person corrected this". Light is the
+   default; dark applies when the device asks for it or the visitor picks it. A one-line
+   script in each <head> writes data-theme before first paint. The dark palette is written
+   twice because CSS cannot say "device asked OR visitor picked" in one rule. */
+
+:root {
+  --sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --display: "Instrument Serif", ui-serif, Georgia, "Times New Roman", serif;
+  --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  --radius-s: 8px;
+  --radius: 14px;
+  --radius-l: 22px;
+  --top-h: 64px;
+  --gutter: clamp(16px, 4vw, 40px);
+  --max: 1180px;
+  --ease: cubic-bezier(.2, .7, .2, 1);
+
+  color-scheme: light;
+  --bg: #f7f6f2;
+  --bg-2: #efede6;
+  --surface: #ffffff;
+  --surface-2: #fbfaf7;
+  --line: #e4e1d7;
+  --line-2: #cfcabd;
+  --ink: #12151a;
+  --dim: #474c55;
+  --faint: #656a74;
+  --accent: #0a7466;
+  --accent-strong: #075a4f;
+  --accent-ink: #ffffff;
+  --accent-soft: #dcefe9;
+  --accent-glow: rgba(10, 116, 102, .18);
+  --warm: #b8482a;
+  --warm-soft: #f8e3da;
+  --shadow-1: 0 1px 2px rgba(18, 21, 26, .06), 0 1px 1px rgba(18, 21, 26, .04);
+  --shadow-2: 0 18px 40px -18px rgba(18, 21, 26, .28), 0 2px 6px rgba(18, 21, 26, .06);
+  --shadow-3: 0 40px 80px -30px rgba(18, 21, 26, .35), 0 6px 18px rgba(18, 21, 26, .08);
+  --header-bg: rgba(247, 246, 242, .82);
+  --grid-line: rgba(18, 21, 26, .055);
+  --inverse-accent: #3fd1b8;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #0b0e12;
+    --bg-2: #10141a;
+    --surface: #151a21;
+    --surface-2: #12171d;
+    --line: #242b34;
+    --line-2: #36404b;
+    --ink: #eef0ec;
+    --dim: #b3bac3;
+    --faint: #8f97a2;
+    --accent: #3fd1b8;
+    --accent-strong: #6fe3cf;
+    --accent-ink: #03211c;
+    --accent-soft: #0f2d29;
+    --accent-glow: rgba(63, 209, 184, .22);
+    --warm: #ff8e6b;
+    --warm-soft: #3a2019;
+    --shadow-1: 0 1px 2px rgba(0, 0, 0, .4);
+    --shadow-2: 0 18px 40px -18px rgba(0, 0, 0, .7), 0 2px 6px rgba(0, 0, 0, .35);
+    --shadow-3: 0 40px 80px -30px rgba(0, 0, 0, .8), 0 6px 18px rgba(0, 0, 0, .4);
+    --header-bg: rgba(11, 14, 18, .78);
+    --grid-line: rgba(238, 240, 236, .05);
+    --inverse-accent: #0a7466;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0b0e12;
+  --bg-2: #10141a;
+  --surface: #151a21;
+  --surface-2: #12171d;
+  --line: #242b34;
+  --line-2: #36404b;
+  --ink: #eef0ec;
+  --dim: #b3bac3;
+  --faint: #8f97a2;
+  --accent: #3fd1b8;
+  --accent-strong: #6fe3cf;
+  --accent-ink: #03211c;
+  --accent-soft: #0f2d29;
+  --accent-glow: rgba(63, 209, 184, .22);
+  --warm: #ff8e6b;
+  --warm-soft: #3a2019;
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, .4);
+  --shadow-2: 0 18px 40px -18px rgba(0, 0, 0, .7), 0 2px 6px rgba(0, 0, 0, .35);
+  --shadow-3: 0 40px 80px -30px rgba(0, 0, 0, .8), 0 6px 18px rgba(0, 0, 0, .4);
+  --header-bg: rgba(11, 14, 18, .78);
+  --grid-line: rgba(238, 240, 236, .05);
+  --inverse-accent: #0a7466;
+}
+
+/* ---- Reset ------------------------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; scroll-padding-top: calc(var(--top-h) + 16px); }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 400 17px/1.6 var(--sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+img, svg { display: block; max-width: 100%; }
+a { color: inherit; }
+button { font: inherit; color: inherit; }
+code, pre, kbd { font-family: var(--mono); }
+::selection { background: var(--accent); color: var(--accent-ink); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+.visually-hidden {
+  position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+.skip {
+  position: absolute; left: 12px; top: -60px; z-index: 50;
+  background: var(--ink); color: var(--bg); padding: 10px 14px; border-radius: var(--radius-s);
+  font-weight: 600; text-decoration: none; transition: top .15s ease;
+}
+.skip:focus { top: 12px; }
+.container { width: 100%; max-width: var(--max); margin-inline: auto; padding-inline: var(--gutter); }
+
+/* ---- Top bar ------------------------------------------------------------------ */
+.site-top {
+  position: sticky; top: 0; z-index: 30;
+  height: var(--top-h);
+  background: var(--header-bg);
+  -webkit-backdrop-filter: saturate(1.4) blur(14px);
+  backdrop-filter: saturate(1.4) blur(14px);
+  border-bottom: 1px solid transparent;
+  transition: border-color .2s ease, background-color .2s ease;
+}
+.site-top.is-docs, .site-top[data-scrolled] { border-bottom-color: var(--line); }
+/* Marketing pages: transparent over the hero until the page scrolls (site.js sets data-top). */
+.site-top[data-top]:not(.is-docs) { background: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; }
+.site-top .bar {
+  height: 100%; display: flex; align-items: center; gap: 12px;
+  max-width: var(--max); margin-inline: auto; padding-inline: var(--gutter);
+}
+.site-top.is-docs .bar { max-width: none; }
+.brand {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-weight: 650; font-size: 1.08rem; letter-spacing: -.02em; text-decoration: none; color: var(--ink);
+  flex: none;
+}
+.brand .mark { width: 28px; height: 28px; flex: none; }
+.brand .mark .ring { fill: none; stroke: var(--accent); stroke-width: 3; }
+.brand .mark .slash { stroke: var(--ink); stroke-width: 3; stroke-linecap: round; }
+.brand .brand-sub { color: var(--faint); font-weight: 500; }
+.nav-main { display: flex; gap: 4px; margin-left: 18px; }
+.nav-main a, .corner a {
+  color: var(--dim); text-decoration: none; font-size: .94rem; font-weight: 500;
+  padding: 8px 10px; border-radius: 999px; transition: color .15s ease, background-color .15s ease;
+}
+.nav-main a:hover, .corner a:hover { color: var(--ink); background: var(--bg-2); }
+.nav-main a[aria-current="page"], .corner a[aria-current="page"] { color: var(--ink); }
+.corner { display: flex; align-items: center; gap: 4px; margin-left: auto; }
+.corner .docs-link {
+  color: var(--ink); border: 1px solid var(--line-2); padding: 7px 14px; margin-right: 4px;
+  display: inline-flex; align-items: center; gap: 7px;
+}
+.corner .docs-link:hover { border-color: var(--ink); background: transparent; }
+.corner .docs-link svg { width: 15px; height: 15px; }
+.corner .gh { display: inline-flex; align-items: center; gap: 7px; }
+.corner .gh svg { width: 18px; height: 18px; }
+.icon-btn {
+  display: inline-grid; place-items: center; width: 38px; height: 38px; padding: 0;
+  border: 0; border-radius: 999px; background: none; color: var(--dim); cursor: pointer;
+  transition: color .15s ease, background-color .15s ease;
+}
+.icon-btn:hover { color: var(--ink); background: var(--bg-2); }
+.icon-btn svg { width: 18px; height: 18px; }
+[data-theme-toggle] .sun { display: none; }
+:root[data-theme="dark"] [data-theme-toggle] .sun { display: block; }
+:root[data-theme="dark"] [data-theme-toggle] .moon { display: none; }
+
+@media (max-width: 860px) {
+  .nav-main { display: none; }
+}
+@media (max-width: 520px) {
+  .corner .gh span { display: none; }
+  .corner .gh { padding: 8px; }
+  .brand .brand-sub { display: none; }
+}
+
+/* ---- Buttons ------------------------------------------------------------------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  min-height: 48px; padding: 12px 22px; border-radius: 999px;
+  font-weight: 600; font-size: 1rem; line-height: 1.2; text-decoration: none;
+  border: 1px solid var(--line-2); color: var(--ink); background: var(--surface);
+  box-shadow: var(--shadow-1);
+  transition: transform .18s var(--ease), box-shadow .18s var(--ease), background-color .18s ease, border-color .18s ease;
+}
+.btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-2); border-color: var(--ink); }
+.btn:active { transform: translateY(0); }
+.btn-primary { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.btn-primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); color: var(--accent-ink); }
+:root[data-theme="dark"] .btn-primary:hover { background: var(--accent); border-color: var(--accent); }
+.btn .arrow { transition: transform .18s var(--ease); }
+.btn:hover .arrow { transform: translateX(3px); }
+.btn:hover .arrow-down { transform: translateY(2px); }
+
+/* ---- Footer ------------------------------------------------------------------- */
+.site-foot { border-top: 1px solid var(--line); padding: 56px 0 40px; color: var(--dim); font-size: .95rem; }
+.site-foot .foot-grid { display: grid; grid-template-columns: 1.4fr repeat(3, 1fr); gap: 32px; }
+.site-foot .brand { margin-bottom: 12px; }
+.site-foot p { margin: 0; max-width: 34ch; }
+.site-foot h2 { font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; color: var(--faint); margin: 4px 0 12px; font-weight: 600; }
+.site-foot ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.site-foot a { text-decoration: none; color: var(--dim); }
+.site-foot a:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+.site-foot .fine { margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; color: var(--faint); font-size: .88rem; max-width: none; }
+@media (max-width: 760px) {
+  .site-foot .foot-grid { grid-template-columns: 1fr 1fr; }
+  .site-foot .foot-brand { grid-column: 1 / -1; }
+}
