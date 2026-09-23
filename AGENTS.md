@@ -31,6 +31,7 @@ Guidance for coding agents working in this repository.
 - Every claim on the site must be something the libraries do; check it against
   `tensacode/python/docs/` (especially `validation.md`).
 - The default branch is `develop`.
+- Credentials go in git-ignored `.env.local`, `.env.prod` and `.env.gh` (plus `.env.dev` if a dev environment is ever added), each with a committed `.env.<name>.example` template. Keep them on disk; never print their values, commit them or delete them.
 
 ## Build, check, deploy
 

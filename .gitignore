@@ -7,6 +7,8 @@ node_modules/
 .dev.vars*
 .env
 .env.*
+# Templates are committed; copy one to .env.<name> and fill it in
+!.env.*.example
 
 # Editors and operating systems
 .vscode/

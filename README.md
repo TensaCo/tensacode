@@ -137,6 +137,18 @@ variables > Actions**:
 
 To deploy by hand: `node scripts/site/build-docs.mjs && npx wrangler deploy`.
 
+Credentials live in git-ignored env files at the repository root, one per
+environment. Each has a committed template: copy `.env.<name>.example` to
+`.env.<name>` and fill it in.
+
+| File | Used for |
+|---|---|
+| `.env.local` | Local development (`npx wrangler dev`, site scripts); optional with `npx wrangler login` |
+| `.env.prod` | Deploying to production from your machine (`set -a; . ./.env.prod; set +a`) |
+| `.env.gh` | The GitHub Actions secrets above; upload with `gh secret set -f .env.gh -R TensaCo/tensacode` |
+
+There is no separate dev or staging environment, so there is no `.env.dev`.
+
 ## Contributing
 
 Library changes belong in [tensacode-py](https://github.com/TensaCo/tensacode-py)
