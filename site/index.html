@@ -3,28 +3,29 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>TensorCode: AI your team can check, correct, and own</title>
-<meta name="description" content="TensorCode is free, open-source software for AI tools that show where every answer came from, learn from your team's corrections, and run on your own servers.">
+<title>TensorCode: Program your AI. Train your software.</title>
+<meta name="description" content="TensorCode puts written code and trained models in one program, with a line between them you can move. Open source, for Python and TypeScript.">
 <link rel="canonical" href="https://tensorcode.dev/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="TensorCode">
 <meta property="og:url" content="https://tensorcode.dev/">
-<meta property="og:title" content="TensorCode: AI your team can check, correct, and own">
-<meta property="og:description" content="AI that shows its receipts, learns from your team, and stays on your servers. Open source.">
+<meta property="og:title" content="TensorCode: Program your AI. Train your software.">
+<meta property="og:description" content="Written code and trained models in one program, with a line between them you can move.">
 <meta property="og:image" content="https://tensorcode.dev/media/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="theme-color" content="#f7f6f2" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0b0e12" media="(prefers-color-scheme: dark)">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2312151a'/%3E%3Cg fill='none' stroke-linecap='round' stroke-linejoin='round' stroke-width='3'%3E%3Cpath stroke='%233fd1b8' d='M25.4 12.6A10 10 0 1 1 17.7 6.2M15.3 2.4l3.3 3.9-3.9 3.1'/%3E%3Cpath stroke='%23f7f6f2' d='M11.6 16.4l3.1 3.1 5.9-6.4'/%3E%3C/g%3E%3C/svg%3E">
+<meta name="theme-color" content="#f1efe8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f0f0e" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23161513'/%3E%3Cg fill='%23f1efe8'%3E%3Crect x='5' y='5' width='10' height='22'/%3E%3Ccircle cx='19' cy='8' r='2.3'/%3E%3Ccircle cx='19' cy='16' r='2.3'/%3E%3Ccircle cx='19' cy='24' r='2.3'/%3E%3Ccircle cx='24.5' cy='12' r='1.6'/%3E%3Ccircle cx='24.5' cy='20' r='1.6'/%3E%3Ccircle cx='28.5' cy='8' r='.9'/%3E%3Ccircle cx='28.5' cy='16' r='.9'/%3E%3Ccircle cx='28.5' cy='24' r='.9'/%3E%3C/g%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900;1,100,400&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap">
 <link rel="stylesheet" href="/assets/base.css">
-<link rel="stylesheet" href="/assets/site.css">
-<script>(function(){try{var t=localStorage.getItem('tc-theme');if(t!=='light'&&t!=='dark')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t}catch(e){}})();</script>
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"TensorCode","url":"https://tensorcode.dev/","applicationCategory":"DeveloperApplication","operatingSystem":"Linux, macOS, Windows","license":"https://opensource.org/licenses/MIT","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"sameAs":["https://github.com/TensaCo/tensacode"]}</script>
+<link rel="stylesheet" href="/assets/home.css">
+<link rel="modulepreload" href="/assets/lib/tensorcode.js">
+<script>(function(){var t;try{t=localStorage.getItem('tc-theme')}catch(e){}if(t!=='light'&&t!=='dark'){t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}document.documentElement.dataset.theme=t;})();</script>
+<script type="module" src="/assets/home/main.js"></script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -32,15 +33,12 @@
 <header class="site-top">
   <div class="bar">
     <a class="brand" href="/" aria-label="TensorCode home">
-      <svg class="mark" viewBox="0 0 32 32" aria-hidden="true"><path class="loop" d="M25.4 12.6A10 10 0 1 1 17.7 6.2"/><path class="loop" d="M15.3 2.4l3.3 3.9-3.9 3.1"/><path class="tick" d="M11.6 16.4l3.1 3.1 5.9-6.4"/></svg>
+      <svg class="mark" viewBox="0 0 32 32" aria-hidden="true"><rect x="3" y="3" width="11" height="26"/><circle cx="18.5" cy="7" r="2.6"/><circle cx="18.5" cy="16" r="2.6"/><circle cx="18.5" cy="25" r="2.6"/><circle cx="24.5" cy="11.5" r="1.8"/><circle cx="24.5" cy="20.5" r="1.8"/><circle cx="29" cy="7" r="1"/><circle cx="29" cy="16" r="1"/><circle cx="29" cy="25" r="1"/></svg>
       <span>TensorCode</span>
     </a>
-    <nav class="nav-main" aria-label="Main">
-      <a href="/how-it-works/">How it works</a>
-      <a href="/why/">Why TensorCode</a>
-    </nav>
     <nav class="corner" aria-label="Resources">
-      <a class="docs-link" href="/docs/"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 2.5h7l3 3v8H3z"/><path d="M10 2.5v3h3M5.5 8.5h5M5.5 11h5"/></svg>Docs</a>
+      <a href="#four">Demos</a>
+      <a class="docs-link" href="/docs/">Docs</a>
       <a class="gh" href="https://github.com/TensaCo/tensacode" aria-label="TensorCode on GitHub"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0a8 8 0 0 0-2.53 15.59c.4.07.55-.17.55-.38l-.01-1.33c-2.23.48-2.7-1.07-2.7-1.07-.36-.93-.89-1.18-.89-1.18-.73-.5.05-.49.05-.49.8.06 1.23.83 1.23.83.72 1.23 1.88.88 2.34.67.07-.52.28-.88.51-1.08-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.03 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.28.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48l-.01 2.19c0 .21.14.46.55.38A8 8 0 0 0 8 0Z"/></svg><span>GitHub</span></a>
       <button class="icon-btn" type="button" data-theme-toggle hidden aria-label="Switch theme"><svg class="moon" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M13.6 10.4A6 6 0 0 1 5.6 2.4a6 6 0 1 0 8 8Z"/></svg><svg class="sun" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="3.1"/><path d="M8 1.1v1.7M8 13.2v1.7M1.1 8h1.7M13.2 8h1.7M3.15 3.15l1.2 1.2M11.65 11.65l1.2 1.2M12.85 3.15l-1.2 1.2M4.35 11.65l-1.2 1.2"/></svg></button>
     </nav>
@@ -49,287 +47,364 @@
 
 <main id="main">
 
-<!-- ================================================================ HERO -->
+<!-- HERO: the headline and a live program whose boundary moves. -->
 <section class="hero" aria-labelledby="hero-title">
-  <div class="container hero-grid">
-    <div>
-      <a class="pill" href="/how-it-works/"><b>Open source</b> Now in early access for Python and TypeScript</a>
-      <h1 id="hero-title" class="display">AI your team can <em>check</em>, correct, and own.</h1>
-      <p class="lead">TensorCode is free software for building AI tools that show where every answer came from, get better when your people correct them, and run on your own computers.</p>
-      <div class="actions">
-        <a class="btn btn-primary" href="/docs/python/quickstart/">Get started <span class="arrow" aria-hidden="true">&rarr;</span></a>
-        <a class="btn" href="#learns">See how it works <span class="arrow arrow-down" aria-hidden="true">&darr;</span></a>
-        <a class="btn-link" href="https://github.com/TensaCo/tensacode">View on GitHub <span class="arrow" aria-hidden="true">&#8599;</span></a>
+  <div class="container">
+    <h1 id="hero-title" class="hl">
+      <span class="hl-line" data-line="program">Program your <span class="phase w-ai" style="--u:.9">AI</span>.</span>
+      <span class="hl-line" data-line="train">Train your <span class="phase w-sw">software</span>.</span>
+    </h1>
+
+    <div class="hero-run" id="hero" aria-label="A live program. Its route function starts as written rules, becomes a trained classifier, then gains a written rule again.">
+      <div class="hero-code">
+        <p class="kicker"><button type="button" class="step" aria-current="step">written</button><button type="button" class="step">trained</button><button type="button" class="step">written + trained</button></p>
+        <pre class="code live" id="hero-code"><code>def route(text):
+    if "refund" in text: return "billing"
+    if "crash" in text:  return "technical"
+    return "unknown"</code></pre>
+        <p class="hero-meter" id="hero-meter" aria-live="polite"></p>
       </div>
-      <ul class="hero-notes">
-        <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7"/></svg>Free and open source</li>
-        <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7"/></svg>Runs on your own servers</li>
-        <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7"/></svg>No cloud account needed</li>
-      </ul>
+      <ol class="io" id="hero-io" aria-label="Tickets and where route sends them">
+        <li class="wrong"><q>give me my money back</q><output>unknown</output></li>
+        <li><q>the app crashes on login</q><output>technical</output></li>
+        <li class="wrong"><q>forgot my password again</q><output>unknown</output></li>
+      </ol>
     </div>
 
-    <div class="mock" role="img" aria-label="Example: an assistant answers why Tuesday's orders failed, cites three sources, and a team member's correction is saved as a lesson.">
-      <div class="mock-window" aria-hidden="true">
-        <div class="mock-bar"><i></i><i></i><i></i><span>Operations assistant</span></div>
-        <div class="mock-body">
-          <div class="bubble-q">Why did Tuesday's orders fail?</div>
-          <div class="bubble-a">
-            <p>The payment database stopped accepting connections at 2:10&nbsp;pm.<sup>1,2</sup> It wasn't the network: the 2:40&nbsp;pm update ruled that out.<sup>3</sup></p>
-            <div class="receipts">
-              <span class="chip"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-7"/></svg>Ops log #17</span>
-              <span class="chip"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-7"/></svg>Vendor email</span>
-              <span class="chip warm"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 8a5 5 0 1 1-1.5-3.6M13 2.5v2.5h-2.5"/></svg>Updated 2:40 pm</span>
+    <div class="hero-foot">
+      <p class="hero-sub">Written code and trained models in one program, with a line between them you can move.</p>
+      <div class="hero-cta">
+        <button class="install" type="button" data-copy="pip install &quot;tensorcode[vec]&quot;"><span class="prompt">$</span> pip install "tensorcode[vec]"<span class="copied" aria-live="polite"></span></button>
+        <a class="btn" href="/docs/">Docs</a>
+        <a class="btn-link" href="https://github.com/TensaCo/tensacode">GitHub ↗</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 01: the software problem -->
+<section class="sec" id="software" aria-labelledby="software-title">
+  <div class="container split">
+    <div class="copy">
+      <p class="label">01 — The software problem</p>
+      <h2 id="software-title" class="h2">You can’t <code>if</code>/<code>else</code> the world.</h2>
+      <p>You can write the outer algorithm. You can’t write every condition inside it. Wherever the rules run out, software reaches for a model.</p>
+      <p class="thesis">Some functions are easier to learn than to write.</p>
+    </div>
+    <figure class="explode" id="explode" aria-label="An if/else routing function grows one rule per unhandled ticket until it becomes unreadable, then collapses into a single learned call.">
+      <div class="explode-head"><span class="count" id="explode-count">3 rules</span><button class="ctl" type="button" data-replay>[ replay ]</button></div>
+      <pre class="code explode-code" id="explode-code"><code>def route(text):
+    if "refund" in text: return "billing"
+    if "crash" in text: return "technical"
+    if "password" in text: return "account"</code></pre>
+    </figure>
+  </div>
+</section>
+
+<!-- 02: the data problem, the mirror image of 01 -->
+<section class="sec" id="data" aria-labelledby="data-title">
+  <div class="container split mirror">
+    <div class="copy">
+      <p class="label">02 — The data problem</p>
+      <h2 id="data-title" class="h2">You can’t dataset the world either.</h2>
+      <p>Examples only cover where you’ve been. Arithmetic, physics and policy you already know exactly. Relearning them from data costs examples and still fails at the edges.</p>
+      <p class="thesis">Some functions are easier to write than to learn.</p>
+      <ul class="knowns" aria-label="Things that are one line of code">
+        <li><code>total = price * qty</code></li>
+        <li><code>assert balance &gt;= 0</code></li>
+        <li><code>assert not (express and pickup)</code></li>
+        <li><code>Order.model_validate(reply)</code></li>
+      </ul>
+    </div>
+    <figure class="extrap" id="extrap" aria-label="Chart: examples of price times quantity for quantities 1 to 12 train an ensemble of small networks. Inside the examples they agree with the written line; beyond them they spread apart, while the written line total = price * qty is exact everywhere.">
+      <div class="extrap-head"><span class="count" id="extrap-count">0 examples</span><button class="ctl" type="button" data-replay>[ replay ]</button></div>
+      <canvas id="extrap-canvas" width="720" height="440"></canvas>
+      <figcaption><span class="key solid"></span><code>total = price * qty</code> <span class="key field"></span>four small networks trained on the examples, by TensorCode in this tab</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- The hinge between the two problems. -->
+<section class="hinge" aria-label="Write what you know. Train what you don't.">
+  <div class="container">
+    <p class="hinge-line solid">Write what you know.</p>
+    <p class="hinge-line liquid"><span class="phase" style="--u:.55">Train what you don’t.</span></p>
+  </div>
+</section>
+
+<!-- 03: the programming model -->
+<section class="sec" id="model" aria-labelledby="model-title">
+  <div class="container">
+    <p class="label">03 — One program</p>
+    <h2 id="model-title" class="h2 wide">A trained model is just another function.</h2>
+    <div class="model-grid">
+      <p class="lede">Call it, branch on it, wrap it in rules. Then teach it through the values your program produces.</p>
+      <dl class="prims">
+        <div><dt><code>op(value)</code></dt><dd>Written or learned, every step is called the same way.</dd></div>
+        <div><dt><code>trace()</code></dt><dd>Records which step produced which value.</dd></div>
+        <div><dt><code>supervise(value, target, source=…)</code></dt><dd>Attaches a target to a value, and records who gave it.</dd></div>
+        <div><dt><code>fit()</code></dt><dd>Updates the learned weights on the path to that value. Written code stays as written.</dd></div>
+      </dl>
+    </div>
+
+    <div class="mover" id="mover">
+      <div class="mover-head">
+        <h3 class="h3">Move the line.</h3>
+        <p>The same function at four points between written and learned. The call site never changes.</p>
+      </div>
+      <div class="slider" role="group" aria-label="Where route sits between written and learned">
+        <span class="end">Written</span>
+        <input type="range" id="mover-range" min="0" max="3" step="1" value="0" aria-label="Written to learned" aria-valuetext="all written">
+        <span class="end">Learned</span>
+      </div>
+      <div class="mover-body">
+        <pre class="code" id="mover-code"><code>def route(text):
+    if "refund" in text: return "billing"
+    if "crash" in text:  return "technical"
+    return "unknown"</code></pre>
+        <table class="mover-table" id="mover-table" aria-live="polite">
+          <caption>Six tickets the learned part never trained on</caption>
+          <thead><tr><th scope="col">ticket</th><th scope="col">route(ticket)</th></tr></thead>
+          <tbody></tbody>
+          <tfoot><tr><td>right</td><td id="mover-score">1 / 6</td></tr></tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 04: four demos, each a different source of knowledge -->
+<section class="sec" id="four" aria-labelledby="four-title">
+  <div class="container">
+    <p class="label">04 — Four ways in</p>
+    <h2 id="four-title" class="h2 wide">Examples, rules, mechanics, consequences.</h2>
+    <p class="lede live-note">Everything below is live. Each demo runs TensorCode itself in this tab: the TypeScript port, running the Python you see step for step, with the same seeds and the same results. Download any program and compare.</p>
+
+    <!-- 01 EXAMPLES -->
+    <article class="demo" id="demo-branch" aria-labelledby="branch-title">
+      <header class="demo-head">
+        <p class="label">Examples</p>
+        <h3 id="branch-title" class="h3">Train a branch.</h3>
+        <p>Replace an <code>if</code>/<code>elif</code> with a <code>Classify</code>. The rest of the program doesn’t notice.</p>
+      </header>
+      <div class="demo-grid">
+        <div class="demo-code">
+          <p class="was">before</p>
+          <pre class="code past"><code>def route(text):
+    if "refund" in text or "charged" in text:
+        return "billing"
+    if "error" in text or "crash" in text:
+        return "technical"
+    if "password" in text or "log in" in text:
+        return "account"
+    return "unknown"   # every new phrasing is a new rule</code></pre>
+          <p class="now">with TensorCode</p>
+          <pre class="code" data-learned="encode route"><code>encode = VocabularyEncoder({"vocabulary": words, "dimensions": 24,
+                            "output_space": space})
+route = Classify({"architecture": "linear", "input_space": space,
+                  "labels": ["billing", "technical", "account"]})
+
+with trace() as t:
+    guess = route(encode(tickets))
+t.supervise(guess, labels, source="support team")
+ops = {"encode": encode, "route": route}
+Trainer.from_ops(ops, optimizer=adam).fit([t], epochs=30)
+
+route(encode("you took money from me twice")).value    # 'billing'</code></pre>
+          <p class="file"><a href="/examples/branch.py" download>branch.py</a> · 24 examples · CPU, offline</p>
+        </div>
+        <div class="demo-live" id="branch-live">
+          <label class="field-label" for="branch-input">A ticket</label>
+          <input class="ticket" id="branch-input" type="text" value="you took money from me twice" autocomplete="off" spellcheck="false" maxlength="90">
+          <p class="tokens" id="branch-tokens" aria-label="Words the encoder knows"></p>
+          <div class="compare">
+            <div class="by-hand"><p class="mini">by hand</p><p class="solid-out" id="branch-hand">unknown</p></div>
+            <div class="learned"><p class="mini">learned</p><div class="dist" id="branch-dist"></div></div>
+          </div>
+          <div class="teach">
+            <p class="mini">Wrong? Teach it: <span class="dim">(retrains here, in milliseconds)</span></p>
+            <div class="teach-buttons" id="branch-teach"></div>
+            <p class="teach-log" id="branch-log" aria-live="polite"></p>
+          </div>
+          <p class="scale">At scale, the same two operations reach <b>89.4%</b> on Banking77’s 3,080 held-out questions (77 intents) after 3.3 seconds of CPU training. <a href="https://github.com/TensaCo/tensacode-py/blob/main/docs/results/banking77-in-process.json">Record ↗</a></p>
+        </div>
+      </div>
+    </article>
+
+    <!-- 02 RULES -->
+    <article class="demo" id="demo-rules" aria-labelledby="rules-title">
+      <header class="demo-head">
+        <p class="label">Rules</p>
+        <h3 id="rules-title" class="h3">Rules it can’t break.</h3>
+        <p>A learned score ranks the options. A written mask decides which options exist.</p>
+      </header>
+      <div class="demo-grid">
+        <div class="demo-code">
+          <p class="was">before</p>
+          <pre class="code past"><code>action = model.predict(incident)
+if action == "restart" and peak_hours:
+    action = model.second_choice(incident)   # also allowed? check again…
+if action == "rollback" and deploy_age &gt; 60:
+    action = ...                             # patch, retrain, hope</code></pre>
+          <p class="now">with TensorCode <span class="hint">· click a rule to switch it off</span></p>
+          <pre class="code rules-code" id="rules-code" data-learned="score"><code>allowed = {
+    "restart":  not peak_hours,             # never at peak
+    "rollback": minutes_since_deploy &lt; 60,  # recent deploys only
+    "scale":    budget_left &gt; 0,            # it costs money
+    "page":     True,                       # a person, always
+}
+mask = torch.tensor([allowed[a] for a in ACTIONS])
+options = CandidateSet(encode(incident),
+                       Latent(actions.tensor, space, mask=mask), ACTIONS)
+choice = decide(score(options)).identity    # never a masked action</code></pre>
+          <p class="file"><a href="/examples/rules.py" download>rules.py</a> · trained on 8 postmortems</p>
+        </div>
+        <div class="demo-live" id="rules-live">
+          <p class="mini">Incident</p>
+          <div class="chips" id="rules-incidents" role="radiogroup" aria-label="Incident"></div>
+          <div class="state">
+            <label class="toggle"><input type="checkbox" id="rules-peak" checked> <code>peak_hours</code></label>
+            <label class="range"><code>minutes_since_deploy</code> <input type="range" id="rules-minutes" min="0" max="180" step="5" value="20"> <output id="rules-minutes-out">20</output></label>
+            <label class="toggle"><input type="checkbox" id="rules-budget" checked> <code>budget_left &gt; 0</code></label>
+          </div>
+          <ol class="options" id="rules-options" aria-live="polite"></ol>
+          <p class="note">Bars: the learned score. Struck through: masked by a rule. Changing a rule changes the choice at once, with no retraining.</p>
+        </div>
+      </div>
+    </article>
+
+    <!-- 03 MECHANICS -->
+    <article class="demo" id="demo-physics" aria-labelledby="physics-title">
+      <header class="demo-head">
+        <p class="label">Mechanics</p>
+        <h3 id="physics-title" class="h3">Write the physics. Learn the aim.</h3>
+        <p>The model never sees a correct angle. Its gradient comes back through code you wrote.</p>
+      </header>
+      <div class="demo-grid">
+        <div class="demo-code">
+          <p class="was">before</p>
+          <pre class="code past"><code># No closed-form inverse once there's drag. So either:
+#   derive one by hand, per model of the world, or
+#   simulate thousands of launches, log (distance, angle),
+#   fit a regressor, and hope it covers your targets.</code></pre>
+          <p class="now">with TensorCode</p>
+          <pre class="code" data-learned="aim"><code>class Flight(Operation):             # written: Euler steps, air drag
+    replayable = True                # pure tensor code: gradients pass
+    def forward(self, aim, *, context=None):
+        angle = pi / 2 * sigmoid(aim)    # rule: 0° to 90°
+        ...                              # 12 s of x, y, vx, vy
+        return landed
+
+aim = Decode({"architecture": "mlp", "output_dimensions": 1, ...})
+
+with trace() as t:
+    landed = fly(aim(targets))
+t.supervise(landed, targets, loss="mse", source="the targets themselves")</code></pre>
+          <p class="file"><a href="/examples/physics.py" download>physics.py</a> · no angle labels anywhere</p>
+        </div>
+        <div class="demo-live" id="physics-live">
+          <div class="bar-ctl">
+            <button class="ctl" type="button" id="physics-train">[ train ]</button>
+            <span class="mini">gravity</span>
+            <div class="seg" role="radiogroup" aria-label="Gravity in the written physics">
+              <button type="button" role="radio" aria-checked="true" data-g="9.81">Earth 9.81</button>
+              <button type="button" role="radio" aria-checked="false" data-g="3.71">Mars 3.71</button>
             </div>
+            <span class="loss" id="physics-loss"></span>
           </div>
-          <div class="mock-actions"><span>Looks right</span><span class="fix">Correct it</span></div>
+          <canvas id="physics-canvas" width="720" height="360" aria-label="Launch arcs toward six training flags and one target you can drag"></canvas>
+          <p class="note">Drag the <b>▼</b> target anywhere. The aim was never trained on it. Switch gravity and the same aim retrains to the new physics, still with no labels.</p>
         </div>
       </div>
-      <div class="float-tag" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-7"/></svg>Checked against 3 sources</div>
-      <div class="float-note" aria-hidden="true"><span class="av">DK</span><span><b>Dana corrected an answer</b><small>Saved as a lesson for next time</small></span></div>
-    </div>
-  </div>
-</section>
+    </article>
 
-<!-- ================================================================ VALUE 1 -->
-<div class="values">
-<section class="value" id="learns" aria-labelledby="v1-title">
-  <div class="container value-grid">
-    <div class="value-copy" data-reveal>
-      <p class="eyebrow"><span class="num">01</span>Gets better with use</p>
-      <h2 id="v1-title" class="display">It learns from <em>your</em> team.</h2>
-      <p class="lead">When someone fixes an answer, that fix isn't lost in a chat log. It's saved as a lesson, and your AI trains on it. Results count too: when an action works out, or doesn't, it learns from that.</p>
-      <ul class="checks">
-        <li><span class="tick"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7"/></svg></span><span><b>Corrections become training.</b> Every fix is saved, along with who made it.</span></li>
-        <li><span class="tick"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7"/></svg></span><span><b>Learns from what actually happened.</b> Real outcomes are feedback, not just opinions.</span></li>
-        <li><span class="tick"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7"/></svg></span><span><b>Improves on your schedule.</b> Retrain when you choose, on your own machines.</span></li>
-      </ul>
-    </div>
-    <figure class="figure-card" data-reveal>
-      <svg class="dg" viewBox="0 0 480 440" role="img" aria-labelledby="dg1-t dg1-d">
-        <title id="dg1-t">The learning loop</title>
-        <desc id="dg1-d">A loop of four steps. One: the AI answers, citing its sources. Two: your team reviews and confirms or fixes it. Three: the fix is saved as a lesson. Four: the AI retrains on your machines, then answers again. Saved lessons stack up in the middle.</desc>
-        <circle class="stroke-track" cx="240" cy="220" r="160"/>
-        <g class="orbit" style="transform-origin:240px 220px">
-          <circle cx="240" cy="220" r="160" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-dasharray="170 836" opacity=".75"/>
-          <circle class="pulse fill-accent" cx="318" cy="360" r="7"/>
-          <circle class="fill-accent" cx="318" cy="360" r="7"/>
-        </g>
-        <g class="stroke-faint" stroke-width="2">
-          <path d="M-5 -6L3 0L-5 6" transform="translate(353 107) rotate(45)"/>
-          <path d="M-5 -6L3 0L-5 6" transform="translate(353 333) rotate(135)"/>
-          <path d="M-5 -6L3 0L-5 6" transform="translate(127 333) rotate(225)"/>
-          <path d="M-5 -6L3 0L-5 6" transform="translate(127 107) rotate(315)"/>
-        </g>
+    <!-- 04 CONSEQUENCES -->
+    <article class="demo" id="demo-outcomes" aria-labelledby="outcomes-title">
+      <header class="demo-head">
+        <p class="label">Consequences</p>
+        <h3 id="outcomes-title" class="h3">Learn from what happened.</h3>
+        <p>Nobody labels the right action. The program acts, observes the result, and trains on it.</p>
+      </header>
+      <div class="demo-grid">
+        <div class="demo-code">
+          <p class="was">before</p>
+          <pre class="code past"><code>POLICY = {"hot": "cool", "corrupt": "reindex", "ready": "serve"}
+# written by someone who already knew the answers;
+# when the world changes, someone rewrites it</code></pre>
+          <p class="now">with TensorCode <span class="hint">· click the world to rewrite it</span></p>
+          <pre class="code" id="outcomes-code" data-learned="expect"><code>FIXES = {("cool", "hot"), ("reindex", "corrupt")}    # the world, written
 
-        <g class="float">
-          <rect class="card-soft" x="186" y="164" width="108" height="78" rx="12" transform="rotate(-7 240 205)"/>
-          <rect class="card-soft" x="186" y="166" width="108" height="78" rx="12" transform="rotate(6 240 205)"/>
-          <g class="shadow"><rect class="card" x="176" y="178" width="128" height="86" rx="12"/></g>
-          <text class="t-label" x="191" y="201">LESSON 128</text>
-          <text class="t-strong" x="191" y="225" style="font-size:14px">Ops log #17</text>
-          <circle class="fill-warm" cx="195" cy="245" r="4"/>
-          <text class="t-sub" x="205" y="249">fixed by Dana</text>
-          <circle class="fill-accent" cx="300" cy="182" r="13"/>
-          <text class="t-num" x="300" y="186.5" text-anchor="middle">+1</text>
-        </g>
+def act(telemetry):                                 # the policy, written:
+    scores = expect(options(telemetry))             # learned expectation
+    return decide(scores).identity                  # take the best one
 
-        <g class="shadow"><rect class="card" x="156" y="30" width="168" height="56" rx="28"/></g>
-        <circle class="fill-accent" cx="182" cy="58" r="13"/><text class="t-num" x="182" y="62.5" text-anchor="middle">1</text>
-        <text class="t-strong" x="204" y="54">It answers</text><text class="t-sub" x="204" y="72">citing its sources</text>
-
-        <g class="shadow"><rect class="card-warm" x="308" y="192" width="170" height="56" rx="28"/></g>
-        <circle class="fill-warm" cx="334" cy="220" r="13"/><text class="t-num" x="334" y="224.5" text-anchor="middle">2</text>
-        <text class="t-strong" x="356" y="216">Team reviews</text><text class="t-sub" x="356" y="234">confirms or fixes</text>
-
-        <g class="shadow"><rect class="card" x="156" y="354" width="168" height="56" rx="28"/></g>
-        <circle class="fill-accent" cx="182" cy="382" r="13"/><text class="t-num" x="182" y="386.5" text-anchor="middle">3</text>
-        <text class="t-strong" x="204" y="378">Fix is saved</text><text class="t-sub" x="204" y="396">as a lesson</text>
-
-        <g class="shadow"><rect class="card" x="2" y="192" width="168" height="56" rx="28"/></g>
-        <circle class="fill-accent" cx="28" cy="220" r="13"/><text class="t-num" x="28" y="224.5" text-anchor="middle">4</text>
-        <text class="t-strong" x="50" y="216">It retrains</text><text class="t-sub" x="50" y="234">on your machines</text>
-      </svg>
-      <figcaption>Answer, review, save, retrain. Each lap fits it a little closer to how your business works.</figcaption>
-    </figure>
-  </div>
-</section>
-
-<!-- ================================================================ VALUE 2 -->
-<section class="value flip" id="receipts" aria-labelledby="v2-title">
-  <div class="container value-grid">
-    <div class="value-copy" data-reveal>
-      <p class="eyebrow"><span class="num">02</span>Shows its receipts</p>
-      <h2 id="v2-title" class="display">Every answer comes with <em>receipts</em>.</h2>
-      <p class="lead">You shouldn't have to take an AI's word for it. TensorCode keeps what your documents actually say apart from what the AI thinks, and links every answer back to where it came from.</p>
-      <ul class="checks">
-        <li><span class="tick"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7"/></svg></span><span><b>Sources on every answer.</b> See the log, email, or report behind it.</span></li>
-        <li><span class="tick"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7"/></svg></span><span><b>Double-checks itself.</b> Answers are checked against those sources before you see them.</span></li>
-        <li><span class="tick"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7"/></svg></span><span><b>Says &ldquo;not sure&rdquo; instead of bluffing.</b> If the check fails, it tells you so.</span></li>
-        <li><span class="tick"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7"/></svg></span><span><b>Changes its mind when the facts change.</b> Correct a source and the answer updates. The old version stays on record.</span></li>
-      </ul>
-      <p class="aside">The checks are done by software, so they can still be wrong. That's exactly why the receipts are always there.</p>
-    </div>
-    <figure class="figure-card" data-reveal>
-      <svg class="dg" viewBox="0 0 480 390" role="img" aria-labelledby="dg2-t dg2-d">
-        <title id="dg2-t">An answer linked to its sources</title>
-        <desc id="dg2-d">Three sources on the left, an ops log, a vendor email, and a network update, each linked to an answer card on the right. The ops log and vendor email support the answer. The network update ruled out the earlier answer, network outage, which is crossed out and replaced by: payment database refused connections.</desc>
-
-        <path class="stroke-accent flow" d="M178 75 C220 75 216 188 258 188"/>
-        <path class="stroke-accent flow" d="M178 200 C220 200 216 204 258 204"/>
-        <path class="stroke-warm flow-slow" d="M178 325 C220 325 216 220 258 220"/>
-        <circle class="fill-accent" cx="258" cy="188" r="3.5"/><circle class="fill-accent" cx="258" cy="204" r="3.5"/><circle class="fill-warm" cx="258" cy="220" r="3.5"/>
-
-        <g class="shadow"><rect class="card" x="8" y="30" width="170" height="90" rx="14"/></g>
-        <path class="stroke-faint" d="M24 44h9l4 4v12H24z"/>
-        <text class="t-strong" x="46" y="58">Ops log #17</text>
-        <text class="t-sub" x="24" y="82">&ldquo;Connection refused&rdquo;</text>
-        <rect class="fill-accent-soft" x="24" y="92" width="80" height="20" rx="10"/>
-        <text class="t-label t-accent" x="34" y="106" style="letter-spacing:.04em">&#10003; SUPPORTS</text>
-
-        <g class="shadow"><rect class="card" x="8" y="155" width="170" height="90" rx="14"/></g>
-        <path class="stroke-faint" d="M23 170h14v10H23z M23 170l7 5 7-5"/>
-        <text class="t-strong" x="46" y="183">Vendor email</text>
-        <text class="t-sub" x="24" y="207">&ldquo;Database at capacity&rdquo;</text>
-        <rect class="fill-accent-soft" x="24" y="217" width="80" height="20" rx="10"/>
-        <text class="t-label t-accent" x="34" y="231" style="letter-spacing:.04em">&#10003; SUPPORTS</text>
-
-        <g class="shadow"><rect class="card-warm" x="8" y="280" width="170" height="90" rx="14"/></g>
-        <path class="stroke-faint" d="M24 302a6 6 0 1 1 1.8 4.3M24 296v6h6" />
-        <text class="t-strong" x="46" y="308">Network update</text>
-        <text class="t-sub" x="24" y="332">&ldquo;No outage today&rdquo;</text>
-        <rect class="fill-warm-soft" x="24" y="342" width="128" height="20" rx="10"/>
-        <text class="t-label t-warm" x="34" y="356" style="letter-spacing:.04em">RULES OUT NETWORK</text>
-        <circle class="fill-warm pulse" cx="166" cy="292" r="5"/><circle class="fill-warm" cx="166" cy="292" r="5"/>
-
-        <g class="shadow"><rect class="card-accent" x="258" y="50" width="214" height="290" rx="16"/></g>
-        <text class="t-label" x="276" y="80">QUESTION</text>
-        <rect class="fill-accent-soft" x="388" y="64" width="70" height="22" rx="11"/>
-        <text class="t-label t-accent" x="423" y="79" text-anchor="middle" style="letter-spacing:.04em">CHECKED</text>
-        <text class="t-strong" x="276" y="104">Why did orders fail?</text>
-        <rect class="fill-line" x="276" y="120" width="178" height="1"/>
-        <text class="t-label" x="276" y="146">ANSWER</text>
-        <g class="blink"><text class="t-sub" x="276" y="170">Network outage</text>
-        <path class="stroke-warm" d="M274 166h92" stroke-width="1.6"/></g>
-        <text class="t-strong" x="276" y="196">Payment database</text>
-        <text class="t-strong" x="276" y="216">refused connections.</text>
-        <rect class="fill-line" x="276" y="234" width="178" height="1"/>
-        <circle class="fill-accent" cx="280" cy="258" r="4"/><text class="t-sub" x="292" y="262">Ops log #17 &middot; supports</text>
-        <circle class="fill-accent" cx="280" cy="282" r="4"/><text class="t-sub" x="292" y="286">Vendor email &middot; supports</text>
-        <circle class="fill-warm" cx="280" cy="306" r="4"/><text class="t-sub" x="292" y="310">Update 2:40 pm &middot; revised</text>
-      </svg>
-      <figcaption>When the network update arrived, the answer changed, and the old one stayed on record.</figcaption>
-    </figure>
-  </div>
-</section>
-
-<!-- ================================================================ VALUE 3 -->
-<section class="value" id="yours" aria-labelledby="v3-title">
-  <div class="container value-grid">
-    <div class="value-copy" data-reveal>
-      <p class="eyebrow"><span class="num">03</span>Yours to keep</p>
-      <h2 id="v3-title" class="display">Your AI. Your servers. <em style="white-space:nowrap">No lock-in.</em></h2>
-      <p class="lead">The AI you train is saved as ordinary files that belong to you. Run it on your own hardware, even with no internet connection. Copy it, back it up, move it. You never have to rent it back.</p>
-      <ul class="checks">
-        <li><span class="tick"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7"/></svg></span><span><b>Works offline.</b> Your data stays in your building unless you choose to send it.</span></li>
-        <li><span class="tick"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7"/></svg></span><span><b>Owned, not rented.</b> Save any version and bring it back exactly as it was.</span></li>
-        <li><span class="tick"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7"/></svg></span><span><b>Free and open source.</b> MIT license: use it, change it, ship it.</span></li>
-        <li><span class="tick"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7"/></svg></span><span><b>Fits the tools your engineers already use.</b> Python and TypeScript.</span></li>
-      </ul>
-    </div>
-    <div data-reveal>
-      <figure class="genimg" style="--ratio: 4 / 3">
-        <img src="/media/value-3.webp" width="1600" height="1200" loading="lazy" decoding="async"
-             alt="A small graphite server resting on a stone plinth in a calm, sunlit room, with a brass key beside it"
-             onload="this.parentNode.classList.add('has-image')" onerror="this.hidden=true">
-        <div class="ph">
-          <div class="ph-head">
-            <span class="ph-label"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><rect x="1.5" y="2.5" width="13" height="11" rx="2"/><circle cx="5.5" cy="6.5" r="1.3"/><path d="M1.5 11.5l4-3.5 3 2.5 2-1.5 4 3"/></svg>Image to generate</span>
-            <code class="ph-file">/media/value-3.webp &middot; 1600&times;1200</code>
-          </div>
-          <pre id="prompt-value-3">Editorial product photograph, photorealistic 3D render. A small, compact matte-graphite server box, about the size of a stack of hardcover books, sits on a pale limestone plinth in a calm, minimal room with warm off-white plaster walls (#f7f6f2). A single brass key rests on the plinth beside it. A thin line of soft teal light (#3fd1b8) glows from a slot on the front of the server. Late-afternoon sunlight falls from a tall window on the left, casting long, soft shadows across a pale oak floor. Composition: subject slightly left of center, generous negative space on the right, camera at plinth height, 50mm lens, shallow depth of field. Mood: quiet, secure, owned, trustworthy. Palette: warm paper white, deep ink charcoal (#12151a), muted teal accent, one small touch of coral (#ff8e6b) in a reflection. Premium, understated, high detail, clean surfaces. No text, no logos, no people, no cable clutter. Aspect ratio 4:3, 1600x1200.</pre>
-          <button class="copy-btn" type="button" data-copy-prompt="prompt-value-3"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="5" width="9" height="9" rx="2"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5"/></svg><span>Copy prompt</span></button>
+with trace() as t:                                  # act, then observe
+    scores = expect(options(telemetry))
+t.supervise(scores, [action, reward], loss="outcome", source="observed")</code></pre>
+          <p class="file"><a href="/examples/outcomes.py" download>outcomes.py</a> · a toy world, like the repo’s <a href="https://github.com/TensaCo/tensacode-py/blob/main/examples/learn_action_outcomes.py">learn_action_outcomes.py</a></p>
         </div>
-      </figure>
-    </div>
-  </div>
-</section>
-</div>
-
-<!-- ================================================================ WHO IT'S FOR -->
-<section class="band band-alt" id="who" aria-labelledby="who-title">
-  <div class="container">
-    <div class="section-head" data-reveal>
-      <p class="eyebrow">Who it's for</p>
-      <h2 id="who-title" class="display">For teams who answer hard questions all day.</h2>
-      <p class="lead">If your people spend their time explaining what happened and why, TensorCode helps them do it faster, and gets better at it the more they use it.</p>
-    </div>
-    <div class="cards">
-      <article class="use" data-reveal>
-        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></span>
-        <h3>Operations</h3>
-        <p>Work out what went wrong from logs and reports, with every clue cited.</p>
-        <q>Why did Tuesday's orders fail?</q>
-      </article>
-      <article class="use" data-reveal>
-        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9.5h8M8 12.5h5"/></svg></span>
-        <h3>Customer support</h3>
-        <p>Send each ticket to the right team, and learn from every one that gets rerouted.</p>
-        <q>Who should handle this refund?</q>
-      </article>
-      <article class="use" data-reveal>
-        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5 5"/><path d="M8 10.5h5"/></svg></span>
-        <h3>Research and analysis</h3>
-        <p>Answer questions from your own documents, with the passages that back each answer up.</p>
-        <q>What do our contracts say about renewals?</q>
-      </article>
-      <article class="use" data-reveal>
-        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4.5"/></svg></span>
-        <h3>Regulated industries</h3>
-        <p>Keep sensitive data in-house, with a record of what every answer was based on.</p>
-        <q>Show me what this decision was based on.</q>
-      </article>
-    </div>
+        <div class="demo-live" id="outcomes-live">
+          <div class="bar-ctl">
+            <button class="ctl" type="button" id="outcomes-run">[ act, observe, learn ]</button>
+            <span class="served" id="outcomes-served">0 / 6 served</span>
+          </div>
+          <table class="observed" id="outcomes-observed" aria-label="Observed rewards while exploring six training scenarios">
+            <thead><tr><th scope="col">explored</th><th scope="col">cool</th><th scope="col">reindex</th><th scope="col">serve</th></tr></thead>
+            <tbody></tbody>
+          </table>
+          <ol class="episodes" id="outcomes-episodes" aria-label="Six new scenarios, handled by the learned policy"></ol>
+        </div>
+      </div>
+    </article>
   </div>
 </section>
 
-<!-- ================================================================ TRUST STRIP -->
-<section class="trust" aria-label="Why you can trust it">
+<!-- 05: start -->
+<section class="sec start" id="start" aria-labelledby="start-title">
   <div class="container">
-    <ul>
-      <li><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></svg></span><span><b>Open source</b><span>MIT license, code on GitHub</span></span></li>
-      <li><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/><path d="M7 7.5h.01M7 16.5h.01"/></svg></span><span><b>Runs on your hardware</b><span>Works offline, no cloud required</span></span></li>
-      <li><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 7.5-2"/></svg></span><span><b>No lock-in</b><span>What you train is yours to keep</span></span></li>
-      <li><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span><span><b>Honest numbers</b><span>We publish results, even the bad ones</span></span></li>
-    </ul>
-  </div>
-</section>
+    <p class="label">05 — Start</p>
+    <h2 id="start-title" class="visually-hidden">Install TensorCode</h2>
+    <div class="installs">
+      <button class="install big" type="button" data-copy="pip install &quot;tensorcode[vec]&quot;"><span class="prompt">$</span> pip install "tensorcode[vec]"<span class="copied" aria-live="polite"></span></button>
+      <button class="install big" type="button" data-copy="npm install tensorcode"><span class="prompt">$</span> npm install tensorcode<span class="copied" aria-live="polite"></span></button>
+    </div>
+    <div class="hello">
+      <pre class="code" id="hello-code" data-learned="encode route"><code>from tensorcode import trace, training
+from tensorcode.ops.vec import Classify
+from tensorcode.ops.vec.encode import VocabularyEncoder
 
-<!-- ================================================================ HONEST NOTE -->
-<section class="band" aria-labelledby="early-title">
-  <div class="container">
-    <div class="honest" data-reveal>
-      <span class="badge" aria-hidden="true">&alpha;</span>
-      <div>
-        <h2 id="early-title">Early, and honest about it.</h2>
-        <p>TensorCode is in early access. It's ready for teams who want to try it on one real problem; it isn't yet a finished product for everyone. We publish every measurement we run, including the experiments that didn't work, so you always know where it stands. Your engineers can <a href="/docs/python/validation/">read the numbers</a>.</p>
+tickets = ["refund my order", "charged twice", "the app crashed",
+           "error on upload", "forgot my password", "cannot log in"]
+labels = ["billing", "billing", "technical", "technical", "account", "account"]
+words = sorted({w for t in tickets for w in t.split()})
+
+space = {"name": "tickets", "dimensions": 8}
+encode = VocabularyEncoder({"vocabulary": words, "dimensions": 8,
+                            "output_space": space})
+route = Classify({"architecture": "linear", "input_space": space,
+                  "labels": ["billing", "technical", "account"]})
+
+with trace() as t:
+    guess = route(encode(tickets))
+t.supervise(guess, labels, source="me")
+trainer = training.Trainer.from_ops({"encode": encode, "route": route}, lr=0.5)
+trainer.fit([t], epochs=50)
+
+print(route(encode("the upload crashed")).value)  # technical</code></pre>
+      <div class="hello-run">
+        <button class="btn btn-primary" type="button" id="hello-run">Run it here ▸</button>
+        <pre class="out" id="hello-out" aria-live="polite">$ python hello.py</pre>
+        <p class="file"><a href="/examples/hello.py" download>hello.py</a></p>
       </div>
     </div>
-  </div>
-</section>
-
-<!-- ================================================================ CTA -->
-<section class="cta" aria-labelledby="cta-title">
-  <div class="container">
-    <div class="cta-box" data-reveal>
-      <div>
-        <h2 id="cta-title" class="display">Start with <em>one question</em>.</h2>
-        <p>Pick one question your team answers every day and hand this page to an engineer. It's free, and it runs on your own machines from day one.</p>
-      </div>
-      <div class="actions">
-        <a class="btn btn-primary" href="/docs/python/quickstart/">Get started <span class="arrow" aria-hidden="true">&rarr;</span></a>
-        <a class="btn" href="/docs/">Docs for your engineers</a>
-      </div>
-    </div>
+    <nav class="links" aria-label="Next">
+      <a href="/docs/python/quickstart/">Python quickstart</a>
+      <a href="/docs/typescript/">TypeScript</a>
+      <a href="/docs/overview/">How it fits together</a>
+      <a href="/docs/python/validation/">What it can’t do yet</a>
+      <a href="https://github.com/TensaCo/tensacode-py">GitHub ↗</a>
+    </nav>
+    <p class="alpha">0.4 alpha. APIs may change between alphas. Every measured result and its limits is published under <a href="/docs/python/validation/">validation</a>.</p>
   </div>
 </section>
 
@@ -337,20 +412,10 @@
 
 <footer class="site-foot">
   <div class="container">
-    <div class="foot-grid">
-      <div class="foot-brand">
-        <a class="brand" href="/"><svg class="mark" viewBox="0 0 32 32" aria-hidden="true"><path class="loop" d="M25.4 12.6A10 10 0 1 1 17.7 6.2"/><path class="loop" d="M15.3 2.4l3.3 3.9-3.9 3.1"/><path class="tick" d="M11.6 16.4l3.1 3.1 5.9-6.4"/></svg><span>TensorCode</span></a>
-        <p>Software that shows its receipts, learns from your team, and stays yours.</p>
-      </div>
-      <nav aria-labelledby="f-product"><h2 id="f-product">Product</h2><ul><li><a href="/how-it-works/">How it works</a></li><li><a href="/why/">Why TensorCode</a></li><li><a href="/docs/">Docs</a></li></ul></nav>
-      <nav aria-labelledby="f-eng"><h2 id="f-eng">For engineers</h2><ul><li><a href="/docs/python/quickstart/">Quickstart</a></li><li><a href="https://github.com/TensaCo/tensacode-py">Python library</a></li><li><a href="https://github.com/TensaCo/tensacode-ts">TypeScript library</a></li></ul></nav>
-      <nav aria-labelledby="f-open"><h2 id="f-open">Open source</h2><ul><li><a href="https://github.com/TensaCo/tensacode">GitHub</a></li><li><a href="https://github.com/TensaCo/tensacode-py/blob/main/LICENSE">MIT license</a></li><li><a href="https://github.com/TensaCo/tensacode-py/issues">Report an issue</a></li></ul></nav>
-    </div>
-    <p class="fine"><span>&copy; 2026 TensorCode &middot; by TensaCo</span><span>Free and open source under the MIT license.</span></p>
+    <p class="fine"><span>TensorCode · MIT licensed · by TensaCo</span><span><a href="/docs/">Docs</a> · <a href="https://github.com/TensaCo/tensacode-py">Python</a> · <a href="https://github.com/TensaCo/tensacode-ts">TypeScript</a> · <a href="https://pypi.org/project/tensorcode/">PyPI</a> · <a href="https://www.npmjs.com/package/tensorcode">npm</a></span></p>
   </div>
 </footer>
 
 <script src="/assets/theme.js" defer></script>
-<script src="/assets/site.js" defer></script>
 </body>
 </html>

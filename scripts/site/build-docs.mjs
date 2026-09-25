@@ -677,9 +677,9 @@ const icons = {
   sun: '<svg class="sun" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="3.1"/><path d="M8 1.1v1.7M8 13.2v1.7M1.1 8h1.7M13.2 8h1.7M3.15 3.15l1.2 1.2M11.65 11.65l1.2 1.2M12.85 3.15l-1.2 1.2M4.35 11.65l-1.2 1.2"/></svg>',
   bars: '<svg class="bars" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12"/></svg>',
   cross: '<svg class="cross" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9"/></svg>',
-  mark: '<svg class="mark" viewBox="0 0 32 32" aria-hidden="true"><path class="loop" d="M25.4 12.6A10 10 0 1 1 17.7 6.2"/><path class="loop" d="M15.3 2.4l3.3 3.9-3.9 3.1"/><path class="tick" d="M11.6 16.4l3.1 3.1 5.9-6.4"/></svg>',
+  mark: '<svg class="mark" viewBox="0 0 32 32" aria-hidden="true"><rect x="3" y="3" width="11" height="26"/><circle cx="18.5" cy="7" r="2.6"/><circle cx="18.5" cy="16" r="2.6"/><circle cx="18.5" cy="25" r="2.6"/><circle cx="24.5" cy="11.5" r="1.8"/><circle cx="24.5" cy="20.5" r="1.8"/><circle cx="29" cy="7" r="1"/><circle cx="29" cy="16" r="1"/><circle cx="29" cy="25" r="1"/></svg>',
 };
-const favicon = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2312151a'/%3E%3Cg fill='none' stroke-linecap='round' stroke-linejoin='round' stroke-width='3'%3E%3Cpath stroke='%233fd1b8' d='M25.4 12.6A10 10 0 1 1 17.7 6.2M15.3 2.4l3.3 3.9-3.9 3.1'/%3E%3Cpath stroke='%23f7f6f2' d='M11.6 16.4l3.1 3.1 5.9-6.4'/%3E%3C/g%3E%3C/svg%3E";
+const favicon = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23161513'/%3E%3Cg fill='%23f1efe8'%3E%3Crect x='5' y='5' width='10' height='22'/%3E%3Ccircle cx='19' cy='8' r='2.3'/%3E%3Ccircle cx='19' cy='16' r='2.3'/%3E%3Ccircle cx='19' cy='24' r='2.3'/%3E%3Ccircle cx='24.5' cy='12' r='1.6'/%3E%3Ccircle cx='24.5' cy='20' r='1.6'/%3E%3Ccircle cx='28.5' cy='8' r='.9'/%3E%3Ccircle cx='28.5' cy='16' r='.9'/%3E%3Ccircle cx='28.5' cy='24' r='.9'/%3E%3C/g%3E%3C/svg%3E";
 const themeSnippet = "<script>(function(){try{var t=localStorage.getItem('tc-theme');if(t!=='light'&&t!=='dark')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t}catch(e){}})();</script>";
 
 function head({ title, description, url }) {
@@ -698,12 +698,12 @@ function head({ title, description, url }) {
 <meta property="og:description" content="${escape(description)}">
 <meta property="og:image" content="${origin}/media/og.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="theme-color" content="#f7f6f2" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0b0e12" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f1efe8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f0f0e" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="${favicon}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900;1,100,400&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap">
 <link rel="stylesheet" href="/assets/base.css">
 <link rel="stylesheet" href="/assets/docs.css">
 ${themeSnippet}
@@ -926,9 +926,9 @@ ${topBar({ lang: null, page: null, menu: false })}
   <section class="dl-hero">
     <div class="container">
       <p class="kicker">tensorcode / developer documentation</p>
-      <h1>Trainable tools with sourced evidence and owned weights.</h1>
-      <p>TensorCode composes callable <b>operations</b> (<code>ops.vec</code>, <code>ops.text</code>, <code>ops.graph</code>) into <b>tools</b> that own their encoders, workspace and decoders. Tools create <b>sessions</b> that keep source evidence, generated hypotheses, model assessments and observed outcomes separate, and emit receipts you can audit.</p>
-      <p>Reviewed targets and action outcomes become data-only <b>experience</b>; a <code>Trainer</code> fits the tool from it; <code>save_pretrained</code> / <code>from_pretrained</code> restore exact configuration and weights, offline or from the Hugging Face Hub. Importing the core package loads no ML framework and makes no network calls.</p>
+      <h1>Written steps and learned steps, in one traced program.</h1>
+      <p>Every step is an <b>operation</b> with one calling convention, <code>op(value, *, context=None)</code>: written ones (subclass <code>Operation</code>) and learned ones that own their weights (<code>ops.vec</code>, <code>ops.text</code>). <code>trace()</code> records which operation produced which value, <code>supervise()</code> attaches a sourced target to any of them, and a <code>Trainer</code> replays the supported local tensor paths and updates only the parameters on them.</p>
+      <p>Complete <b>tools</b> (<code>Investigator</code>, <code>Planner</code>, <code>Chatbot</code> and more) own their encoders, workspace and decoders, and keep evidence, hypotheses and outcomes separate. Everything saves as data-only artifacts with <code>save_pretrained</code> / <code>from_pretrained</code>, offline or from the Hugging Face Hub. Importing the core package loads no ML framework and makes no network calls.</p>
       <p class="dl-actions"><a class="btn btn-primary" href="/docs/install/">Install</a><a class="btn" href="/docs/overview/">Architecture overview</a></p>
     </div>
   </section>

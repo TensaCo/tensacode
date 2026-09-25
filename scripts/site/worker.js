@@ -4,10 +4,13 @@
 //   http://tensorcode.dev/...        -> 301 https://tensorcode.dev/...
 //   http(s)://www.tensorcode.dev/... -> 301 https://tensorcode.dev/...
 //
+//   /how-it-works/, /why/            -> 301 /  (retired pages; the landing page replaced them)
+//
 // Anything else (the workers.dev address, `wrangler dev`) is served as is, with the
 // 404 page and trailing-slash rules configured under "assets".
 
 const APEX = 'tensorcode.dev';
+const RETIRED = /^\/(?:how-it-works|why)(?:\/.*)?$/;
 
 export default {
   async fetch(request, env) {
@@ -21,6 +24,9 @@ export default {
         status: 301,
         headers: { location: url.toString(), 'cache-control': 'public, max-age=86400' },
       });
+    }
+    if (RETIRED.test(url.pathname)) {
+      return new Response(null, { status: 301, headers: { location: '/', 'cache-control': 'public, max-age=86400' } });
     }
     return env.ASSETS.fetch(request);
   },

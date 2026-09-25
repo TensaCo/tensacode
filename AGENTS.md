@@ -15,6 +15,10 @@ Guidance for coding agents working in this repository.
 - `scripts/site/build-docs.mjs`: builds `site/docs/` from the submodules' `README.md`
   and `docs/*.md`, plus the shared pages in `scripts/site/pages/`.
 - `scripts/site/check-links.mjs`: checks internal links, anchors and code blocks.
+- `scripts/site/build-lib.mjs`: bundles the TypeScript library into
+  `site/assets/lib/tensorcode.js`, which the landing page's live demos run.
+- `scripts/site/check-examples.mjs`: checks that each demo's JavaScript program computes
+  what its Python twin in `site/examples/` computes.
 - `wrangler.jsonc`, `scripts/site/worker.js`: the Cloudflare Worker `tensorcode-site`.
 - `.github/workflows/`: `site.yml` (build and link check) and `deploy.yml`
   (deploy on push to `develop`).

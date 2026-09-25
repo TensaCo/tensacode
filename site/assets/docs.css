@@ -1,51 +1,23 @@
 /* Docs: sidebar, article typography, code, tables, TOC, and the technical landing.
    Tokens and the top bar come from base.css. */
 
+/* Code in the docs follows the landing page: typographic highlighting, not colour.
+   Keywords and definitions are heavier, strings are a shade lighter, comments italic. */
 :root {
   --side-w: 272px;
   --toc-w: 220px;
-  --code-bg: #f1efe8;
-  --code-line: #e2ded2;
-  --code-ink: #1d2128;
-  --syn-comment: #686d76;
-  --syn-keyword: #8a3ab9;
-  --syn-string: #2f7a3a;
-  --syn-number: #9a4d00;
-  --syn-func: #1f5fbf;
-  --syn-type: #0a7466;
-  --syn-builtin: #a1401f;
-  --syn-deco: #9a4d00;
-  --syn-punct: #5a5f68;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --code-bg: #0f1318;
-    --code-line: #232a33;
-    --code-ink: #dfe3e8;
-    --syn-comment: #7d8793;
-    --syn-keyword: #d49bff;
-    --syn-string: #9fd88a;
-    --syn-number: #ffb870;
-    --syn-func: #86b7ff;
-    --syn-type: #5fe0c8;
-    --syn-builtin: #ff9f80;
-    --syn-deco: #ffc56b;
-    --syn-punct: #9aa3ad;
-  }
-}
-:root[data-theme="dark"] {
-  --code-bg: #0f1318;
-  --code-line: #232a33;
-  --code-ink: #dfe3e8;
-  --syn-comment: #7d8793;
-  --syn-keyword: #d49bff;
-  --syn-string: #9fd88a;
-  --syn-number: #ffb870;
-  --syn-func: #86b7ff;
-  --syn-type: #5fe0c8;
-  --syn-builtin: #ff9f80;
-  --syn-deco: #ffc56b;
-  --syn-punct: #9aa3ad;
+  --code-bg: var(--paper-2);
+  --code-line: var(--rule);
+  --code-ink: var(--ink);
+  --syn-comment: var(--faint);
+  --syn-keyword: var(--ink);
+  --syn-string: var(--ink-2);
+  --syn-number: var(--ink);
+  --syn-func: var(--ink);
+  --syn-type: var(--ink);
+  --syn-builtin: var(--ink);
+  --syn-deco: var(--dim);
+  --syn-punct: var(--dim);
 }
 
 body.docs { font-size: 16px; }
@@ -53,12 +25,12 @@ body.docs { font-size: 16px; }
 /* ---- Top bar additions ------------------------------------------------------ */
 .docs-tag { font-size: .8rem; font-weight: 600; color: var(--faint); border-left: 1px solid var(--line-2); padding-left: 12px; margin-left: 2px; }
 .lang-switch {
-  display: inline-flex; padding: 3px; gap: 2px; border-radius: 999px; background: var(--bg-2); border: 1px solid var(--line);
+  display: inline-flex; padding: 3px; gap: 2px; border-radius: 2px; background: var(--bg-2); border: 1px solid var(--line);
   margin-left: 14px;
 }
 .lang-switch a {
   font-size: .84rem; font-weight: 600; text-decoration: none; color: var(--dim);
-  padding: 5px 12px; border-radius: 999px; transition: color .15s ease, background-color .15s ease;
+  padding: 5px 12px; border-radius: 2px; transition: color .15s ease, background-color .15s ease;
 }
 .lang-switch a:hover { color: var(--ink); }
 .lang-switch a[aria-current="true"] { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-1); }
@@ -82,7 +54,7 @@ body.docs { font-size: 16px; }
 .side .group { margin-bottom: 22px; }
 .side .group-title { font-size: .72rem; font-weight: 650; letter-spacing: .09em; text-transform: uppercase; color: var(--faint); margin: 0 0 6px 8px; }
 .side a {
-  display: block; padding: 6px 10px; border-radius: 8px; color: var(--dim); text-decoration: none; font-size: .92rem; line-height: 1.35;
+  display: block; padding: 6px 10px; border-radius: 2px; color: var(--dim); text-decoration: none; font-size: .92rem; line-height: 1.35;
 }
 .side a:hover { background: var(--bg-2); color: var(--ink); }
 .side a[aria-current="page"] { background: var(--accent-soft); color: var(--accent-strong); font-weight: 600; }
@@ -114,10 +86,10 @@ body.docs { font-size: 16px; }
 .prose strong { font-weight: 650; }
 .prose hr { border: 0; border-top: 1px solid var(--line); margin: 32px 0; }
 .prose img { max-width: 100%; height: auto; border-radius: var(--radius-s); }
-.prose blockquote { border-left: 3px solid var(--accent); background: var(--surface-2); padding: 12px 18px; border-radius: 0 var(--radius-s) var(--radius-s) 0; color: var(--dim); }
+.prose blockquote { border-left: 3px solid var(--accent); background: var(--surface-2); padding: 12px 18px; border-radius: 0; color: var(--dim); }
 .prose blockquote > :last-child { margin-bottom: 0; }
 .prose :not(pre) > code {
-  font-size: .86em; padding: .12em .38em; border-radius: 6px; background: var(--code-bg); border: 1px solid var(--code-line);
+  font-size: .86em; padding: .12em .38em; border-radius: 2px; background: var(--code-bg); border: 1px solid var(--code-line);
   overflow-wrap: anywhere;
 }
 .prose a code { color: inherit; }
@@ -125,7 +97,7 @@ body.docs { font-size: 16px; }
 /* Code blocks */
 .code { position: relative; margin: 0 0 20px; }
 .code pre {
-  margin: 0; background: var(--code-bg); color: var(--code-ink); border: 1px solid var(--code-line); border-radius: 12px;
+  margin: 0; background: var(--code-bg); color: var(--code-ink); border: 1px solid var(--code-line); border-radius: 2px;
   padding: 16px 18px; overflow-x: auto; font-size: .84rem; line-height: 1.6; tab-size: 4;
 }
 .code .lang {
@@ -134,7 +106,7 @@ body.docs { font-size: 16px; }
 }
 .code .copy {
   position: absolute; top: 8px; right: 8px; opacity: 0; cursor: pointer;
-  font-size: .74rem; font-weight: 600; padding: 5px 10px; border-radius: 7px;
+  font-size: .74rem; font-weight: 600; padding: 5px 10px; border-radius: 2px;
   background: var(--surface); color: var(--dim); border: 1px solid var(--line-2); transition: opacity .15s ease;
 }
 .code:hover .copy, .code .copy:focus-visible { opacity: 1; }
@@ -142,10 +114,10 @@ body.docs { font-size: 16px; }
 .code .copy.done { color: var(--accent); }
 @media (hover: none) { .code .copy { opacity: 1; } .code .lang { display: none; } }
 .tok-c { color: var(--syn-comment); font-style: italic; }
-.tok-k { color: var(--syn-keyword); }
+.tok-k { color: var(--syn-keyword); font-weight: 600; }
 .tok-s { color: var(--syn-string); }
 .tok-n { color: var(--syn-number); }
-.tok-f { color: var(--syn-func); }
+.tok-f { color: var(--syn-func); font-weight: 600; }
 .tok-t { color: var(--syn-type); }
 .tok-b { color: var(--syn-builtin); }
 .tok-d { color: var(--syn-deco); }
@@ -153,7 +125,7 @@ body.docs { font-size: 16px; }
 .tok-v { color: var(--syn-type); }
 
 /* Tables */
-.table { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; }
+.table { overflow-x: auto; border: 1px solid var(--line); border-radius: 2px; }
 .table table { border-collapse: collapse; width: 100%; font-size: .9rem; }
 .table th, .table td { text-align: left; vertical-align: top; padding: 10px 14px; border-bottom: 1px solid var(--line); }
 .table th { background: var(--surface-2); font-weight: 650; font-size: .82rem; color: var(--dim); white-space: nowrap; }
@@ -164,7 +136,7 @@ body.docs { font-size: 16px; }
 /* Pager, footer */
 .pager { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 56px 0 0; max-width: 780px; }
 .pager a {
-  display: block; border: 1px solid var(--line); border-radius: 12px; padding: 14px 18px; text-decoration: none; color: var(--ink);
+  display: block; border: 1px solid var(--line); border-radius: 2px; padding: 14px 18px; text-decoration: none; color: var(--ink);
   transition: border-color .15s ease, background-color .15s ease;
 }
 .pager a:hover { border-color: var(--accent); }
@@ -186,13 +158,13 @@ body.docs { font-size: 16px; }
 .dl-hero .kicker { font-family: var(--mono); font-size: .8rem; color: var(--accent); margin: 0 0 14px; }
 .dl-hero h1 { font-size: clamp(2.2rem, 4.6vw, 3.4rem); letter-spacing: -.03em; line-height: 1.08; margin: 0 0 16px; max-width: 20ch; font-weight: 650; }
 .dl-hero p { color: var(--dim); max-width: 64ch; margin: 0 0 12px; font-size: 1.06rem; }
-.dl-hero p code { font-size: .88em; background: var(--code-bg); border: 1px solid var(--code-line); padding: .1em .35em; border-radius: 6px; }
+.dl-hero p code { font-size: .88em; background: var(--code-bg); border: 1px solid var(--code-line); padding: .1em .35em; border-radius: 2px; }
 .dl-section { padding: 48px 0; border-bottom: 1px solid var(--line); }
 .dl-section:last-of-type { border-bottom: 0; }
 .dl-section > .container > h2, .dl-h2 { font-size: 1.5rem; letter-spacing: -.02em; margin: 0 0 8px; font-weight: 650; }
 .dl-sub { color: var(--dim); margin: 0 0 24px; max-width: 70ch; }
 .lang-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-.lang-card { border: 1px solid var(--line); border-radius: 16px; background: var(--surface); padding: 22px 22px 18px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.lang-card { border: 1px solid var(--line); border-radius: 2px; background: var(--surface); padding: 22px 22px 18px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
 .lang-card header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .lang-card h3 { margin: 0; font-size: 1.3rem; letter-spacing: -.02em; }
 .lang-card h3 a { text-decoration: none; }
@@ -200,11 +172,11 @@ body.docs { font-size: 16px; }
 .lang-card .ver { font-family: var(--mono); font-size: .78rem; color: var(--faint); }
 .lang-card .code { margin: 0; }
 .lang-card ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
-.lang-card li a { display: flex; justify-content: space-between; gap: 12px; padding: 7px 8px; border-radius: 8px; text-decoration: none; color: var(--dim); font-size: .92rem; }
+.lang-card li a { display: flex; justify-content: space-between; gap: 12px; padding: 7px 8px; border-radius: 2px; text-decoration: none; color: var(--dim); font-size: .92rem; }
 .lang-card li a:hover { background: var(--bg-2); color: var(--ink); }
 .lang-card li a span:last-child { color: var(--faint); font-family: var(--mono); font-size: .76rem; }
 .lang-card .more { font-size: .9rem; font-weight: 600; color: var(--accent); text-decoration: none; margin-top: auto; }
-.arch { border: 1px solid var(--line); border-radius: 16px; background: var(--surface); padding: clamp(12px, 3vw, 28px); overflow-x: auto; }
+.arch { border: 1px solid var(--line); border-radius: 2px; background: var(--surface); padding: clamp(12px, 3vw, 28px); overflow-x: auto; }
 .arch svg { min-width: 640px; width: 100%; height: auto; }
 .arch text { font-family: var(--sans); fill: var(--ink); }
 .arch .mono { font-family: var(--mono); }
@@ -222,10 +194,10 @@ body.docs { font-size: 16px; }
 .arch .head-a { fill: var(--accent); }
 .arch .head-w { fill: var(--warm); }
 .concepts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 0; }
-.concepts div { border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; background: var(--surface); }
+.concepts div { border: 1px solid var(--line); border-radius: 2px; padding: 16px 18px; background: var(--surface); }
 .concepts dt { font-family: var(--mono); font-size: .9rem; font-weight: 600; color: var(--accent); margin-bottom: 6px; }
 .concepts dd { margin: 0; color: var(--dim); font-size: .92rem; }
-.callout { border: 1px solid var(--line); border-left: 3px solid var(--warm); border-radius: 12px; background: var(--surface); padding: 16px 20px; color: var(--dim); max-width: 860px; }
+.callout { border: 1px solid var(--line); border-left: 3px solid var(--warm); border-radius: 2px; background: var(--surface); padding: 16px 20px; color: var(--dim); max-width: 860px; }
 .callout b { color: var(--ink); }
 .callout a { color: var(--accent); }
 
@@ -262,12 +234,12 @@ body.docs { font-size: 16px; }
 /* ---- Tabbed code samples (```python tab=Python + ```ts tab=TypeScript) -------------- */
 .code-tabs { margin: 0 0 20px; }
 .code-tabs .tab-list {
-  display: inline-flex; gap: 2px; padding: 3px; margin: 0 0 8px; border-radius: 999px;
+  display: inline-flex; gap: 2px; padding: 3px; margin: 0 0 8px; border-radius: 2px;
   background: var(--bg-2); border: 1px solid var(--line);
 }
 .code-tabs [role="tab"] {
   font: inherit; font-size: .8rem; font-weight: 600; line-height: 1.2; color: var(--dim); background: none; border: 0;
-  padding: 5px 12px; border-radius: 999px; cursor: pointer; transition: color .15s ease, background-color .15s ease;
+  padding: 5px 12px; border-radius: 2px; cursor: pointer; transition: color .15s ease, background-color .15s ease;
 }
 .code-tabs [role="tab"]:hover { color: var(--ink); }
 .code-tabs [role="tab"][aria-selected="true"] { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-1); }

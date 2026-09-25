@@ -4,35 +4,49 @@ The product launch site for TensorCode, the `tensorcode` libraries for Python an
 TypeScript. It is a site for this one product, not a company site: brand everything as
 TensorCode, and mention TensaCo only as the plain-text "by TensaCo" in footers.
 
-It's static: no framework, and no build step for the marketing pages. Cloudflare Workers
+It's static: no framework, and no build step for the landing page. Cloudflare Workers
 serves it as static assets (`../wrangler.jsonc`, Worker `tensorcode-site`). A few lines
-in `../scripts/site/worker.js` run first and redirect `www.tensorcode.dev` and plain
-`http` to `https://tensorcode.dev`.
+in `../scripts/site/worker.js` run first: they redirect `www.tensorcode.dev` and plain
+`http` to `https://tensorcode.dev`, and the retired `/how-it-works/` and `/why/` to `/`.
 
-| Path | What it is | Audience |
-|---|---|---|
-| `index.html` | Landing page: hero, three value sections, who it's for, trust strip, CTA | Business readers |
-| `how-it-works/` | Four plain steps, what stays in your control, limits, FAQ | Business readers |
-| `why/` | Principles, a side-by-side comparison, open-source stance | Business readers |
-| `docs/` | **Generated.** Technical landing, shared overview and install pages, Python and TypeScript guides | Engineers |
-| `404.html` | Served for any missing path (`not_found_handling: "404-page"`) | Everyone |
-| `assets/base.css` | Tokens (light and dark), reset, top bar, buttons, footer: shared by every page | |
-| `assets/site.css` | Marketing components: hero, diagrams, image placeholders, strips | |
-| `assets/docs.css` | Docs layout, article typography, code highlighting colours | |
-| `assets/theme.js` | The light/dark toggle (key `tc-theme`, shared with the docs) | |
-| `assets/site.js` | Copy-prompt buttons, header state, reveal on scroll | |
-| `media/` | Generated images; `PROMPTS.md` has the prompts | |
-| `sitemap.xml`, `sitemap-pages.xml`, `robots.txt` | Sitemap index (pages + generated `docs/sitemap.xml`) | |
+| Path | What it is |
+|---|---|
+| `index.html` | The landing page: hero, the two problems, the programming model, four live demos, start |
+| `DESIGN.md` | The visual system (written = solid, learned = halftone, `--signal` = training). Read it before changing the look |
+| `docs/` | **Generated.** Technical landing, shared overview and install pages, Python and TypeScript guides |
+| `404.html` | Served for any missing path (`not_found_handling: "404-page"`) |
+| `examples/*.py` | The Python programs the demos show. Each runs offline on CPU with `tensorcode[vec]` |
+| `assets/base.css` | Tokens (light and dark), reset, top bar, controls, footer: shared by every page |
+| `assets/home.css` | Landing page components and the phase grammar |
+| `assets/docs.css` | Docs layout, article typography, code highlighting |
+| `assets/theme.js` | The light/dark toggle (key `tc-theme`, shared with the docs) |
+| `assets/home/*.js` | Landing page behaviour: `code.js` (highlighting, phase gutter, melt/condense, superposed values), one module per section and demo |
+| `assets/programs/*.js` | JavaScript twins of `examples/*.py`, run on the bundled library |
+| `assets/lib/tensorcode.js` | **Generated, committed.** TensorCode for TypeScript bundled for the browser |
+| `media/og.png` | Social preview image (1200×630) |
+| `sitemap.xml`, `sitemap-pages.xml`, `robots.txt` | Sitemap index (pages + generated `docs/sitemap.xml`) |
 
-Keep the marketing pages in plain language: short sentences, concrete outcomes, no
-jargon. Every claim has to be something the library actually does. Check it against
-`tensacode/python/docs/` (especially `validation.md`) before you add it. Technical detail
-belongs in `/docs/`.
+Keep the landing page short: one idea per section, lines people can repeat. Every claim
+has to be something the library actually does. Check it against `tensacode/python/docs/`
+(especially `validation.md`) before you add it. Technical detail belongs in `/docs/`.
 
-The header, footer and favicon are repeated in each marketing page (there is no
-template step). When you change one, change all four: `index.html`, `how-it-works/`,
-`why/` and `404.html`. The docs generator carries its own copy of the header, the mark
-and the favicon.
+## The live demos run TensorCode
+
+Every demo imports `assets/lib/tensorcode.js`, the TypeScript library itself, and
+trains in the visitor's tab. Each demo's program is written twice: `examples/<name>.py`
+(the code the page shows, downloadable) and `assets/programs/<name>.js` (the same program
+for the browser). The two print the same report, and a check compares them:
+
+```sh
+node scripts/site/build-lib.mjs     # rebuild assets/lib/tensorcode.js after the typescript submodule moves
+PYTHON=tensacode/python/.venv/bin/python node scripts/site/check-examples.mjs
+```
+
+`build-lib.mjs` needs `npm install` in `tensacode/typescript` once (it uses that
+checkout's `dist/` and its rolldown). `check-examples.mjs` needs a Python with
+`tensorcode[vec]`. Numbers must match exactly, except where float32 rounding compounds
+over training (`rules` agrees to within 1%). Run both after changing a demo or its
+program, and after moving either submodule.
 
 ## Build the docs
 
@@ -86,21 +100,15 @@ node scripts/site/build-docs.mjs && npx wrangler deploy
 and keeps the `workers.dev` address. Cloudflare creates and manages the DNS records for
 custom domains, but it refuses a hostname that already has an A, AAAA or CNAME record
 (error 100117). Delete those records for `tensorcode.dev` and `www` first (never MX or
-TXT), then deploy again. `.assetsignore` keeps this README and `media/PROMPTS.md` out
-of the upload.
-
-## Images
-
-Each placeholder box shows its image-generation prompt and a **Copy prompt** button, and
-already contains an `<img>` that points at the final path. Generate the image and save it
-at that path (for example `site/media/value-3.webp`). On the next load the image
-replaces the box: `onload` adds `.has-image`, and a missing file triggers `onerror`, which
-keeps the box. All prompts, sizes and paths are listed in [`media/PROMPTS.md`](media/PROMPTS.md).
-`media/og.png` (1200×630) is the social preview image and has no placeholder box.
+TXT), then deploy again. `.assetsignore` keeps this README and `DESIGN.md` out of the
+upload.
 
 ## Checks before shipping
 
 - `node scripts/site/build-docs.mjs --check` passes.
-- No horizontal scroll at 360px wide. Diagram cards go full-bleed on phones.
+- `check-examples.mjs` passes, if you changed a demo, a program or a submodule.
+- No horizontal page scroll at 360px wide (code blocks may scroll inside themselves).
 - Both themes: toggle in the corner, or change the OS setting with no stored choice.
-- `prefers-reduced-motion`: diagram animations, floating cards and scroll reveals all turn off.
+- `prefers-reduced-motion`: the hero shows its final state, and demos compute without
+  animating. Controls still work.
+- `--signal` appears only while something is training.
