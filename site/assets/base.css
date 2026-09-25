@@ -209,7 +209,16 @@ code, pre, kbd { font-family: var(--mono); }
 .btn-link:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 4px; }
 
 /* ---- Footer ------------------------------------------------------------------- */
-.site-foot { border-top: 1px solid var(--rule); padding: 40px 0 48px; color: var(--dim); font: 400 13px/1.6 var(--mono); }
-.site-foot .fine { display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; color: var(--faint); margin: 0; }
+.site-foot { border-top: 4px solid var(--learn); padding: 56px 0 40px; color: var(--dim); font: 400 13px/1.6 var(--mono); }
+.foot-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 40px; padding-bottom: 40px; }
+.foot-name { margin: 0 0 6px; font: 840 22px/1 var(--display); font-variation-settings: "wdth" 118; text-transform: uppercase; letter-spacing: -.01em; color: var(--ink); }
+.foot-brand p { margin: 0 0 10px; max-width: 46ch; }
+.foot-alpha { color: var(--faint); }
+.site-foot nav { display: flex; flex-direction: column; gap: 8px; }
+.foot-h { margin: 0 0 4px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--ink); }
+.site-foot .fine { display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; color: var(--faint); margin: 0; padding-top: 20px; border-top: 1px solid var(--rule); }
 .site-foot a { color: var(--dim); text-decoration: none; }
 .site-foot a:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+.site-foot .foot-co { color: var(--ink); font-weight: 600; }
+.site-foot .foot-co:hover { color: var(--learn); text-decoration: underline; text-decoration-color: var(--learn); text-decoration-thickness: 2px; }
+@media (max-width: 760px) { .foot-grid { grid-template-columns: 1fr 1fr; } .foot-brand { grid-column: 1 / -1; } }

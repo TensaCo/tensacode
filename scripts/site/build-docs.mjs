@@ -973,7 +973,20 @@ ${cards}
     </div>
   </section>
 </main>
-<footer class="site-foot"><div class="container"><p class="fine" style="margin-top:0;border-top:0;padding-top:0"><span>&copy; 2026 TensorCode &middot; MIT licensed &middot; by TensaCo</span><span><a href="/">tensorcode.dev</a> &middot; <a href="https://github.com/TensaCo/tensacode-py">Python on GitHub</a> &middot; <a href="https://github.com/TensaCo/tensacode-ts">TypeScript on GitHub</a></span></p></div></footer>
+<footer class="site-foot">
+  <div class="container">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <p class="foot-name">TensorCode</p>
+        <p>Program your AI. Train your software.</p>
+        <p class="foot-alpha">0.4 alpha. APIs may change between alphas. Every measured result and its limits is published under <a href="/docs/python/validation/">validation</a>.</p>
+      </div>
+      <nav aria-label="Documentation"><p class="foot-h">Docs</p><a href="/docs/python/quickstart/">Python quickstart</a><a href="/docs/typescript/">TypeScript</a><a href="/docs/overview/">How it fits together</a><a href="/docs/python/validation/">What it can’t do yet</a></nav>
+      <nav aria-label="Code"><p class="foot-h">Code</p><a href="https://github.com/TensaCo/tensacode-py">Python on GitHub</a><a href="https://github.com/TensaCo/tensacode-ts">TypeScript on GitHub</a><a href="https://pypi.org/project/tensorcode/">PyPI</a><a href="https://www.npmjs.com/package/tensorcode">npm</a></nav>
+    </div>
+    <p class="fine"><span>© 2026 TensaCo Inc. · MIT licensed</span><span>Built by <a class="foot-co" href="https://tensaco.ai">TensaCo</a></span></p>
+  </div>
+</footer>
 <script src="/assets/theme.js" defer></script>
 ${pageScript}
 </body>

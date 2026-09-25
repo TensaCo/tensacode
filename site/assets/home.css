@@ -27,7 +27,7 @@
 
 /* ---- Type -------------------------------------------------------------------- */
 .label {
-  margin: 0 0 22px; font: 500 12px/1.2 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--dim);
+  margin: 0 0 22px; font: 500 12px/1.2 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--learn);
 }
 .h2 {
   margin: 0 0 28px; font-family: var(--display); font-weight: 800; font-variation-settings: "wdth" 115;
@@ -111,7 +111,10 @@ code { font-size: .92em; }
 .file a { color: var(--ink); }
 
 /* ---- Hero -------------------------------------------------------------------- */
-.hero { padding: clamp(40px, 7vh, 84px) 0 72px; }
+.hero { padding: clamp(40px, 7vh, 84px) 0 72px; position: relative; }
+/* halftone field of the learned phase, printed behind the hero */
+.hero::before { content: ""; position: absolute; top: 0; right: 0; width: 55%; height: 100%; background-image: var(--dots); background-size: 8px 8px; opacity: .55; -webkit-mask-image: radial-gradient(ellipse at 85% 30%, #000 0%, transparent 70%); mask-image: radial-gradient(ellipse at 85% 30%, #000 0%, transparent 70%); pointer-events: none; }
+.hero > * { position: relative; }
 .hl {
   margin: 0; font-family: var(--display); font-weight: 820; font-variation-settings: "wdth" 116;
   font-size: clamp(42px, 8.6vw, 132px); line-height: .88; letter-spacing: -.018em; text-transform: uppercase;
@@ -202,7 +205,11 @@ code { font-size: .92em; }
 .knowns code { font-size: 1em; }
 
 /* ---- Hinge ------------------------------------------------------------------ */
-.hinge { padding: 120px 0 128px; border-top: 1px solid var(--rule); }
+.hinge { padding: 120px 0 128px; background: var(--learn); color: #f7f5ef; position: relative; overflow: hidden; }
+/* the hinge is printed in riso blue: paper-coloured type, with the pink plate slightly off register */
+.hinge::before { content: ""; position: absolute; inset: 0; background-image: radial-gradient(circle at center, rgb(255 255 255 / .16) 0 1px, transparent 1.4px); background-size: 9px 9px; -webkit-mask-image: linear-gradient(100deg, transparent 35%, #000 100%); mask-image: linear-gradient(100deg, transparent 35%, #000 100%); pointer-events: none; }
+.hinge .container { position: relative; }
+.hinge .hinge-line.liquid .phase { color: #f7f5ef; text-shadow: .045em .02em 0 rgb(var(--ghost-rgb) / .85); }
 .hinge-line {
   margin: 0; font-family: var(--display); font-weight: 840; font-variation-settings: "wdth" 118;
   font-size: clamp(38px, 8.2vw, 124px); line-height: .9; letter-spacing: -.018em; text-transform: uppercase;
@@ -382,6 +389,8 @@ code { font-size: .92em; }
 /* ---- 05: start ------------------------------------------------------------------ */
 .installs { display: flex; flex-wrap: wrap; gap: 12px; }
 .install.big { font-size: clamp(16px, 2vw, 22px); padding: 16px 22px; }
+.install.big:first-child { background: var(--learn); border-color: var(--learn); color: #fff; }
+.install.big:first-child:hover { background: transparent; color: var(--learn); }
 .install.big + .install.big { background: transparent; color: var(--ink); }
 .install.big + .install.big:hover { background: var(--ink); color: var(--paper); }
 .hello { display: grid; grid-template-columns: minmax(0, 8fr) minmax(0, 4fr); gap: 48px; margin-top: 48px; align-items: start; }
