@@ -9,13 +9,14 @@ phase change between them, and the site's motion mostly shows that change.
 
 | | Written (solid) | Learned (liquid) | Training (signal) |
 |---|---|---|---|
-| Mark | Solid ink: a 2px bar, a filled square, a hairline | Halftone: a dot field in ink, never a new hue | `--signal` vermilion, and nothing else |
+| Mark | Solid ink: a 2px bar, a filled square, a hairline | Halftone: a dot field printed in `--learn` (riso blue) | `--signal` vermilion, and nothing else |
 | Values | One typeset value | Every possible value, overlaid with opacity equal to its probability. Uncertainty adds blur and offset (`--u`) | Loss figures, gradient pulses, "supervise" marks |
 | Motion | Discrete. It snaps, types one character per frame, or steps | Continuous. It eases (`--ease-liquid`), settles, and stops moving once it converges | Travels backward along the gutter, only through lines that can learn |
 | Code gutter | `│` solid bar | `┊` dotted bar | a pulse running up the bar |
 
-- Colour never tells written from learned; form does. The one accent means that
-  training is happening right now.
+- Form tells written from learned; colour only reinforces it. The palette is
+  risograph spot inks: black for written, blue for learned, fluorescent pink only as
+  misregistration in liquid type, and vermilion only while training runs.
 - A value that has converged is still. Nothing moves unless it is computing.
 - A transition shows the boundary moving: solid text melts into superposition, or
   a superposition collapses into one solid value.
@@ -47,8 +48,17 @@ phase change between them, and the site's motion mostly shows that change.
 
 ## Colour
 
-Light is warm paper with near-black ink; dark is carbon with bone ink. The tokens
-are in `assets/base.css`. There are no gradients, glows or shadows.
+Light is warm paper with near-black ink; dark is carbon with bone ink. Three spot
+inks sit on top, each with one job:
+
+| Token | Ink | Used for |
+|---|---|---|
+| `--learn` | riso blue | halftone fields, learned-name underlines, uncertain candidates, the first ghost of liquid type |
+| `--ghost-rgb` | fluorescent pink | the second ghost of liquid type (misregistration), nothing else |
+| `--signal` | vermilion | training in progress: loss, gradient pulses, `supervise`/`fit` lines |
+
+A converged value sets in black. The tokens are in `assets/base.css`. There are no
+gradients, glows or shadows.
 
 ## Motion timing
 

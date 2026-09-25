@@ -35,6 +35,9 @@
   --signal: #e0401b;
   --signal-ink: #ffffff;
   --field: rgb(var(--ink-rgb) / .07);
+  --learn-rgb: 0 96 214;          /* riso blue: the learned phase's ink */
+  --learn: rgb(var(--learn-rgb));
+  --ghost-rgb: 255 58 150;        /* fluorescent pink: misregistration in liquid type */
 
   /* Names the docs stylesheet uses. */
   --bg: var(--paper);
@@ -71,6 +74,8 @@
     --signal: #ff5a2d;
     --signal-ink: #0f0f0e;
     --field: rgb(var(--ink-rgb) / .08);
+    --learn-rgb: 92 160 255;
+    --ghost-rgb: 255 92 176;
     --surface: #141413;
     --surface-2: #121211;
     --warm-soft: rgb(255 90 45 / .12);
@@ -90,6 +95,8 @@
   --signal: #ff5a2d;
   --signal-ink: #0f0f0e;
   --field: rgb(var(--ink-rgb) / .08);
+  --learn-rgb: 92 160 255;
+  --ghost-rgb: 255 92 176;
   --surface: #141413;
   --surface-2: #121211;
   --warm-soft: rgb(255 90 45 / .12);

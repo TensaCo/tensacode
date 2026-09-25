@@ -157,6 +157,8 @@ export function palette() {
     ink: `rgb(${rgb})`, inkA: (a) => `rgba(${rgb},${a})`,
     paper: style.getPropertyValue('--paper').trim(),
     signal: style.getPropertyValue('--signal').trim(),
+    learn: `rgb(${style.getPropertyValue('--learn-rgb').trim().split(/\s+/).join(',')})`,
+    learnA: (a) => `rgba(${style.getPropertyValue('--learn-rgb').trim().split(/\s+/).join(',')},${a})`,
     faint: style.getPropertyValue('--faint').trim(),
     rule: style.getPropertyValue('--rule').trim(),
     mono: '"IBM Plex Mono", ui-monospace, monospace',

@@ -64,9 +64,9 @@ export function init(figure) {
       GRID.forEach((x, i) => ctx.lineTo(X(x), Y(Math.min(Y_MAX, hi[i] + 1.2))));
       for (let i = GRID.length - 1; i >= 0; i -= 1) ctx.lineTo(X(GRID[i]), Y(Math.max(-5, lo[i] - 1.2)));
       ctx.closePath();
-      ctx.fillStyle = dotPattern(ctx, c.ink, 4, 0.9);
+      ctx.fillStyle = dotPattern(ctx, c.learn, 4, 0.9);
       ctx.fill();
-      ctx.setLineDash([1.5, 3]); ctx.strokeStyle = c.inkA(0.75); ctx.lineWidth = 1.2;
+      ctx.setLineDash([1.5, 3]); ctx.strokeStyle = c.learnA(0.85); ctx.lineWidth = 1.2;
       for (const cv of state.curves) {
         ctx.beginPath();
         GRID.forEach((x, i) => ctx.lineTo(X(x), Y(Math.max(-5, Math.min(Y_MAX + 5, cv[i])))));
