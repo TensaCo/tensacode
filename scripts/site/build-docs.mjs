@@ -55,6 +55,7 @@ const languages = [
     sections: [
       { title: 'Start here', pages: [
         { file: 'README.md', slug: '', title: 'Introduction' },
+        { file: 'docs/program.md', slug: 'program' },
         { file: 'docs/quickstart.md', slug: 'quickstart' },
         { file: 'docs/README.md', slug: 'overview', title: 'Architecture and contracts' },
         { file: 'docs/pretrained.md', slug: 'pretrained' },
@@ -82,13 +83,14 @@ const languages = [
     repo: 'https://github.com/TensaCo/tensacode-ts',
     branch: 'main',
     fence: 'ts',
-    blurb: 'The port for Node.js 20.16 or newer, with its own autograd core and no runtime dependencies; install from npm.',
+    blurb: 'The port for Node.js 20.16 or newer, with its own autograd core, source compiler and portable program runtime; install from npm.',
     install: [
       'npm install tensorcode',
     ],
     sections: [
       { title: 'Start here', pages: [
         { file: 'README.md', slug: '', title: 'Introduction' },
+        { file: 'docs/program.md', slug: 'program' },
         { file: 'docs/quickstart.md', slug: 'quickstart' },
         { file: 'docs/parity.md', slug: 'parity', title: 'Parity with Python' },
       ]},

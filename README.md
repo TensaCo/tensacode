@@ -8,7 +8,7 @@
 
 TensorCode builds trainable programs from callable operations and small tools
 that own their models. You compose encoders, scorers and decoders
-(`ops.vec`, `ops.text`, `ops.graph`), or use a complete tool such as
+(`ops.vec`, `ops.text`), or use a complete tool such as
 `Investigator`, `Planner`, `Decision`, `Chatbot` or `Scene`. You collect reviewed
 feedback with explicit provenance, train on it, and save the result as a
 data-only artifact (JSON configuration and safetensors weights) that reloads in a
@@ -28,8 +28,8 @@ also holds the product site for [tensorcode.dev](https://tensorcode.dev).
 
 | Language | Directory | Package | Status |
 |---|---|---|---|
-| Python | [`tensacode/python`](https://github.com/TensaCo/tensacode-py) | `tensorcode` 0.4.0a3 (pip) | Implemented. The reference implementation |
-| TypeScript | [`tensacode/typescript`](https://github.com/TensaCo/tensacode-ts) | `tensorcode` 0.4.0-alpha.3 (npm) | Implemented. A port that matches Python and shares its file formats ([parity](https://tensorcode.dev/docs/typescript/parity/)) |
+| Python | [`tensacode/python`](https://github.com/TensaCo/tensacode-py) | `tensorcode` (pip) | Implemented. The reference implementation |
+| TypeScript | [`tensacode/typescript`](https://github.com/TensaCo/tensacode-ts) | `tensorcode` (npm) | Implemented. A port that matches Python and shares its file formats ([parity](https://tensorcode.dev/docs/typescript/parity/)) |
 | C++ | `tensacode/cpp` | | Not yet implemented |
 | C# | `tensacode/csharp` | | Not yet implemented |
 | Dart | `tensacode/dart` | | Not yet implemented |
@@ -56,6 +56,20 @@ npm install tensorcode
 
 The [install guide](https://tensorcode.dev/docs/install/) lists the Python extras
 and how to set up each repository for development.
+
+## Deterministic and learned computation
+
+The current SDK source also compiles bounded numerical functions into portable
+circuits. A circuit runs without training; explicit parameters can then be
+trained alongside fixed rules. This compiler is separate from operation tracing
+and from the reserved `ops.graph` interfaces.
+
+Start with the [Python program guide](tensacode/python/docs/program.md) or
+[TypeScript program guide](tensacode/typescript/docs/program.md). Both explain
+supported syntax, exact/relaxed/hybrid gradient policies, state, verification and
+shared artifacts. Python provides reference execution and a PyTorch bridge;
+TypeScript adds WASM and restricted float32 WebGPU execution. These are scalar
+numerical programs, not compilation of arbitrary applications or host effects.
 
 ## A first program
 

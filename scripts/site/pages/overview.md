@@ -1,6 +1,6 @@
 # Architecture overview
 
-TensorCode builds trainable programs out of four kinds of parts. **Operations**
+TensorCode builds trainable programs from numerical circuits, operations and tools. **Operations**
 are callable units that turn one value into another. **Tools** compose
 operations into complete models that own every parameter. **Tracing and
 training** record which operation produced which value, attach reviewed targets
@@ -14,6 +14,7 @@ TypeScript uses the same names in camelCase (`save_pretrained` is
 
 | Part | Python | TypeScript | Holds weights |
 |---|---|---|---|
+| Compiled programs | `tensorcode.program` | `tensorcode/program` | Only explicitly declared parameters |
 | Vector operations | `tensorcode.ops.vec` | `tensorcode/ops/vec` | Learned ones do |
 | Text operations | `tensorcode.ops.text` | `tensorcode/ops/text` | Owned ones do; provider-backed ones do not |
 | Graph operations | `tensorcode.ops.graph` | `tensorcode/ops/graph` | No (symbolic interfaces) |
@@ -21,6 +22,26 @@ TypeScript uses the same names in camelCase (`save_pretrained` is
 | Tracing | `tensorcode.trace()` | `trace()` from `tensorcode` | No |
 | Training | `tensorcode.training` | `tensorcode/training` | Updates them |
 | Providers | `tensorcode.integrations` | `tensorcode/integrations` | No (external models) |
+
+## Compiled numerical programs
+
+Compile a supported numerical function, or build a circuit explicitly. Its
+instructions encode the rule directly, so it runs without training. Declare
+trainable parameters when part of the computation should learn; a fixed rule
+can then sit beside a learned correction in the same program.
+
+The compiler captures arithmetic and bounded control flow. Tracing instead
+records calls between operations. `ProgramOperation` connects a stateless,
+call-free circuit to those traces and the existing Trainer. Neither mechanism
+turns arbitrary host effects into differentiable computation. `ops.graph`
+remains a separate set of reserved symbolic interfaces.
+
+The [Python](/docs/python/program/) and [TypeScript](/docs/typescript/program/)
+guides explain exact execution, relaxed comparisons and explicit surrogate
+gradients, plus portable artifacts and event snapshots. The present IR is scalar;
+verification can exhaust a bounded integer domain but does not prove every real
+input or stateful history. Source compilation is available in the current SDK
+checkout; install that checkout to follow these guides.
 
 ## Operations
 
