@@ -56,6 +56,7 @@ const languages = [
       { title: 'Start here', pages: [
         { file: 'README.md', slug: '', title: 'Introduction' },
         { file: 'docs/program.md', slug: 'program' },
+        { file: 'docs/algorithm.md', slug: 'algorithm' },
         { file: 'docs/quickstart.md', slug: 'quickstart' },
         { file: 'docs/README.md', slug: 'overview', title: 'Architecture and contracts' },
         { file: 'docs/pretrained.md', slug: 'pretrained' },
@@ -91,6 +92,7 @@ const languages = [
       { title: 'Start here', pages: [
         { file: 'README.md', slug: '', title: 'Introduction' },
         { file: 'docs/program.md', slug: 'program' },
+        { file: 'docs/algorithm.md', slug: 'algorithm' },
         { file: 'docs/quickstart.md', slug: 'quickstart' },
         { file: 'docs/parity.md', slug: 'parity', title: 'Parity with Python' },
       ]},
