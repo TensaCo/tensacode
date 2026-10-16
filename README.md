@@ -74,17 +74,12 @@ numerical programs, not compilation of arbitrary applications or host effects.
 The higher-level [algorithm framework](tensacode/python/docs/algorithm.md) also
 supports symbolic (ALG.0), native differentiable (ALG.1), and scheduled attention
 (ALG.2) execution of shared tensor artifacts. It includes structural priors for
-pretrained attention and a [20-joint MuJoCo policy example](tensacode/python/examples/robotics/calibration/robotics_policy.py).
+pretrained attention and [sensor-driven G1 control](tensacode/python/examples/robotics/README.md).
 Each target states its execution or approximation contract explicitly.
 
-The [humanoid demo gallery](tensacode/python/docs/results/robotics/index.html)
-shows recorded walking and physical gripping, with downloadable experiment evidence.
-
-The [archived compositional kitting demo](tensacode/python/docs/results/robotics/kitting/evidence.html)
-uses JSON work orders, quality-based quarantine and contact-driven grasp recovery.
-Its 252-episode comparison includes a native feedback baseline; compiled and native
-feedback controllers both complete 42/42 orders. This is bounded simulation
-validation, not a VLA/diffusion advantage or measured customer ROI.
+The [robotics lab](tensacode/python/docs/results/robotics/index.html) is the
+shared interface for annotating and diagnosing recorded G1 walking and manipulation,
+with sensor traces, controller architecture and measured session evidence.
 
 ## A first program
 
