@@ -83,6 +83,10 @@ with sensor traces, controller architecture and measured session evidence. Its
 full handling demonstration walks to a camera-localized workcell, grasps and
 transports a payload, then uses tactile support transfer to place and release it.
 Recorded comparisons measure the effect of online payload-load compensation.
+Shared warehouse sessions add language-conditioned parallel/sequential workcells,
+observed scene and task trees, and grounded question previews. Native Ψ₀, Ψ₀.1
+and GR00T policy recordings, plus π₀ on ALOHA arms, are separate references with
+their own task contracts and retained failures.
 
 ## A first program
 
