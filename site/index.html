@@ -341,7 +341,7 @@ def act(telemetry):                                 # the policy, written:
 with trace() as t:                                  # act, then observe
     scores = expect(options(telemetry))
 t.supervise(scores, [action, reward], loss="outcome", source="observed")</code></pre>
-          <p class="file"><a href="/examples/outcomes.py" download>outcomes.py</a> · a toy world, like the repo’s <a href="https://github.com/TensaCo/tensacode-py/blob/main/examples/learn_action_outcomes.py">learn_action_outcomes.py</a></p>
+          <p class="file"><a href="/examples/outcomes.py" download>outcomes.py</a> · a toy world, like the repo’s <a href="https://github.com/TensaCo/tensacode-py/blob/main/examples/cognition/learn_action_outcomes.py">learn_action_outcomes.py</a></p>
         </div>
         <div class="demo-live" id="outcomes-live">
           <div class="bar-ctl">

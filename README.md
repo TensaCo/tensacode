@@ -74,7 +74,7 @@ numerical programs, not compilation of arbitrary applications or host effects.
 The higher-level [algorithm framework](tensacode/python/docs/algorithm.md) also
 supports symbolic (ALG.0), native differentiable (ALG.1), and scheduled attention
 (ALG.2) execution of shared tensor artifacts. It includes structural priors for
-pretrained attention and a [20-joint MuJoCo policy example](tensacode/python/examples/robotics_policy.py).
+pretrained attention and a [20-joint MuJoCo policy example](tensacode/python/examples/robotics/calibration/robotics_policy.py).
 Each target states its execution or approximation contract explicitly.
 
 ## A first program
