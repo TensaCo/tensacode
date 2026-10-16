@@ -77,6 +77,12 @@ supports symbolic (ALG.0), native differentiable (ALG.1), and scheduled attentio
 pretrained attention and a [20-joint MuJoCo policy example](tensacode/python/examples/robotics/calibration/robotics_policy.py).
 Each target states its execution or approximation contract explicitly.
 
+The [compositional kitting demo](tensacode/python/docs/results/robotics/kitting/index.html)
+uses JSON work orders, quality-based quarantine and contact-driven grasp recovery.
+Its 252-episode comparison includes a native feedback baseline; compiled and native
+feedback controllers both complete 42/42 orders. This is bounded simulation
+validation, not a VLA/diffusion advantage or measured customer ROI.
+
 ## A first program
 
 This trains an `Investigator` to rank two supplied hypotheses from log evidence,
