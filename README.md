@@ -79,7 +79,10 @@ Each target states its execution or approximation contract explicitly.
 
 The [robotics lab](tensacode/python/docs/results/robotics/index.html) is the
 shared interface for annotating and diagnosing recorded G1 walking and manipulation,
-with sensor traces, controller architecture and measured session evidence.
+with sensor traces, controller architecture and measured session evidence. Its
+full handling demonstration walks to a camera-localized workcell, grasps and
+transports a payload, then uses tactile support transfer to place and release it.
+Recorded comparisons measure the effect of online payload-load compensation.
 
 ## A first program
 
