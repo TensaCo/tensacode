@@ -37,8 +37,7 @@
       <span>TensorCode</span>
     </a>
     <nav class="corner" aria-label="Resources">
-      <a href="#four">Demos</a>
-      <a class="nav-wide" href="#robots">Robots</a>
+      <a href="#demos">Demos</a>
       <a class="docs-link" href="/docs/">Docs</a>
       <a class="gh" href="https://github.com/TensaCo/tensacode" aria-label="TensorCode on GitHub"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0a8 8 0 0 0-2.53 15.59c.4.07.55-.17.55-.38l-.01-1.33c-2.23.48-2.7-1.07-2.7-1.07-.36-.93-.89-1.18-.89-1.18-.73-.5.05-.49.05-.49.8.06 1.23.83 1.23.83.72 1.23 1.88.88 2.34.67.07-.52.28-.88.51-1.08-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.03 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.28.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48l-.01 2.19c0 .21.14.46.55.38A8 8 0 0 0 8 0Z"/></svg><span>GitHub</span></a>
       <button class="icon-btn" type="button" data-theme-toggle hidden aria-label="Switch theme"><svg class="moon" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M13.6 10.4A6 6 0 0 1 5.6 2.4a6 6 0 1 0 8 8Z"/></svg><svg class="sun" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="3.1"/><path d="M8 1.1v1.7M8 13.2v1.7M1.1 8h1.7M13.2 8h1.7M3.15 3.15l1.2 1.2M11.65 11.65l1.2 1.2M12.85 3.15l-1.2 1.2M4.35 11.65l-1.2 1.2"/></svg></button>
@@ -83,49 +82,7 @@
   </div>
 </section>
 
-<!-- 01: the software problem -->
-<section class="sec" id="software" aria-labelledby="software-title">
-  <div class="container split">
-    <div class="copy">
-      <p class="label">01 — The software problem</p>
-      <h2 id="software-title" class="h2">You can’t <code>if</code>/<code>else</code> the world.</h2>
-      <p>You can write the outer algorithm. You can’t write every condition inside it. Wherever the rules run out, software reaches for a model.</p>
-      <p class="thesis">Some functions are easier to learn than to write.</p>
-    </div>
-    <figure class="explode" id="explode" aria-label="An if/else routing function grows one rule per unhandled ticket until it becomes unreadable, then collapses into a single learned call.">
-      <div class="explode-head"><span class="count" id="explode-count">3 rules</span><button class="ctl" type="button" data-replay>[ replay ]</button></div>
-      <pre class="code explode-code" id="explode-code"><code>def route(text):
-    if "refund" in text: return "billing"
-    if "crash" in text: return "technical"
-    if "password" in text: return "account"</code></pre>
-    </figure>
-  </div>
-</section>
-
-<!-- 02: the data problem, the mirror image of 01 -->
-<section class="sec" id="data" aria-labelledby="data-title">
-  <div class="container split mirror">
-    <div class="copy">
-      <p class="label">02 — The data problem</p>
-      <h2 id="data-title" class="h2">You can’t dataset the world either.</h2>
-      <p>Examples only cover where you’ve been. Arithmetic, physics and policy you already know exactly. Relearning them from data costs examples and still fails at the edges.</p>
-      <p class="thesis">Some functions are easier to write than to learn.</p>
-      <ul class="knowns" aria-label="Things that are one line of code">
-        <li><code>total = price * qty</code></li>
-        <li><code>assert balance &gt;= 0</code></li>
-        <li><code>assert not (express and pickup)</code></li>
-        <li><code>Order.model_validate(reply)</code></li>
-      </ul>
-    </div>
-    <figure class="extrap" id="extrap" aria-label="Chart: examples of price times quantity for quantities 1 to 12 train an ensemble of small networks. Inside the examples they agree with the written line; beyond them they spread apart, while the written line total = price * qty is exact everywhere.">
-      <div class="extrap-head"><span class="count" id="extrap-count">0 examples</span><button class="ctl" type="button" data-replay>[ replay ]</button></div>
-      <canvas id="extrap-canvas" width="720" height="440"></canvas>
-      <figcaption><span class="key solid"></span><code>total = price * qty</code> <span class="key field"></span>four small networks trained on the examples, by TensorCode in this tab</figcaption>
-    </figure>
-  </div>
-</section>
-
-<!-- The hinge between the two problems. -->
+<!-- The idea, in two lines. -->
 <section class="hinge" aria-label="Write what you know. Train what you don't.">
   <div class="container">
     <p class="hinge-line solid">Write what you know.</p>
@@ -133,106 +90,14 @@
   </div>
 </section>
 
-<!-- 03: the programming model -->
-<section class="sec" id="model" aria-labelledby="model-title">
+<!-- 01: two live demos -->
+<section class="sec" id="demos" aria-labelledby="demos-title">
   <div class="container">
-    <p class="label">03 — One program</p>
-    <h2 id="model-title" class="h2 wide">A trained model is just another function.</h2>
-    <div class="model-grid">
-      <p class="lede">Call it, branch on it, wrap it in rules. Then teach it through the values your program produces.</p>
-      <dl class="prims">
-        <div><dt><code>op(value)</code></dt><dd>Written or learned, every step is called the same way.</dd></div>
-        <div><dt><code>trace()</code></dt><dd>Records which step produced which value.</dd></div>
-        <div><dt><code>supervise(value, target, source=…)</code></dt><dd>Attaches a target to a value, and records who gave it.</dd></div>
-        <div><dt><code>fit()</code></dt><dd>Updates the learned weights on the path to that value. Written code stays as written.</dd></div>
-      </dl>
-    </div>
+    <p class="label">01 — Live</p>
+    <h2 id="demos-title" class="h2 wide">Written and trained, in one program.</h2>
+    <p class="lede live-note">Both run TensorCode in this tab, with the same results as the Python beside them.</p>
 
-    <div class="mover" id="mover">
-      <div class="mover-head">
-        <h3 class="h3">Move the line.</h3>
-        <p>The same function at four points between written and learned. The call site never changes.</p>
-      </div>
-      <div class="slider" role="group" aria-label="Where route sits between written and learned">
-        <span class="end">Written</span>
-        <input type="range" id="mover-range" min="0" max="3" step="1" value="0" aria-label="Written to learned" aria-valuetext="all written">
-        <span class="end">Learned</span>
-      </div>
-      <div class="mover-body">
-        <pre class="code" id="mover-code"><code>def route(text):
-    if "refund" in text: return "billing"
-    if "crash" in text:  return "technical"
-    return "unknown"</code></pre>
-        <table class="mover-table" id="mover-table" aria-live="polite">
-          <caption>Six tickets the learned part never trained on</caption>
-          <thead><tr><th scope="col">ticket</th><th scope="col">route(ticket)</th></tr></thead>
-          <tbody></tbody>
-          <tfoot><tr><td>right</td><td id="mover-score">1 / 6</td></tr></tfoot>
-        </table>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- 04: four demos, each a different source of knowledge -->
-<section class="sec" id="four" aria-labelledby="four-title">
-  <div class="container">
-    <p class="label">04 — Four ways in</p>
-    <h2 id="four-title" class="h2 wide">Examples, rules, mechanics, consequences.</h2>
-    <p class="lede live-note">Everything below is live. Each demo runs TensorCode itself in this tab: the TypeScript port, running the Python you see step for step, with the same seeds and the same results. Download any program and compare.</p>
-
-    <!-- 01 EXAMPLES -->
-    <article class="demo" id="demo-branch" aria-labelledby="branch-title">
-      <header class="demo-head">
-        <p class="label">Examples</p>
-        <h3 id="branch-title" class="h3">Train a branch.</h3>
-        <p>Replace an <code>if</code>/<code>elif</code> with a <code>Classify</code>. The rest of the program doesn’t notice.</p>
-      </header>
-      <div class="demo-grid">
-        <div class="demo-code">
-          <p class="was">before</p>
-          <pre class="code past"><code>def route(text):
-    if "refund" in text or "charged" in text:
-        return "billing"
-    if "error" in text or "crash" in text:
-        return "technical"
-    if "password" in text or "log in" in text:
-        return "account"
-    return "unknown"   # every new phrasing is a new rule</code></pre>
-          <p class="now">with TensorCode</p>
-          <pre class="code" data-learned="encode route"><code>encode = VocabularyEncoder({"vocabulary": words, "dimensions": 24,
-                            "output_space": space})
-route = Classify({"architecture": "linear", "input_space": space,
-                  "labels": ["billing", "technical", "account"]})
-
-with trace() as t:
-    guess = route(encode(tickets))
-t.supervise(guess, labels, source="support team")
-ops = {"encode": encode, "route": route}
-Trainer.from_ops(ops, optimizer=adam).fit([t], epochs=30)
-
-route(encode("you took money from me twice")).value    # 'billing'</code></pre>
-          <p class="file"><a href="/examples/branch.py" download>branch.py</a> · 24 examples · CPU, offline</p>
-        </div>
-        <div class="demo-live" id="branch-live">
-          <label class="field-label" for="branch-input">A ticket</label>
-          <input class="ticket" id="branch-input" type="text" value="you took money from me twice" autocomplete="off" spellcheck="false" maxlength="90">
-          <p class="tokens" id="branch-tokens" aria-label="Words the encoder knows"></p>
-          <div class="compare">
-            <div class="by-hand"><p class="mini">by hand</p><p class="solid-out" id="branch-hand">unknown</p></div>
-            <div class="learned"><p class="mini">learned</p><div class="dist" id="branch-dist"></div></div>
-          </div>
-          <div class="teach">
-            <p class="mini">Wrong? Teach it: <span class="dim">(retrains here, in milliseconds)</span></p>
-            <div class="teach-buttons" id="branch-teach"></div>
-            <p class="teach-log" id="branch-log" aria-live="polite"></p>
-          </div>
-          <p class="scale">At scale, the same two operations reach <b>89.4%</b> on Banking77’s 3,080 held-out questions (77 intents) after 3.3 seconds of CPU training. <a href="https://github.com/TensaCo/tensacode-py/blob/main/docs/results/banking77-in-process.json">Record ↗</a></p>
-        </div>
-      </div>
-    </article>
-
-    <!-- 02 RULES -->
+    <!-- RULES -->
     <article class="demo" id="demo-rules" aria-labelledby="rules-title">
       <header class="demo-head">
         <p class="label">Rules</p>
@@ -274,7 +139,7 @@ choice = decide(score(options)).identity    # never a masked action</code></pre>
       </div>
     </article>
 
-    <!-- 03 MECHANICS -->
+    <!-- MECHANICS -->
     <article class="demo" id="demo-physics" aria-labelledby="physics-title">
       <header class="demo-head">
         <p class="label">Mechanics</p>
@@ -319,86 +184,28 @@ t.supervise(landed, targets, loss="mse", source="the targets themselves")</code>
       </div>
     </article>
 
-    <!-- 04 CONSEQUENCES -->
-    <article class="demo" id="demo-outcomes" aria-labelledby="outcomes-title">
-      <header class="demo-head">
-        <p class="label">Consequences</p>
-        <h3 id="outcomes-title" class="h3">Learn from what happened.</h3>
-        <p>Nobody labels the right action. The program acts, observes the result, and trains on it.</p>
-      </header>
-      <div class="demo-grid">
-        <div class="demo-code">
-          <p class="was">before</p>
-          <pre class="code past"><code>POLICY = {"hot": "cool", "corrupt": "reindex", "ready": "serve"}
-# written by someone who already knew the answers;
-# when the world changes, someone rewrites it</code></pre>
-          <p class="now">with TensorCode <span class="hint">· click the world to rewrite it</span></p>
-          <pre class="code" id="outcomes-code" data-learned="expect"><code>FIXES = {("cool", "hot"), ("reindex", "corrupt")}    # the world, written
-
-def act(telemetry):                                 # the policy, written:
-    scores = expect(options(telemetry))             # learned expectation
-    return decide(scores).identity                  # take the best one
-
-with trace() as t:                                  # act, then observe
-    scores = expect(options(telemetry))
-t.supervise(scores, [action, reward], loss="outcome", source="observed")</code></pre>
-          <p class="file"><a href="/examples/outcomes.py" download>outcomes.py</a> · a toy world, like the repo’s <a href="https://github.com/TensaCo/tensacode-py/blob/main/examples/cognition/learn_action_outcomes.py">learn_action_outcomes.py</a></p>
-        </div>
-        <div class="demo-live" id="outcomes-live">
-          <div class="bar-ctl">
-            <button class="ctl" type="button" id="outcomes-run">[ act, observe, learn ]</button>
-            <span class="served" id="outcomes-served">0 / 6 served</span>
-          </div>
-          <table class="observed" id="outcomes-observed" aria-label="Observed rewards while exploring six training scenarios">
-            <thead><tr><th scope="col">explored</th><th scope="col">cool</th><th scope="col">reindex</th><th scope="col">serve</th></tr></thead>
-            <tbody></tbody>
-          </table>
-          <ol class="episodes" id="outcomes-episodes" aria-label="Six new scenarios, handled by the learned policy"></ol>
-        </div>
-      </div>
-    </article>
   </div>
 </section>
 
-<!-- 05: robots, recorded in simulation -->
-<section class="sec" id="robots" aria-labelledby="robots-title">
-  <div class="container">
-    <div class="split">
-      <div class="copy">
-        <p class="label">05 — Robots</p>
-        <h2 id="robots-title" class="h2">Some skills are still easier to write.</h2>
-        <p>Unitree G1 humanoids with Dex3-1 hands, in MuJoCo. A written controller fuses the head camera with 66 pressure sensors on its fingertips, finger pads and palms to estimate the parcel’s pose, then solves hand and arm inverse kinematics for the joint torques. It never reads the simulator’s ground truth.</p>
-      </div>
-      <figure class="reel">
-        <video data-reel muted loop playsinline preload="metadata" poster="/media/robots/warehouse.jpg" aria-label="Two G1 humanoids in a warehouse; one picks up an orange parcel with a three-finger hand and sets it on a pink receiving tray.">
-          <source src="/media/robots/warehouse.mp4" type="video/mp4">
-        </video>
-        <figcaption>A recorded run, rendered in Cycles. The building, forklifts and people are scenery, not simulated.</figcaption>
-      </figure>
-    </div>
-    <div class="versus">
-      <figure>
-        <video controls muted playsinline preload="none" poster="/media/robots/written.jpg" aria-label="Written controller, seeded case 0: both robots place their parcels.">
-          <source src="/media/robots/written.mp4" type="video/mp4">
-        </video>
-        <figcaption><span class="score">23 / 24</span> placed by the written controller</figcaption>
-      </figure>
-      <figure>
-        <video controls muted playsinline preload="none" poster="/media/robots/learned.jpg" aria-label="Policy trained on the controller's demonstrations, seeded case 0: neither robot places its parcel.">
-          <source src="/media/robots/learned.mp4" type="video/mp4">
-        </video>
-        <figcaption><span class="score learned">0 / 24</span> placed by each of seven policies trained on its demonstrations</figcaption>
-      </figure>
-    </div>
-    <p class="note">Same 12 seeded cases, two robots each, declared before any run. The trained policies (GRU, diffusion, geometry-residual) copy the demonstrations open loop but drift off them closed loop. <a href="https://github.com/TensaCo/tensacode-py/blob/main/docs/results/robotics/README.md">Every run, failures included</a>.</p>
+<!-- 02: robots, a recorded run behind the section -->
+<section class="reel" id="robots" aria-labelledby="robots-title">
+  <video class="reel-video" data-reel muted loop playsinline preload="metadata" poster="/media/robots.jpg" aria-hidden="true">
+    <source src="/media/robots.mp4" type="video/mp4">
+  </video>
+  <div class="container reel-body">
+    <p class="label">02 — Robots</p>
+    <h2 id="robots-title" class="h2">Some skills are easier to write.</h2>
+    <p class="reel-line">A written controller placed 23 of 24 parcels. Seven policies trained on its demonstrations placed none.</p>
+    <p class="reel-fine">Unitree G1 with Dex3-1 hands in MuJoCo, rendered in Cycles; the scenery is not simulated. <a href="https://github.com/TensaCo/tensacode-py/blob/main/docs/results/robotics/README.md">Every run ↗</a></p>
   </div>
 </section>
 
-<!-- 06: start -->
+<!-- 03: start -->
 <section class="sec start" id="start" aria-labelledby="start-title">
   <div class="container">
-    <p class="label">06 — Start</p>
-    <h2 id="start-title" class="visually-hidden">Install TensorCode</h2>
+    <p class="label">03 — Start</p>
+    <h2 id="start-title" class="h2 wide">A trained model is just another function.</h2>
+    <p class="lede">Call it, branch on it, wrap it in rules. Then teach it through the values your program produces.</p>
     <div class="installs">
       <button class="install big" type="button" data-copy="pip install &quot;tensorcode[vec]&quot;"><span class="prompt">$</span> pip install "tensorcode[vec]"<span class="copied" aria-live="polite"></span></button>
       <button class="install big" type="button" data-copy="npm install tensorcode"><span class="prompt">$</span> npm install tensorcode<span class="copied" aria-live="polite"></span></button>
@@ -448,7 +255,7 @@ print(route(encode("the upload crashed")).value)  # technical</code></pre>
       <nav aria-label="Documentation"><p class="foot-h">Docs</p><a href="/docs/python/quickstart/">Python quickstart</a><a href="/docs/typescript/">TypeScript</a><a href="/docs/overview/">How it fits together</a><a href="/docs/python/validation/">What it can’t do yet</a></nav>
       <nav aria-label="Code"><p class="foot-h">Code</p><a href="https://github.com/TensaCo/tensacode-py">Python on GitHub</a><a href="https://github.com/TensaCo/tensacode-ts">TypeScript on GitHub</a><a href="https://pypi.org/project/tensorcode/">PyPI</a><a href="https://www.npmjs.com/package/tensorcode">npm</a></nav>
     </div>
-    <p class="fine"><span>© 2026 TensaCo Inc. · MIT licensed</span><span>by TensaCo</span></p>
+    <p class="fine"><span>© 2026 TensaCo Inc. · MIT licensed</span><span>Built by <a class="foot-co" href="https://tensaco.ai">TensaCo</a></span></p>
   </div>
 </footer>
 

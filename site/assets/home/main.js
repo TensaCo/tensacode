@@ -14,13 +14,8 @@ for (const pre of document.querySelectorAll('pre.code:not(.live)')) {
 }
 
 import('./hero.js').then((m) => m.init(document.querySelector('#hero')));
-lazy('#explode', () => import('./explode.js'), '0px');
-lazy('#extrap', () => import('./extrap.js'), '0px');
-lazy('#mover', () => import('./mover.js'));
-lazy('#demo-branch', () => import('./demo-branch.js'));
 lazy('#demo-rules', () => import('./demo-rules.js'));
 lazy('#demo-physics', () => import('./demo-physics.js'));
-lazy('#demo-outcomes', () => import('./demo-outcomes.js'));
 lazy('[data-reel]', () => import('./reel.js'), '0px');
 
 // Install commands copy themselves.

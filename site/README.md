@@ -2,7 +2,8 @@
 
 The product launch site for TensorCode, the `tensorcode` libraries for Python and
 TypeScript. It is a site for this one product, not a company site: brand everything as
-TensorCode, and mention TensaCo only as the plain-text "by TensaCo" in footers.
+TensorCode, and mention TensaCo only in footers, as "Built by TensaCo" linking to
+https://tensaco.ai.
 
 It's static: no framework, and no build step for the landing page. Cloudflare Workers
 serves it as static assets (`../wrangler.jsonc`, Worker `tensorcode-site`). A few lines
@@ -11,7 +12,7 @@ in `../scripts/site/worker.js` run first: they redirect `www.tensorcode.dev` and
 
 | Path | What it is |
 |---|---|
-| `index.html` | The landing page: hero, the two problems, the programming model, four live demos, start |
+| `index.html` | The landing page: hero, the idea in two lines, two live demos, the robots reel, start |
 | `DESIGN.md` | The visual system (written = solid, learned = halftone, `--signal` = training). Read it before changing the look |
 | `docs/` | **Generated.** Technical landing, shared overview and install pages, Python and TypeScript guides |
 | `404.html` | Served for any missing path (`not_found_handling: "404-page"`) |
@@ -24,7 +25,7 @@ in `../scripts/site/worker.js` run first: they redirect `www.tensorcode.dev` and
 | `assets/programs/*.js` | JavaScript twins of `examples/*.py`, run on the bundled library |
 | `assets/lib/tensorcode.js` | **Generated, committed.** TensorCode for TypeScript bundled for the browser |
 | `media/og.png` | Social preview image (1200×630) |
-| `media/robots/` | Landing section 05: recorded G1 runs (H.264, faststart) and posters. Results come from `tensacode/python/docs/results/robotics/` |
+| `media/robots.mp4`, `media/robots.jpg` | **Generated, committed.** The robots reel behind section 02 and its poster, built from `../media/robots/` (§ Videos) |
 | `sitemap.xml`, `sitemap-pages.xml`, `robots.txt` | Sitemap index (pages + generated `docs/sitemap.xml`) |
 
 Keep the landing page short: one idea per section, lines people can repeat. Every claim
@@ -48,6 +49,25 @@ checkout's `dist/` and its rolldown). `check-examples.mjs` needs a Python with
 `tensorcode[vec]`. Numbers must match exactly, except where float32 rounding compounds
 over training (`rules` agrees to within 1%). Run both after changing a demo or its
 program, and after moving either submodule.
+
+## Videos
+
+Each video on the site is an edit in code: `../media/<name>/<Name>.vid.py`, a video declared with
+CommandAGI's SDK (`commandagi.design.media`: tracks, clips with their in and out points,
+transitions, a `poster` marker). It names its source clips by path, so a better render of a shot
+replaces the file in `sources/` and the edit stays the same. Open it in the CommandAGI video
+editor to cut it by hand; the editor writes the edits back into the file.
+
+```sh
+node scripts/site/build-media.mjs           # every edit → site/media/<name>.mp4 and <name>.jpg
+node scripts/site/build-media.mjs robots    # one
+```
+
+It renders with CommandAGI's headless renderer (`packages/applets/video/eval` in a CommandAGI
+checkout: `COMMANDAGI_HOME`, default `~/Documents/commandagi`; `npm install` there once). The
+renderer draws the ffmpeg subset (cuts, crossfades, fades, trims, framing) and lists what it
+left out. The ffmpeg is `FFMPEG_PATH`, or imageio-ffmpeg's from `tensacode/python/.venv`.
+Commit the rendered files: the deploy does not render.
 
 ## Build the docs
 

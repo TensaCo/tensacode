@@ -15,6 +15,9 @@ Guidance for coding agents working in this repository.
 - `scripts/site/build-docs.mjs`: builds `site/docs/` from the submodules' `README.md`
   and `docs/*.md`, plus the shared pages in `scripts/site/pages/`.
 - `scripts/site/check-links.mjs`: checks internal links, anchors and code blocks.
+- `media/<name>/`: the site's videos as edits in code: `<Name>.vid.py` (CommandAGI's SDK)
+  names its source clips by path. `scripts/site/build-media.mjs` renders each to
+  `site/media/<name>.mp4` and its poster (`site/README.md` § Videos).
 - `scripts/site/build-lib.mjs`: bundles the TypeScript library into
   `site/assets/lib/tensorcode.js`, which the landing page's live demos run.
 - `scripts/site/check-examples.mjs`: checks that each demo's JavaScript program computes
@@ -29,9 +32,9 @@ Guidance for coding agents working in this repository.
   not through this repository. Don't run `git submodule update` or commit a moved
   submodule pointer unless the task is to do exactly that.
 - The product is TensorCode (packages `tensorcode` on PyPI and npm), at
-  https://tensorcode.dev. Brand everything as TensorCode; TensaCo appears only as the
-  plain-text "by TensaCo" in site footers.
-- Never mention or link `tensaco.ai`. It is reserved for a future company site.
+  https://tensorcode.dev. Brand everything as TensorCode; TensaCo appears only in site
+  footers, as "Built by TensaCo" linking to https://tensaco.ai (the company's site, built
+  in the TensaCo/tensaco.ai repository).
 - Every claim on the site must be something the libraries do; check it against
   `tensacode/python/docs/` (especially `validation.md`).
 - The default branch is `develop`.
