@@ -38,6 +38,7 @@
     </a>
     <nav class="corner" aria-label="Resources">
       <a href="#four">Demos</a>
+      <a class="nav-wide" href="#robots">Robots</a>
       <a class="docs-link" href="/docs/">Docs</a>
       <a class="gh" href="https://github.com/TensaCo/tensacode" aria-label="TensorCode on GitHub"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0a8 8 0 0 0-2.53 15.59c.4.07.55-.17.55-.38l-.01-1.33c-2.23.48-2.7-1.07-2.7-1.07-.36-.93-.89-1.18-.89-1.18-.73-.5.05-.49.05-.49.8.06 1.23.83 1.23.83.72 1.23 1.88.88 2.34.67.07-.52.28-.88.51-1.08-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.03 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.28.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48l-.01 2.19c0 .21.14.46.55.38A8 8 0 0 0 8 0Z"/></svg><span>GitHub</span></a>
       <button class="icon-btn" type="button" data-theme-toggle hidden aria-label="Switch theme"><svg class="moon" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M13.6 10.4A6 6 0 0 1 5.6 2.4a6 6 0 1 0 8 8Z"/></svg><svg class="sun" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="3.1"/><path d="M8 1.1v1.7M8 13.2v1.7M1.1 8h1.7M13.2 8h1.7M3.15 3.15l1.2 1.2M11.65 11.65l1.2 1.2M12.85 3.15l-1.2 1.2M4.35 11.65l-1.2 1.2"/></svg></button>
@@ -359,10 +360,44 @@ t.supervise(scores, [action, reward], loss="outcome", source="observed")</code><
   </div>
 </section>
 
-<!-- 05: start -->
+<!-- 05: robots, recorded in simulation -->
+<section class="sec" id="robots" aria-labelledby="robots-title">
+  <div class="container">
+    <div class="split">
+      <div class="copy">
+        <p class="label">05 — Robots</p>
+        <h2 id="robots-title" class="h2">Some skills are still easier to write.</h2>
+        <p>Unitree G1 humanoids with Dex3-1 hands, in MuJoCo. A written controller fuses the head camera with 66 pressure sensors on its fingertips, finger pads and palms to estimate the parcel’s pose, then solves hand and arm inverse kinematics for the joint torques. It never reads the simulator’s ground truth.</p>
+      </div>
+      <figure class="reel">
+        <video data-reel muted loop playsinline preload="metadata" poster="/media/robots/warehouse.jpg" aria-label="Two G1 humanoids in a warehouse; one picks up an orange parcel with a three-finger hand and sets it on a pink receiving tray.">
+          <source src="/media/robots/warehouse.mp4" type="video/mp4">
+        </video>
+        <figcaption>A recorded run, rendered in Cycles. The building, forklifts and people are scenery, not simulated.</figcaption>
+      </figure>
+    </div>
+    <div class="versus">
+      <figure>
+        <video controls muted playsinline preload="none" poster="/media/robots/written.jpg" aria-label="Written controller, seeded case 0: both robots place their parcels.">
+          <source src="/media/robots/written.mp4" type="video/mp4">
+        </video>
+        <figcaption><span class="score">23 / 24</span> placed by the written controller</figcaption>
+      </figure>
+      <figure>
+        <video controls muted playsinline preload="none" poster="/media/robots/learned.jpg" aria-label="Policy trained on the controller's demonstrations, seeded case 0: neither robot places its parcel.">
+          <source src="/media/robots/learned.mp4" type="video/mp4">
+        </video>
+        <figcaption><span class="score learned">0 / 24</span> placed by each of seven policies trained on its demonstrations</figcaption>
+      </figure>
+    </div>
+    <p class="note">Same 12 seeded cases, two robots each, declared before any run. The trained policies (GRU, diffusion, geometry-residual) copy the demonstrations open loop but drift off them closed loop. <a href="https://github.com/TensaCo/tensacode-py/blob/main/docs/results/robotics/README.md">Every run, failures included</a>.</p>
+  </div>
+</section>
+
+<!-- 06: start -->
 <section class="sec start" id="start" aria-labelledby="start-title">
   <div class="container">
-    <p class="label">05 — Start</p>
+    <p class="label">06 — Start</p>
     <h2 id="start-title" class="visually-hidden">Install TensorCode</h2>
     <div class="installs">
       <button class="install big" type="button" data-copy="pip install &quot;tensorcode[vec]&quot;"><span class="prompt">$</span> pip install "tensorcode[vec]"<span class="copied" aria-live="polite"></span></button>
@@ -413,7 +448,7 @@ print(route(encode("the upload crashed")).value)  # technical</code></pre>
       <nav aria-label="Documentation"><p class="foot-h">Docs</p><a href="/docs/python/quickstart/">Python quickstart</a><a href="/docs/typescript/">TypeScript</a><a href="/docs/overview/">How it fits together</a><a href="/docs/python/validation/">What it can’t do yet</a></nav>
       <nav aria-label="Code"><p class="foot-h">Code</p><a href="https://github.com/TensaCo/tensacode-py">Python on GitHub</a><a href="https://github.com/TensaCo/tensacode-ts">TypeScript on GitHub</a><a href="https://pypi.org/project/tensorcode/">PyPI</a><a href="https://www.npmjs.com/package/tensorcode">npm</a></nav>
     </div>
-    <p class="fine"><span>© 2026 TensaCo Inc. · MIT licensed</span><span>Built by <a class="foot-co" href="https://tensaco.ai">TensaCo</a></span></p>
+    <p class="fine"><span>© 2026 TensaCo Inc. · MIT licensed</span><span>by TensaCo</span></p>
   </div>
 </footer>
 

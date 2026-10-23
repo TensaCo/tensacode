@@ -21,6 +21,7 @@ lazy('#demo-branch', () => import('./demo-branch.js'));
 lazy('#demo-rules', () => import('./demo-rules.js'));
 lazy('#demo-physics', () => import('./demo-physics.js'));
 lazy('#demo-outcomes', () => import('./demo-outcomes.js'));
+lazy('[data-reel]', () => import('./reel.js'), '0px');
 
 // Install commands copy themselves.
 for (const button of document.querySelectorAll('[data-copy]')) {

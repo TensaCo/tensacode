@@ -988,7 +988,7 @@ ${cards}
       <nav aria-label="Documentation"><p class="foot-h">Docs</p><a href="/docs/python/quickstart/">Python quickstart</a><a href="/docs/typescript/">TypeScript</a><a href="/docs/overview/">How it fits together</a><a href="/docs/python/validation/">What it can’t do yet</a></nav>
       <nav aria-label="Code"><p class="foot-h">Code</p><a href="https://github.com/TensaCo/tensacode-py">Python on GitHub</a><a href="https://github.com/TensaCo/tensacode-ts">TypeScript on GitHub</a><a href="https://pypi.org/project/tensorcode/">PyPI</a><a href="https://www.npmjs.com/package/tensorcode">npm</a></nav>
     </div>
-    <p class="fine"><span>© 2026 TensaCo Inc. · MIT licensed</span><span>Built by <a class="foot-co" href="https://tensaco.ai">TensaCo</a></span></p>
+    <p class="fine"><span>© 2026 TensaCo Inc. · MIT licensed</span><span>by TensaCo</span></p>
   </div>
 </footer>
 <script src="/assets/theme.js" defer></script>

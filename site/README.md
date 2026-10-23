@@ -24,6 +24,7 @@ in `../scripts/site/worker.js` run first: they redirect `www.tensorcode.dev` and
 | `assets/programs/*.js` | JavaScript twins of `examples/*.py`, run on the bundled library |
 | `assets/lib/tensorcode.js` | **Generated, committed.** TensorCode for TypeScript bundled for the browser |
 | `media/og.png` | Social preview image (1200×630) |
+| `media/robots/` | Landing section 05: recorded G1 runs (H.264, faststart) and posters. Results come from `tensacode/python/docs/results/robotics/` |
 | `sitemap.xml`, `sitemap-pages.xml`, `robots.txt` | Sitemap index (pages + generated `docs/sitemap.xml`) |
 
 Keep the landing page short: one idea per section, lines people can repeat. Every claim
